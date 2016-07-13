@@ -22,6 +22,6 @@ package com.vanillasource.clint;
  * Represents a possibly generic type in java.
  */
 public interface JavaType<T> {
-   // TODO
+   // TODO: return a parser?
 }
 
