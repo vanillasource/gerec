@@ -18,14 +18,30 @@
 
 package com.vanillasource.clint;
 
+import java.util.List;
+
+/**
+ * A server response after calling a HTTP Method.
+ */
 public interface Response<T> {
    HttpStatusCode getStatusCode();
 
-   Condition ifMatch();
+   /**
+    * @return Whether the response content has a link with the given relation. The media-type
+    * defines how links are parsed (if at all) in the given type.
+    */
+   boolean hasLink(String relationName);
 
-   Condition ifNotMatch();
+   /**
+    * Follow the link with the given relation.
+    */
+   ResourceReference follow(String relationName);
 
-   Condition ifModifiedSince();
+   /**
+    * @return The updated reference to the returned state.
+    */
+   ResourceReference self();
 
-   Condition ifUnmodifiedSince();
+   // How to process content: streams, http/2, multipart, but still easy
 }
+

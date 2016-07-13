@@ -22,7 +22,15 @@ package com.vanillasource.clint;
  * References a remote HTTP resource which can be accessed by given methods.
  */
 public interface ResourceReference {
-    <T> Response<T> get(JavaType<T> type);
+   ResourceReference ifMatch();
+
+   ResourceReference ifNotMatch();
+
+   ResourceReference ifModifiedSince();
+
+   ResourceReference ifUnmodifiedSince();
+
+   <T> Response<T> get(JavaType<T> type);
     
-    // TODO: async, different standard types, conditionals
+   // TODO: async, different standard types, conditionals
 }
