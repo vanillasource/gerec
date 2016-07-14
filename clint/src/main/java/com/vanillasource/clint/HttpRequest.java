@@ -19,6 +19,5 @@
 package com.vanillasource.clint;
 
 public interface HttpRequest {
-   // TODO: relevant methods, eg. headers
 }
 
