@@ -16,28 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.gerec.mediatype;
 
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
 import java.io.Serializable;
-import java.util.concurrent.CompletableFuture;
 
-/**
- * References a remote HTTP resource which can be accessed by given methods.
- */
-public interface ResourceReference extends Serializable {
-   <T> Response<T> get(Class<T> type, Condition condition);
+public interface MediaType<T> extends Serializable {
+   void applyTo(HttpRequest request);
 
-   default <T> Response<T> get(Class<T> type) {
-      return get(type, Condition.TRUE);
-   }
+   boolean isHandling(HttpResponse response);
 
-   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type) {
-      return CompletableFuture.supplyAsync(() -> get(type));
-   }
-
-   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type, Condition condition) {
-      return CompletableFuture.supplyAsync(() -> get(type, condition));
-   }
-
-   // TODO: different standard types (list of Ts, other methods: POST, DELETE, etc.)
+   T deserialize(HttpResponse response);
 }

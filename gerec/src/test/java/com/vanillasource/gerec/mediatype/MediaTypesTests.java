@@ -16,11 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint.mediatype;
+package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.clint.HttpResponse;
-import com.vanillasource.clint.HttpRequest;
-import com.vanillasource.clint.ClintException;
+import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.GerecException;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
@@ -65,14 +65,14 @@ public class MediaTypesTests {
       assertTrue(types.isHandling(response));
    }
 
-   @Test(expectedExceptions = ClintException.class)
+   @Test(expectedExceptions = GerecException.class)
    public void testNoTypesThrowsExceptionOnDeserialize() {
       MediaTypes<String> types = new MediaTypes<>(emptyList());
 
       types.deserialize(response);
    }
 
-   @Test(expectedExceptions = ClintException.class)
+   @Test(expectedExceptions = GerecException.class)
    public void testIfTypeNotHandlingResponseDeserializationThrowsException() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 

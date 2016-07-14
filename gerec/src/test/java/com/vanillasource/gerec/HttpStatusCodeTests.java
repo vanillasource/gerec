@@ -16,10 +16,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.gerec;
 
-import java.io.InputStream;
+import org.testng.annotations.*;
+import static org.testng.Assert.*;
 
-public interface HttpResponse {
-   InputStream getContent();
+@Test
+public class HttpStatusCodeTests {
+   public void test200EqualToOk() {
+      assertEquals(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+   }
+
+   public void test200SameAsOk() {
+      assertSame(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+   }
+
+   public void testNonExistingCodeStillGetsValue() {
+      assertNotNull(HttpStatusCode.valueOf(299));
+   }
 }

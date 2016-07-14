@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.gerec;
 
 import java.util.List;
 import java.io.Serializable;

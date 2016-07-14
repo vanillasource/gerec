@@ -16,22 +16,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.gerec;
 
-import org.testng.annotations.*;
-import static org.testng.Assert.*;
+import java.io.Serializable;
+import java.util.concurrent.CompletableFuture;
 
-@Test
-public class HttpStatusCodeTests {
-   public void test200EqualToOk() {
-      assertEquals(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+/**
+ * References a remote HTTP resource which can be accessed by given methods.
+ */
+public interface ResourceReference extends Serializable {
+   <T> Response<T> get(Class<T> type, Condition condition);
+
+   default <T> Response<T> get(Class<T> type) {
+      return get(type, Condition.TRUE);
    }
 
-   public void test200SameAsOk() {
-      assertSame(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type) {
+      return CompletableFuture.supplyAsync(() -> get(type));
    }
 
-   public void testNonExistingCodeStillGetsValue() {
-      assertNotNull(HttpStatusCode.valueOf(299));
+   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type, Condition condition) {
+      return CompletableFuture.supplyAsync(() -> get(type, condition));
    }
+
+   // TODO: different standard types (list of Ts, other methods: POST, DELETE, etc.)
 }

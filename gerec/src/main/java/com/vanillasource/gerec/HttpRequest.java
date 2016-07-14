@@ -16,17 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.gerec;
 
-/**
- * Represent a requested condition on some HTTP method.
- */
-public interface Condition {
-   Condition TRUE = new Condition() {
-      @Override
-      public void applyTo(HttpRequest request) {
-      }
-   };
-
-   void applyTo(HttpRequest request);
+public interface HttpRequest {
 }
+

@@ -16,8 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.gerec.mediatype;
 
-public interface HttpRequest {
+/**
+ * A catalog of all known media-types.
+ */
+public interface MediaTypeCatalog {
+   /**
+    * Get all matching media-types for the given class. There may be multiple media-types for
+    * each class, for example a json and an xml representation, or multiple versions of the same.
+    */
+   <T> MediaTypes<T> getMediaTypesFor(Class<T> type);
 }
 

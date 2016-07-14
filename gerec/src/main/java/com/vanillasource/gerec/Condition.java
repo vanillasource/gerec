@@ -16,16 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint.mediatype;
+package com.vanillasource.gerec;
 
-import com.vanillasource.clint.HttpRequest;
-import com.vanillasource.clint.HttpResponse;
-import java.io.Serializable;
+/**
+ * Represent a requested condition on some HTTP method.
+ */
+public interface Condition {
+   Condition TRUE = new Condition() {
+      @Override
+      public void applyTo(HttpRequest request) {
+      }
+   };
 
-public interface MediaType<T> extends Serializable {
    void applyTo(HttpRequest request);
-
-   boolean isHandling(HttpResponse response);
-
-   T deserialize(HttpResponse response);
 }

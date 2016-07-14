@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
-   <groupId>com.vanillasource.clint</groupId>
-   <artifactId>clint-parent</artifactId>
+   <groupId>com.vanillasource.gerec</groupId>
+   <artifactId>gerec-parent</artifactId>
    <packaging>pom</packaging>
    <version>1.0.0-SNAPSHOT</version>
-   <name>Clint Parent</name>
-   <description>The link following HTTP client</description>
-   <url>https://github.com/vanillasource/clint</url>
+   <name>Gerec Parent</name>
+   <description>The Generic REST Client for Java</description>
+   <url>https://github.com/vanillasource/gerec</url>
 
    <modules>
-      <module>clint</module>
+      <module>gerec</module>
    </modules>
 
    <properties>
@@ -32,9 +32,9 @@
    </developers>
 
    <scm>
-      <connection>scm:git:git@github.com:vanillasource/clint.git</connection>
-      <developerConnection>scm:git:git@github.com:vanillasource/clint.git</developerConnection>
-      <url>git@github.com:vanillasource/clint.git</url>
+      <connection>scm:git:git@github.com:vanillasource/gerec.git</connection>
+      <developerConnection>scm:git:git@github.com:vanillasource/gerec.git</developerConnection>
+      <url>git@github.com:vanillasource/gerec.git</url>
      <tag>HEAD</tag>
    </scm>
 

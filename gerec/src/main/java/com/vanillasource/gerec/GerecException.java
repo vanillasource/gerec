@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.gerec;
 
-public class ClintException extends RuntimeException {
-   public ClintException(String msg) {
+public class GerecException extends RuntimeException {
+   public GerecException(String msg) {
       super(msg);
    }
 
-   public ClintException(String msg, Exception e) {
+   public GerecException(String msg, Exception e) {
       super(msg, e);
    }
 }

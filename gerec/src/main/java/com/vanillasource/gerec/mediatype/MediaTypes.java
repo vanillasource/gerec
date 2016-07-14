@@ -16,11 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint.mediatype;
+package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.clint.HttpRequest;
-import com.vanillasource.clint.HttpResponse;
-import com.vanillasource.clint.ClintException;
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.GerecException;
 import java.util.List;
 
 /**
@@ -48,7 +48,7 @@ public final class MediaTypes<T> implements MediaType<T> {
       return mediaTypes.stream()
          .filter(mediaType -> mediaType.isHandling(response))
          .findFirst()
-         .orElseThrow(() -> new ClintException("no matching media types found for "+response+", possible media types were: "+mediaTypes))
+         .orElseThrow(() -> new GerecException("no matching media types found for "+response+", possible media types were: "+mediaTypes))
          .deserialize(response);
    }
 }
