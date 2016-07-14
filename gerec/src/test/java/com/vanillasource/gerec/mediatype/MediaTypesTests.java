@@ -18,9 +18,7 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.gerec.GerecException;
+import com.vanillasource.gerec.*;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
@@ -79,12 +77,14 @@ public class MediaTypesTests {
       types.deserialize(response);
    }
 
+   @SuppressWarnings("unchecked")
    public void testHandlingTypeDeserializesForTypes() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
-      when(mediaType.deserialize(response)).thenReturn("abc");
+      Hypermedia<String> media = mock(Hypermedia.class);
+      when(mediaType.deserialize(response)).thenReturn(media);
 
-      assertEquals(types.deserialize(response), "abc");
+      assertEquals(types.deserialize(response), media);
    }
 
    @BeforeMethod

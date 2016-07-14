@@ -19,5 +19,15 @@
 package com.vanillasource.gerec;
 
 public interface HttpRequest {
+   public interface HttpRequestChange {
+      void applyTo(HttpRequest request);
+
+      default HttpRequestChange and(HttpRequestChange that) {
+         return request -> {
+            this.applyTo(request);
+            that.applyTo(request);
+         };
+      }
+   }
 }
 

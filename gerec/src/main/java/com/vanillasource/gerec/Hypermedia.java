@@ -18,15 +18,26 @@
 
 package com.vanillasource.gerec;
 
-import java.util.function.Consumer;
+import java.io.Serializable;
 
 /**
- * Represent a requested condition on some HTTP method.
+ * The hypermedia aspects of a certain representation. The returned content may or may not
+ * be equal to the full representation, it may have the links stripped out for example.
  */
-public interface Condition extends HttpRequest.HttpRequestChange {
-   Condition TRUE = new Condition() {
-      @Override
-      public void applyTo(HttpRequest request) {
-      }
-   };
+public interface Hypermedia<T> extends Serializable {
+   /**
+    * @return Whether the response content has a link with the given relation. The media-type
+    * defines how links are parsed (if at all) in the given type.
+    */
+   boolean hasLink(String relationName);
+
+   /**
+    * Follow the link with the given relation.
+    */
+   ResourceReference follow(String relationName);
+
+   /**
+    * Get the content.
+    */
+   T getContent();
 }

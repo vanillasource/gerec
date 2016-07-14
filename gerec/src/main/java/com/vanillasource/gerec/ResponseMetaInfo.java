@@ -18,15 +18,23 @@
 
 package com.vanillasource.gerec;
 
-import java.util.function.Consumer;
+import java.io.Serializable;
 
-/**
- * Represent a requested condition on some HTTP method.
- */
-public interface Condition extends HttpRequest.HttpRequestChange {
-   Condition TRUE = new Condition() {
-      @Override
-      public void applyTo(HttpRequest request) {
-      }
-   };
+public interface ResponseMetaInfo extends Serializable {
+   HttpStatusCode getStatusCode();
+
+   Condition ifMatch();
+
+   Condition ifNoneMatch();
+
+   Condition ifModifiedSince();
+
+   Condition ifUnmodifiedSince();
+
+   boolean hasLocation();
+
+   /**
+    * @return The updated reference to the returned state.
+    */
+   ResourceReference followLocation();
 }

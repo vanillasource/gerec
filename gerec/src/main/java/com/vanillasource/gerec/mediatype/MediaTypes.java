@@ -21,6 +21,7 @@ package com.vanillasource.gerec.mediatype;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.GerecException;
+import com.vanillasource.gerec.Hypermedia;
 import java.util.List;
 
 /**
@@ -44,7 +45,7 @@ public final class MediaTypes<T> implements MediaType<T> {
    }
 
    @Override
-   public T deserialize(HttpResponse response) {
+   public Hypermedia<T> deserialize(HttpResponse response) {
       return mediaTypes.stream()
          .filter(mediaType -> mediaType.isHandling(response))
          .findFirst()

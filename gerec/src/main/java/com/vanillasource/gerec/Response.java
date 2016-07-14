@@ -24,38 +24,6 @@ import java.io.Serializable;
 /**
  * A server response after calling a HTTP Method.
  */
-public interface Response<T> extends Serializable {
-   HttpStatusCode getStatusCode();
-
-   Condition ifMatch();
-
-   Condition ifNoneMatch();
-
-   Condition ifModifiedSince();
-
-   Condition ifUnmodifiedSince();
-
-   /**
-    * @return Whether the response content has a link with the given relation. The media-type
-    * defines how links are parsed (if at all) in the given type.
-    */
-   boolean hasLink(String relationName);
-
-   /**
-    * Follow the link with the given relation.
-    */
-   ResourceReference follow(String relationName);
-
-   boolean hasLocation();
-
-   /**
-    * @return The updated reference to the returned state.
-    */
-   ResourceReference followLocation();
-
-   /**
-    * Get the content of the response.
-    */
-   T getContent();
+public interface Response<T> extends Hypermedia<T>, ResponseMetaInfo, Serializable {
 }
 

@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
  * References a remote HTTP resource which can be accessed by given methods.
  */
 public interface ResourceReference extends Serializable {
-   <T> Response<T> get(Class<T> type, Condition condition);
+   <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change);
 
    default <T> Response<T> get(Class<T> type) {
       return get(type, Condition.TRUE);
@@ -35,8 +35,8 @@ public interface ResourceReference extends Serializable {
       return CompletableFuture.supplyAsync(() -> get(type));
    }
 
-   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type, Condition condition) {
-      return CompletableFuture.supplyAsync(() -> get(type, condition));
+   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type, HttpRequest.HttpRequestChange change) {
+      return CompletableFuture.supplyAsync(() -> get(type, change));
    }
 
    // TODO: different standard types (list of Ts, other methods: POST, DELETE, etc.)

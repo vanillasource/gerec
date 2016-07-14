@@ -19,7 +19,10 @@
 package com.vanillasource.gerec;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 
 public interface HttpResponse {
-   InputStream getContent();
+   ResponseMetaInfo getMetaInfo();
+
+   void processContent(Consumer<InputStream> contentProcessor);
 }
