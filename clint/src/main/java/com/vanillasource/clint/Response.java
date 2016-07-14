@@ -42,6 +42,9 @@ public interface Response<T> {
     */
    ResourceReference self();
 
-   // TODO: How to process content: streams, http/2, multipart, but still easy
+   /**
+    * Get the content of the response.
+    */
+   T getContent();
 }
 

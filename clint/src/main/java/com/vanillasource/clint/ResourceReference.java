@@ -30,7 +30,7 @@ public interface ResourceReference {
 
    ResourceReference ifUnmodifiedSince();
 
-   <T> Response<T> get(JavaType<T> type);
+   <T> Response<T> get(Class<T> type);
     
-   // TODO: async, different standard types, conditionals
+   // TODO: async, different standard types, methods
 }
