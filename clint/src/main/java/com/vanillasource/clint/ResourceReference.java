@@ -18,10 +18,12 @@
 
 package com.vanillasource.clint;
 
+import java.io.Serializable;
+
 /**
  * References a remote HTTP resource which can be accessed by given methods.
  */
-public interface ResourceReference {
+public interface ResourceReference extends Serializable {
    ResourceReference ifMatch();
 
    ResourceReference ifNotMatch();

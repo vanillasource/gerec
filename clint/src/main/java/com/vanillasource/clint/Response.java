@@ -19,11 +19,12 @@
 package com.vanillasource.clint;
 
 import java.util.List;
+import java.io.Serializable;
 
 /**
  * A server response after calling a HTTP Method.
  */
-public interface Response<T> {
+public interface Response<T> extends Serializable {
    HttpStatusCode getStatusCode();
 
    /**
