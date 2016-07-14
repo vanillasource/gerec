@@ -19,8 +19,13 @@
 package com.vanillasource.clint.mediatype;
 
 import com.vanillasource.clint.HttpRequest;
+import com.vanillasource.clint.HttpResponse;
 import java.io.Serializable;
 
 public interface MediaType<T> extends Serializable {
    void applyTo(HttpRequest request);
+
+   boolean isHandling(HttpResponse response);
+
+   T deserialize(HttpResponse response);
 }
