@@ -18,17 +18,7 @@
 
 package com.vanillasource.clint;
 
-import java.io.Serializable;
-
-/**
- * References a remote HTTP resource which can be accessed by given methods.
- */
-public interface ResourceReference extends Serializable {
-   <T> Response<T> get(Class<T> type, Condition condition);
-
-   default <T> Response<T> get(Class<T> type) {
-      return get(type, Condition.TRUE);
-   }
-    
-   // TODO: async, different standard types, methods
+public interface HttpRequest {
+   // TODO: relevant methods, eg. headers
 }
+

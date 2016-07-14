@@ -16,19 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.clint.mediatype;
 
-import java.io.Serializable;
+import java.util.Collection;
 
 /**
- * References a remote HTTP resource which can be accessed by given methods.
+ * A catalog of all known media-types.
  */
-public interface ResourceReference extends Serializable {
-   <T> Response<T> get(Class<T> type, Condition condition);
-
-   default <T> Response<T> get(Class<T> type) {
-      return get(type, Condition.TRUE);
-   }
-    
-   // TODO: async, different standard types, methods
+public interface MediaTypeCatalog {
+   /**
+    * Get all matching media-types for the given class. There may be multiple media-types for
+    * each class, for example a json and an xml representation, or multiple versions of the same.
+    */
+   <T> Collection<MediaType<T>> getMediaTypesFor(Class<T> type);
 }
+

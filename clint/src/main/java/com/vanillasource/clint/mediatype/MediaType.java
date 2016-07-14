@@ -16,19 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.clint;
+package com.vanillasource.clint.mediatype;
 
+import com.vanillasource.clint.HttpRequest;
 import java.io.Serializable;
 
-/**
- * References a remote HTTP resource which can be accessed by given methods.
- */
-public interface ResourceReference extends Serializable {
-   <T> Response<T> get(Class<T> type, Condition condition);
-
-   default <T> Response<T> get(Class<T> type) {
-      return get(type, Condition.TRUE);
-   }
-    
-   // TODO: async, different standard types, methods
+public interface MediaType<T> extends Serializable {
+   void applyTo(HttpRequest request);
 }
