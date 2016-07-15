@@ -19,17 +19,27 @@
 package com.vanillasource.gerec.mediatype;
 
 import com.vanillasource.gerec.*;
+import java.util.function.Supplier;
 
 public abstract class MediaTypeAwareResourceReference implements ResourceReference {
-   private MediaTypeCatalog catalog;
+   private Supplier<MediaTypeCatalog> catalogSupplier;
 
-   public MediaTypeAwareResourceReference(MediaTypeCatalog catalog) {
-      this.catalog = catalog;
+   /**
+    * @param catalogSupplier Object that can supply a catalog. It does not directly depend
+    * on a catalog to be able to decouple it from serialization. The supplier has to be
+    * serializable.
+    */
+   public MediaTypeAwareResourceReference(Supplier<MediaTypeCatalog> catalogSupplier) {
+      this.catalogSupplier = catalogSupplier;
+   }
+
+   protected Supplier<MediaTypeCatalog> getCatalogSupplier() {
+      return catalogSupplier;
    }
 
    @Override
    public <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change) {
-      MediaTypes<T> types = catalog.getMediaTypesFor(type);
+      MediaTypes<T> types = catalogSupplier.get().getMediaTypesFor(type);
       HttpResponse response = get(change.and(types));
       ResponseMetaInfo metaInfo = response.getMetaInfo();
       Hypermedia<T> media = types.deserialize(response);

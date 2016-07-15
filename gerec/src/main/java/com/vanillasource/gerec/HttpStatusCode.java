@@ -117,6 +117,10 @@ public final class HttpStatusCode implements Serializable {
       return value;
    }
 
+   public boolean isError() {
+      return value >= 400;
+   }
+
    @Override
    public int hashCode() {
       return value;
