@@ -41,7 +41,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
    public <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change) {
       MediaTypes<T> types = catalogSupplier.get().getMediaTypesFor(type);
       HttpResponse response = get(change.and(types));
-      Hypermedia<T> media = types.deserialize(response);
+      T media = types.deserialize(response);
       return new Response<T>() {
          @Override
          public HttpStatusCode getStatusCode() {
@@ -79,18 +79,8 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
          }
 
          @Override
-         public boolean hasLink(String relationName) {
-            return media.hasLink(relationName);
-         }
-
-         @Override
-         public ResourceReference follow(String relationName) {
-            return media.follow(relationName);
-         }
-
-         @Override
          public T getContent() {
-            return media.getContent();
+            return media;
          }
       };
    }

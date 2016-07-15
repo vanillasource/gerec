@@ -81,10 +81,9 @@ public class MediaTypesTests {
    public void testHandlingTypeDeserializesForTypes() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
-      Hypermedia<String> media = mock(Hypermedia.class);
-      when(mediaType.deserialize(response)).thenReturn(media);
+      when(mediaType.deserialize(response)).thenReturn("abc");
 
-      assertEquals(types.deserialize(response), media);
+      assertEquals(types.deserialize(response), "abc");
    }
 
    @BeforeMethod

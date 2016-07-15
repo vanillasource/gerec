@@ -24,6 +24,7 @@ import java.io.Serializable;
 /**
  * A server response after calling a HTTP Method.
  */
-public interface Response<T> extends Hypermedia<T>, ResponseMetaInfo, Serializable {
+public interface Response<T> extends ResponseMetaInfo, Serializable {
+   T getContent();
 }
 
