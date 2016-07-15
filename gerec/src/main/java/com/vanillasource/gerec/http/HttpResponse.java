@@ -16,25 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.http;
 
+import java.io.InputStream;
+import java.util.function.Consumer;
 import java.io.Serializable;
 
-public interface ResponseMetaInfo extends Serializable {
+public interface HttpResponse extends Serializable{
    HttpStatusCode getStatusCode();
 
-   Condition ifMatch();
+   boolean hasHeader(Header header);
 
-   Condition ifNoneMatch();
+   String getHeader(Header header);
 
-   Condition ifModifiedSince();
-
-   Condition ifUnmodifiedSince();
-
-   boolean hasLocation();
-
-   /**
-    * @return The updated reference to the returned state.
-    */
-   ResourceReference followLocation();
+   void processContent(Consumer<InputStream> contentProcessor);
 }

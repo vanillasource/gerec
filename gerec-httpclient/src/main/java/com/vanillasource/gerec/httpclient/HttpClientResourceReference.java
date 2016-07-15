@@ -18,12 +18,13 @@
 
 package com.vanillasource.gerec.httpclient;
 
-import com.vanillasource.gerec.*;
+import com.vanillasource.gerec.GerecException;
+import com.vanillasource.gerec.resource.*;
+import com.vanillasource.gerec.http.*;
 import com.vanillasource.gerec.mediatype.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.Header;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
 import java.net.URI;
@@ -31,13 +32,18 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public final class HttpClientResourceReference extends MediaTypeAwareResourceReference {
-   private Supplier<HttpClient> httpClientSupplier;
-   private URI resourceUri;
+   private final Supplier<HttpClient> httpClientSupplier;
+   private final URI resourceUri;
 
    public HttpClientResourceReference(Supplier<MediaTypeCatalog> catalogSupplier, Supplier<HttpClient> httpClientSupplier, URI resourceUri) {
       super(catalogSupplier);
       this.httpClientSupplier = httpClientSupplier;
       this.resourceUri = resourceUri;
+   }
+
+   @Override
+   protected ResourceReference follow(URI link) {
+      return new HttpClientResourceReference(getCatalogSupplier(), httpClientSupplier, resourceUri.resolve(link));
    }
 
    @Override
@@ -47,6 +53,20 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
 
    private HttpResponse execute(HttpRequestBase request, HttpRequest.HttpRequestChange change) {
       change.applyTo(new HttpRequest() {
+         @Override
+         public boolean hasHeader(Header header) {
+            return request.containsHeader(header.value());
+         }
+
+         @Override
+         public String getHeader(Header header) {
+            return request.getFirstHeader(header.value()).getValue();
+         }
+
+         @Override
+         public void setHeader(Header header, String value) {
+            request.setHeader(header.value(), value);
+         }
       });
       try {
          org.apache.http.HttpResponse httpResponse = httpClientSupplier.get().execute(request);
@@ -57,38 +77,15 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
             }
 
             @Override
-            public Condition ifMatch() {
-               return Condition.TRUE; // TODO
+            public boolean hasHeader(Header header) {
+               return httpResponse.containsHeader(header.value());
             }
 
             @Override
-            public Condition ifNoneMatch() {
-               return Condition.TRUE; // TODO
+            public String getHeader(Header header) {
+               return httpResponse.getFirstHeader(header.value()).getValue();
             }
 
-            @Override
-            public Condition ifModifiedSince() {
-               return Condition.TRUE; // TODO
-            }
-
-            @Override
-            public Condition ifUnmodifiedSince() {
-               return Condition.TRUE; // TODO
-            }
-
-            @Override
-            public boolean hasLocation() {
-               return httpResponse.containsHeader("Location");
-            }
-
-            @Override
-            public ResourceReference followLocation() {
-               Header locationHeader = httpResponse.getFirstHeader("Location");
-               if (locationHeader == null) {
-                  throw new GerecException("there was no 'Location' header present, can not follow");
-               }
-               return new HttpClientResourceReference(getCatalogSupplier(), httpClientSupplier, resourceUri.resolve(URI.create(locationHeader.getValue())));
-            }
             @Override
             public void processContent(Consumer<InputStream> contentProcessor) {
                try {

@@ -16,24 +16,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.http;
 
-public interface HttpRequest {
-   public interface HttpRequestChange {
-      HttpRequestChange NO_CHANGE = new HttpRequestChange() {
-         @Override
-         public void applyTo(HttpRequest request) {
-         }
-      };
+import org.testng.annotations.*;
+import static org.testng.Assert.*;
 
-      void applyTo(HttpRequest request);
+@Test
+public class HttpStatusCodeTests {
+   public void test200EqualToOk() {
+      assertEquals(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+   }
 
-      default HttpRequestChange and(HttpRequestChange that) {
-         return request -> {
-            this.applyTo(request);
-            that.applyTo(request);
-         };
-      }
+   public void test200SameAsOk() {
+      assertSame(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+   }
+
+   public void testNonExistingCodeStillGetsValue() {
+      assertNotNull(HttpStatusCode.valueOf(299));
    }
 }
-

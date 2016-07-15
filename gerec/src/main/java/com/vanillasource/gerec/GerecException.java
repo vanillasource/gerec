@@ -18,6 +18,9 @@
 
 package com.vanillasource.gerec;
 
+/**
+ * All exceptions subclass, or directly throw this one.
+ */
 public class GerecException extends RuntimeException {
    public GerecException(String msg) {
       super(msg);

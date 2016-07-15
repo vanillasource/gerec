@@ -16,15 +16,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.http;
 
-import java.util.List;
-import java.io.Serializable;
+public enum Header {
+   ETAG("ETag"),
+   DATE("Date"),
+   IF_MATCH("If-Match"),
+   IF_NONE_MATCH("If-None-Match"),
+   IF_MODIFIED_SINCE("If-Modified-Since"),
+   IF_UNMODIFIED_SINCE("If-Unmodified-Since"),
+   LAST_MODIFIED("Last-Modified"),
+   LOCATION("Location");
 
-/**
- * A server response after calling a HTTP Method.
- */
-public interface Response<T> extends ResponseMetaInfo, Serializable {
-   T getContent();
+   private final String value;
+
+   private Header(String value) {
+      this.value = value;
+   }
+   
+   public String value() {
+      return value;
+   }
 }
-

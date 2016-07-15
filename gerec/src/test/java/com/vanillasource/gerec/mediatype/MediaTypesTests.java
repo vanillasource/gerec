@@ -19,6 +19,7 @@
 package com.vanillasource.gerec.mediatype;
 
 import com.vanillasource.gerec.*;
+import com.vanillasource.gerec.http.*;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;

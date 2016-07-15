@@ -16,13 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.http;
 
-import java.util.function.Consumer;
+public interface HttpRequest {
+   boolean hasHeader(Header header);
 
-/**
- * Represent a requested condition on some HTTP method.
- */
-public interface Condition extends HttpRequest.HttpRequestChange {
-   HttpRequest.HttpRequestChange TRUE = HttpRequest.HttpRequestChange.NO_CHANGE;
+   String getHeader(Header header);
+
+   void setHeader(Header header, String value);
+
+   public interface HttpRequestChange {
+      HttpRequestChange NO_CHANGE = new HttpRequestChange() {
+         @Override
+         public void applyTo(HttpRequest request) {
+         }
+      };
+
+      void applyTo(HttpRequest request);
+
+      default HttpRequestChange and(HttpRequestChange that) {
+         return request -> {
+            this.applyTo(request);
+            that.applyTo(request);
+         };
+      }
+   }
 }
+

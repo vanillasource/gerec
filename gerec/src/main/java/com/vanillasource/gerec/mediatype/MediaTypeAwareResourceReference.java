@@ -18,8 +18,15 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.*;
+import com.vanillasource.gerec.http.HttpRequest;
+import com.vanillasource.gerec.http.HttpResponse;
+import com.vanillasource.gerec.http.HttpStatusCode;
+import com.vanillasource.gerec.http.SingleHeaderValue;
+import com.vanillasource.gerec.http.Header;
+import com.vanillasource.gerec.resource.ResourceReference;
+import com.vanillasource.gerec.resource.Response;
 import java.util.function.Supplier;
+import java.net.URI;
 
 public abstract class MediaTypeAwareResourceReference implements ResourceReference {
    private Supplier<MediaTypeCatalog> catalogSupplier;
@@ -49,33 +56,53 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
          }
 
          @Override
-         public Condition ifMatch() {
-            return response.ifMatch();
+         public boolean hasIdentity() {
+            return response.hasHeader(Header.ETAG);
          }
 
          @Override
-         public Condition ifNoneMatch() {
-            return response.ifNoneMatch();
+         public HttpRequest.HttpRequestChange ifMatch() {
+            return new SingleHeaderValue(Header.IF_MATCH, response.getHeader(Header.ETAG));
          }
 
          @Override
-         public Condition ifModifiedSince() {
-            return response.ifModifiedSince();
+         public HttpRequest.HttpRequestChange ifNotMatch() {
+            return new SingleHeaderValue(Header.IF_NONE_MATCH, response.getHeader(Header.ETAG));
          }
 
          @Override
-         public Condition ifUnmodifiedSince() {
-            return response.ifUnmodifiedSince();
+         public HttpRequest.HttpRequestChange ifModifiedSince() {
+            return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.DATE));
+         }
+
+         @Override
+         public HttpRequest.HttpRequestChange ifUnmodifiedSince() {
+            return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.DATE));
+         }
+
+         @Override
+         public boolean hasLastModified() {
+            return response.hasHeader(Header.LAST_MODIFIED);
+         }
+
+         @Override
+         public HttpRequest.HttpRequestChange ifModifiedSinceLastModified() {
+            return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
+         }
+
+         @Override
+         public HttpRequest.HttpRequestChange ifUnmodifiedSinceLastModified() {
+            return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
          }
 
          @Override
          public boolean hasLocation() {
-            return response.hasLocation();
+            return response.hasHeader(Header.LOCATION);
          }
 
          @Override
          public ResourceReference followLocation() {
-            return response.followLocation();
+            return follow(URI.create(response.getHeader(Header.LOCATION)));
          }
 
          @Override
@@ -84,6 +111,8 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
          }
       };
    }
+
+   protected abstract ResourceReference follow(URI link);
 
    protected abstract HttpResponse get(HttpRequest.HttpRequestChange change);
 }

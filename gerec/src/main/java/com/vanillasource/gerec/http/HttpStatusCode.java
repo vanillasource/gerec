@@ -16,19 +16,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.http;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.io.Serializable;
 
 /**
- * A list of HTTP status codes. This is not an enum, because there might be extensions to HTTP at any later point
- * in time, which should not break any code using this quasi-enumeration. The operator '==' and switch statements
- * work with these objects.
+ * A list of HTTP status codes in a quasi-enumeration. HTTP Codes are <i>almost</i> an enumeration,
+ * except they can (and are) extended with new specifications. So this class defines
+ * constant objects which can be used with the '==' sign, and can be used in switch statements normally,
+ * but also are able to contain values which were not previously defined.
  */
 public final class HttpStatusCode implements Serializable {
-   private static Map<Integer, HttpStatusCode> CODES = new HashMap<>();
+   private static final Map<Integer, HttpStatusCode> CODES = new HashMap<>();
 
    // --- 1xx Informational ---
 
@@ -107,7 +108,7 @@ public final class HttpStatusCode implements Serializable {
       return code;
    }
 
-   private int value;
+   private final int value;
 
    private HttpStatusCode(int value) {
       this.value = value;

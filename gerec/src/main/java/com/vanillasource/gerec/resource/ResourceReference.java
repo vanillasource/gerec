@@ -16,10 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.resource;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
+import com.vanillasource.gerec.http.HttpRequest;
 
 /**
  * References a remote HTTP resource which can be accessed by given methods.

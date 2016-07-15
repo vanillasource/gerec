@@ -18,11 +18,8 @@
 
 package com.vanillasource.gerec.httpclient;
 
-import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.HttpGerecException;
+import com.vanillasource.gerec.http.*;
 import com.vanillasource.gerec.GerecException;
-import com.vanillasource.gerec.HttpStatusCode;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
@@ -62,29 +59,12 @@ public class HttpClientResourceReferenceTests {
       verify(change).applyTo(any(HttpRequest.class));
    }
 
-   public void testLocationNotPresentIfNoLocationHeader() {
-      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
-
-      HttpResponse response = reference.get(change);
-
-      assertFalse(response.hasLocation());
-   }
-
-   @Test(expectedExceptions = GerecException.class)
-   public void testFollowingLocationThrowsExceptionIfNoLocationHeader() {
-      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
-
-      HttpResponse response = reference.get(change);
-
-      response.followLocation();
-   }
-
-   public void testLocationPresentIfLocationHeaderPresent() {
+   public void testLocationHeaderCanBeRead() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Location", "nunu").withBody("ABC")));
 
       HttpResponse response = reference.get(change);
 
-      assertTrue(response.hasLocation());
+      assertEquals(response.getHeader(Header.LOCATION), "nunu");
    }
 
    @BeforeMethod

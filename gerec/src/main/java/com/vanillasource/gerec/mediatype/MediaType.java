@@ -18,8 +18,8 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.http.HttpRequest;
+import com.vanillasource.gerec.http.HttpResponse;
 import java.io.Serializable;
 
 public interface MediaType<T> extends HttpRequest.HttpRequestChange, Serializable {

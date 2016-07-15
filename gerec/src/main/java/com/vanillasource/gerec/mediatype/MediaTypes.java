@@ -18,8 +18,8 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.http.HttpRequest;
+import com.vanillasource.gerec.http.HttpResponse;
 import com.vanillasource.gerec.GerecException;
 import java.util.List;
 

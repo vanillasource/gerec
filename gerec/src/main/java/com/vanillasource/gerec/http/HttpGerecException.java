@@ -16,22 +16,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.http;
 
-import org.testng.annotations.*;
-import static org.testng.Assert.*;
+import com.vanillasource.gerec.GerecException;
 
-@Test
-public class HttpStatusCodeTests {
-   public void test200EqualToOk() {
-      assertEquals(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+/**
+ * Indicates that a HTTP request was made, but server reported error (4xx or 5xx codes).
+ */
+public class HttpGerecException extends GerecException {
+   private final HttpResponse response; 
+
+   public HttpGerecException(String msg, HttpResponse response) {
+      super(msg);
+      this.response = response;
    }
 
-   public void test200SameAsOk() {
-      assertSame(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
-   }
-
-   public void testNonExistingCodeStillGetsValue() {
-      assertNotNull(HttpStatusCode.valueOf(299));
+   public HttpResponse getResponse() {
+      return response;
    }
 }
+
