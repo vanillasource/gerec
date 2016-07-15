@@ -20,6 +20,12 @@ package com.vanillasource.gerec;
 
 public interface HttpRequest {
    public interface HttpRequestChange {
+      HttpRequestChange NO_CHANGE = new HttpRequestChange() {
+         @Override
+         public void applyTo(HttpRequest request) {
+         }
+      };
+
       void applyTo(HttpRequest request);
 
       default HttpRequestChange and(HttpRequestChange that) {

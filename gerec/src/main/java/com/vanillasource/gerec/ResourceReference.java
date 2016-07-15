@@ -28,7 +28,7 @@ public interface ResourceReference extends Serializable {
    <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change);
 
    default <T> Response<T> get(Class<T> type) {
-      return get(type, Condition.TRUE);
+      return get(type, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
    default <T> CompletableFuture<Response<T>> getAsync(Class<T> type) {

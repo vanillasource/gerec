@@ -24,9 +24,5 @@ import java.util.function.Consumer;
  * Represent a requested condition on some HTTP method.
  */
 public interface Condition extends HttpRequest.HttpRequestChange {
-   Condition TRUE = new Condition() {
-      @Override
-      public void applyTo(HttpRequest request) {
-      }
-   };
+   HttpRequest.HttpRequestChange TRUE = HttpRequest.HttpRequestChange.NO_CHANGE;
 }
