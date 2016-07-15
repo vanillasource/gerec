@@ -50,7 +50,7 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
       });
       try {
          org.apache.http.HttpResponse httpResponse = httpClientSupplier.get().execute(request);
-         ResponseMetaInfo metaInfo = new ResponseMetaInfo() {
+         HttpResponse response = new HttpResponse() {
             @Override
             public HttpStatusCode getStatusCode() {
                return HttpStatusCode.valueOf(httpResponse.getStatusLine().getStatusCode());
@@ -89,16 +89,6 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
                }
                return new HttpClientResourceReference(getCatalogSupplier(), httpClientSupplier, resourceUri.resolve(URI.create(locationHeader.getValue())));
             }
-         };
-         if (metaInfo.getStatusCode().isError()) {
-            throw new HttpGerecException("received status code: "+metaInfo.getStatusCode(), metaInfo);
-         }
-         return new HttpResponse() {
-            @Override
-            public ResponseMetaInfo getMetaInfo() {
-               return metaInfo;
-            }
-
             @Override
             public void processContent(Consumer<InputStream> contentProcessor) {
                try {
@@ -110,6 +100,10 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
                }
             }
          };
+         if (response.getStatusCode().isError()) {
+            throw new HttpGerecException("received status code: "+response.getStatusCode(), response);
+         }
+         return response;
       } catch (IOException e) {
          throw new GerecException("error while making http call", e);
       }

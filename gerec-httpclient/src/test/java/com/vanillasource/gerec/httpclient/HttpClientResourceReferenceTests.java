@@ -51,7 +51,7 @@ public class HttpClientResourceReferenceTests {
 
       HttpResponse response = reference.get(change);
 
-      assertTrue(response.getMetaInfo().getStatusCode() == HttpStatusCode.OK);
+      assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
 
    public void testChangeIsAppliedToRequest() {
@@ -67,7 +67,7 @@ public class HttpClientResourceReferenceTests {
 
       HttpResponse response = reference.get(change);
 
-      assertFalse(response.getMetaInfo().hasLocation());
+      assertFalse(response.hasLocation());
    }
 
    @Test(expectedExceptions = GerecException.class)
@@ -76,7 +76,7 @@ public class HttpClientResourceReferenceTests {
 
       HttpResponse response = reference.get(change);
 
-      response.getMetaInfo().followLocation();
+      response.followLocation();
    }
 
    public void testLocationPresentIfLocationHeaderPresent() {
@@ -84,7 +84,7 @@ public class HttpClientResourceReferenceTests {
 
       HttpResponse response = reference.get(change);
 
-      assertTrue(response.getMetaInfo().hasLocation());
+      assertTrue(response.hasLocation());
    }
 
    @BeforeMethod

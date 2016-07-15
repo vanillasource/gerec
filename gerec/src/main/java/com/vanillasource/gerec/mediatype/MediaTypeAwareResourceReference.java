@@ -41,42 +41,41 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
    public <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change) {
       MediaTypes<T> types = catalogSupplier.get().getMediaTypesFor(type);
       HttpResponse response = get(change.and(types));
-      ResponseMetaInfo metaInfo = response.getMetaInfo();
       Hypermedia<T> media = types.deserialize(response);
       return new Response<T>() {
          @Override
          public HttpStatusCode getStatusCode() {
-            return metaInfo.getStatusCode();
+            return response.getStatusCode();
          }
 
          @Override
          public Condition ifMatch() {
-            return metaInfo.ifMatch();
+            return response.ifMatch();
          }
 
          @Override
          public Condition ifNoneMatch() {
-            return metaInfo.ifNoneMatch();
+            return response.ifNoneMatch();
          }
 
          @Override
          public Condition ifModifiedSince() {
-            return metaInfo.ifModifiedSince();
+            return response.ifModifiedSince();
          }
 
          @Override
          public Condition ifUnmodifiedSince() {
-            return metaInfo.ifUnmodifiedSince();
+            return response.ifUnmodifiedSince();
          }
 
          @Override
          public boolean hasLocation() {
-            return metaInfo.hasLocation();
+            return response.hasLocation();
          }
 
          @Override
          public ResourceReference followLocation() {
-            return metaInfo.followLocation();
+            return response.followLocation();
          }
 
          @Override

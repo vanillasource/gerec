@@ -21,8 +21,7 @@ package com.vanillasource.gerec;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
-public interface HttpResponse {
-   ResponseMetaInfo getMetaInfo();
+public interface HttpResponse extends ResponseMetaInfo {
 
    void processContent(Consumer<InputStream> contentProcessor);
 }

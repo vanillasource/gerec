@@ -22,15 +22,15 @@ package com.vanillasource.gerec;
  * Indicates that a HTTP request was made, but server reported error (4xx or 5xx codes).
  */
 public class HttpGerecException extends GerecException {
-   private ResponseMetaInfo metaInfo; 
+   private HttpResponse response; 
 
-   public HttpGerecException(String msg, ResponseMetaInfo metaInfo) {
+   public HttpGerecException(String msg, HttpResponse response) {
       super(msg);
-      this.metaInfo = metaInfo;
+      this.response = response;
    }
 
-   public ResponseMetaInfo getMetaInfo() {
-      return metaInfo;
+   public HttpResponse getResponse() {
+      return response;
    }
 }
 
