@@ -133,4 +133,9 @@ public final class HttpStatusCode implements Serializable {
       }
       return value == ((HttpStatusCode) o).value;
    }
+
+   @Override
+   public String toString() {
+      return "HTTP "+value;
+   }
 }
