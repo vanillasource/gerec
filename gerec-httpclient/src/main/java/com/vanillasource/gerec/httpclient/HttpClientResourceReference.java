@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import java.net.URI;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public final class HttpClientResourceReference extends MediaTypeAwareResourceReference {
    private final Supplier<HttpClient> httpClientSupplier;
@@ -66,6 +67,11 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
          @Override
          public void setHeader(Header header, String value) {
             request.setHeader(header.value(), value);
+         }
+
+         @Override
+         public void processContent(Consumer<OutputStream> contentProcessor) {
+            throw new UnsupportedOperationException("can not modify outpustream at this stage");
          }
       });
       try {

@@ -51,5 +51,10 @@ public final class MediaTypes<T> implements MediaType<T> {
          .orElseThrow(() -> new GerecException("no matching media types found for "+response+", possible media types were: "+mediaTypes))
          .deserialize(response);
    }
+
+   @Override
+   public void serialize(T object, HttpRequest request) {
+      throw new UnsupportedOperationException("multiple media-types can not serialize object, you have to select a single media-type");
+   }
 }
 

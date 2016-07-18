@@ -18,12 +18,17 @@
 
 package com.vanillasource.gerec.http;
 
+import java.util.function.Consumer;
+import java.io.OutputStream;
+
 public interface HttpRequest {
    boolean hasHeader(Header header);
 
    String getHeader(Header header);
 
    void setHeader(Header header, String value);
+
+   void processContent(Consumer<OutputStream> contentProcessor);
 
    public interface HttpRequestChange {
       HttpRequestChange NO_CHANGE = new HttpRequestChange() {

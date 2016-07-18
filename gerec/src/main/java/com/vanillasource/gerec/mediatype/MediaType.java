@@ -26,4 +26,6 @@ public interface MediaType<T> extends HttpRequest.HttpRequestChange, Serializabl
    boolean isHandling(HttpResponse response);
 
    T deserialize(HttpResponse response);
+
+   void serialize(T object, HttpRequest request);
 }
