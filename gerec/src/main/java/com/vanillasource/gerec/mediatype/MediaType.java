@@ -18,14 +18,17 @@
 
 package com.vanillasource.gerec.mediatype;
 
+import com.vanillasource.gerec.resource.ResourceReference;
 import com.vanillasource.gerec.http.HttpRequest;
 import com.vanillasource.gerec.http.HttpResponse;
 import java.io.Serializable;
+import java.util.function.Function;
+import java.net.URI;
 
 public interface MediaType<T> extends HttpRequest.HttpRequestChange, Serializable {
    boolean isHandling(HttpResponse response);
 
-   T deserialize(HttpResponse response);
+   T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer);
 
    void serialize(T object, HttpRequest request);
 }

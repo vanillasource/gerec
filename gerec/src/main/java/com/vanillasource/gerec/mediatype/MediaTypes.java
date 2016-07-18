@@ -18,10 +18,13 @@
 
 package com.vanillasource.gerec.mediatype;
 
+import com.vanillasource.gerec.resource.ResourceReference;
 import com.vanillasource.gerec.http.HttpRequest;
 import com.vanillasource.gerec.http.HttpResponse;
 import com.vanillasource.gerec.GerecException;
 import java.util.List;
+import java.util.function.Function;
+import java.net.URI;
 
 /**
  * A collection of media-types that all produce the same java type.
@@ -44,12 +47,12 @@ public final class MediaTypes<T> implements MediaType<T> {
    }
 
    @Override
-   public T deserialize(HttpResponse response) {
+   public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
       return mediaTypes.stream()
          .filter(mediaType -> mediaType.isHandling(response))
          .findFirst()
          .orElseThrow(() -> new GerecException("no matching media types found for "+response+", possible media types were: "+mediaTypes))
-         .deserialize(response);
+         .deserialize(response, referenceProducer);
    }
 
    @Override

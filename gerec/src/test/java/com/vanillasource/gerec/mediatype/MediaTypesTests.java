@@ -68,23 +68,23 @@ public class MediaTypesTests {
    public void testNoTypesThrowsExceptionOnDeserialize() {
       MediaTypes<String> types = new MediaTypes<>(emptyList());
 
-      types.deserialize(response);
+      types.deserialize(response, null);
    }
 
    @Test(expectedExceptions = GerecException.class)
    public void testIfTypeNotHandlingResponseDeserializationThrowsException() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 
-      types.deserialize(response);
+      types.deserialize(response, null);
    }
 
    @SuppressWarnings("unchecked")
    public void testHandlingTypeDeserializesForTypes() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
-      when(mediaType.deserialize(response)).thenReturn("abc");
+      when(mediaType.deserialize(response, null)).thenReturn("abc");
 
-      assertEquals(types.deserialize(response), "abc");
+      assertEquals(types.deserialize(response, null), "abc");
    }
 
    @BeforeMethod
