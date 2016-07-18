@@ -18,25 +18,33 @@
 
 package com.vanillasource.gerec.http;
 
-public enum Header {
-   ETAG("ETag"),
-   DATE("Date"),
-   CONTENT_TYPE("Content-Type"),
-   ACCEPT("Accept"),
-   IF_MATCH("If-Match"),
-   IF_NONE_MATCH("If-None-Match"),
-   IF_MODIFIED_SINCE("If-Modified-Since"),
-   IF_UNMODIFIED_SINCE("If-Unmodified-Since"),
-   LAST_MODIFIED("Last-Modified"),
-   LOCATION("Location");
+import org.testng.annotations.*;
+import static org.testng.Assert.*;
+import static org.mockito.Mockito.*;
 
-   private final String value;
+@Test
+public class SingleHeaderValueTests {
+   private HttpRequest request;
 
-   private Header(String value) {
-      this.value = value;
+   public void testHeaderValueIsSetIfNotPresent() {
+      SingleHeaderValue value = new SingleHeaderValue(Header.ETAG, "123");
+
+      value.applyTo(request);
+
+      verify(request).setHeader(Header.ETAG, "123");
    }
-   
-   public String value() {
-      return value;
+
+   @Test(expectedExceptions = IllegalStateException.class)
+   public void testThrowsExceptionIfAlreadyExists() {
+      SingleHeaderValue value = new SingleHeaderValue(Header.ETAG, "123");
+      when(request.hasHeader(Header.ETAG)).thenReturn(true);
+
+      value.applyTo(request);
+   }
+
+   @BeforeMethod
+   protected void setUp() {
+      request = mock(HttpRequest.class);
    }
 }
+

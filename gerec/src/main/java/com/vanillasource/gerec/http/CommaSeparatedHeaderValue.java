@@ -18,25 +18,25 @@
 
 package com.vanillasource.gerec.http;
 
-public enum Header {
-   ETAG("ETag"),
-   DATE("Date"),
-   CONTENT_TYPE("Content-Type"),
-   ACCEPT("Accept"),
-   IF_MATCH("If-Match"),
-   IF_NONE_MATCH("If-None-Match"),
-   IF_MODIFIED_SINCE("If-Modified-Since"),
-   IF_UNMODIFIED_SINCE("If-Unmodified-Since"),
-   LAST_MODIFIED("Last-Modified"),
-   LOCATION("Location");
-
+/**
+ * Set the specified value to the given header, and separate with comma if there was
+ * already a value assigned.
+ */
+public class CommaSeparatedHeaderValue implements HttpRequest.HttpRequestChange {
+   private final Header header;
    private final String value;
 
-   private Header(String value) {
+   public CommaSeparatedHeaderValue(Header header, String value) {
+      this.header = header;
       this.value = value;
    }
-   
-   public String value() {
-      return value;
+
+   @Override
+   public void applyTo(HttpRequest request) {
+      String aggregatedValue = value;
+      if (request.hasHeader(header)) {
+         aggregatedValue = request.getHeader(header)+", "+aggregatedValue;
+      }
+      request.setHeader(header, aggregatedValue);
    }
 }
