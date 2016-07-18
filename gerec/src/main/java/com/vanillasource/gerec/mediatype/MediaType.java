@@ -25,10 +25,18 @@ import java.io.Serializable;
 import java.util.function.Function;
 import java.net.URI;
 
-public interface MediaType<T> extends HttpRequest.HttpRequestChange, Serializable {
-   boolean isHandling(HttpResponse response);
+public interface MediaType<T> extends Serializable {
+   AcceptType<T> getAcceptType();
 
-   T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer);
+   ContentType<T> getContentType();
 
-   void serialize(T object, HttpRequest request);
+   interface AcceptType<T> extends HttpRequest.HttpRequestChange {
+      boolean isHandling(HttpResponse response);
+
+      T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer);
+   }
+
+   interface ContentType<T> extends HttpRequest.HttpRequestChange {
+      void serialize(T object, HttpRequest request);
+   }
 }

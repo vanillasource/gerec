@@ -47,8 +47,8 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
    @Override
    public <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change) {
       MediaTypes<T> types = catalogSupplier.get().getMediaTypesFor(type);
-      HttpResponse response = get(change.and(types));
-      T media = types.deserialize(response, this::follow);
+      HttpResponse response = get(change.and(types.getAcceptType()));
+      T media = types.getAcceptType().deserialize(response, this::follow);
       return new Response<T>() {
          @Override
          public HttpStatusCode getStatusCode() {

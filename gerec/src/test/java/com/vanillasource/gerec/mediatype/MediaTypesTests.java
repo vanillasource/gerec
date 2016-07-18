@@ -27,6 +27,7 @@ import static java.util.Collections.*;
 
 @Test
 public class MediaTypesTests {
+   private MediaType.AcceptType<String> acceptType;
    private MediaType<String> mediaType;
    private HttpResponse response = mock(HttpResponse.class);
    private HttpRequest request = mock(HttpRequest.class);
@@ -34,63 +35,65 @@ public class MediaTypesTests {
    public void testNoTypesDontApply() {
       MediaTypes<String> types = new MediaTypes<>(emptyList());
 
-      types.applyTo(request);
+      types.getAcceptType().applyTo(request);
    }
 
    public void testAllTypesAreApplied() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 
-      types.applyTo(request);
+      types.getAcceptType().applyTo(request);
 
-      verify(mediaType).applyTo(request);
+      verify(mediaType.getAcceptType()).applyTo(request);
    }
 
    public void testNoTypesDontHandleResponse() {
       MediaTypes<String> types = new MediaTypes<>(emptyList());
 
-      assertFalse(types.isHandling(response));
+      assertFalse(types.getAcceptType().isHandling(response));
    }
 
    public void testTypesDoesNotHandleResponseIfTypeIsNotHandling() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 
-      assertFalse(types.isHandling(response));
+      assertFalse(types.getAcceptType().isHandling(response));
    }
 
    public void testTypesDoHandleResponseIfTypeDoes() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
-      when(mediaType.isHandling(response)).thenReturn(true);
+      when(mediaType.getAcceptType().isHandling(response)).thenReturn(true);
 
-      assertTrue(types.isHandling(response));
+      assertTrue(types.getAcceptType().isHandling(response));
    }
 
    @Test(expectedExceptions = GerecException.class)
    public void testNoTypesThrowsExceptionOnDeserialize() {
       MediaTypes<String> types = new MediaTypes<>(emptyList());
 
-      types.deserialize(response, null);
+      types.getAcceptType().deserialize(response, null);
    }
 
    @Test(expectedExceptions = GerecException.class)
    public void testIfTypeNotHandlingResponseDeserializationThrowsException() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 
-      types.deserialize(response, null);
+      types.getAcceptType().deserialize(response, null);
    }
 
    @SuppressWarnings("unchecked")
    public void testHandlingTypeDeserializesForTypes() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
-      when(mediaType.isHandling(response)).thenReturn(true);
-      when(mediaType.deserialize(response, null)).thenReturn("abc");
+      when(mediaType.getAcceptType().isHandling(response)).thenReturn(true);
+      when(mediaType.getAcceptType().deserialize(response, null)).thenReturn("abc");
 
-      assertEquals(types.deserialize(response, null), "abc");
+      assertEquals(types.getAcceptType().deserialize(response, null), "abc");
    }
 
    @BeforeMethod
    @SuppressWarnings("unchecked")
    public void setUp() {
+      acceptType = mock(MediaType.AcceptType.class);
       mediaType = mock(MediaType.class);
+      when(mediaType.getAcceptType()).thenReturn(acceptType);
    }
 }
 
