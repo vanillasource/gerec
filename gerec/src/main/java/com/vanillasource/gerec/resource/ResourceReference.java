@@ -21,11 +21,14 @@ package com.vanillasource.gerec.resource;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 import com.vanillasource.gerec.http.HttpRequest;
+import java.net.URI;
 
 /**
  * References a remote HTTP resource which can be accessed by given methods.
  */
 public interface ResourceReference extends Serializable {
+   URI toURI();
+
    <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change);
 
    default <T> Response<T> get(Class<T> type) {

@@ -12,6 +12,7 @@
    <modules>
       <module>gerec</module>
       <module>gerec-httpclient</module>
+      <module>gerec-jackson</module>
    </modules>
 
    <properties>

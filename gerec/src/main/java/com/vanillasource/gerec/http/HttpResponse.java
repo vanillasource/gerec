@@ -19,7 +19,7 @@
 package com.vanillasource.gerec.http;
 
 import java.io.InputStream;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.io.Serializable;
 
 public interface HttpResponse extends Serializable{
@@ -29,5 +29,5 @@ public interface HttpResponse extends Serializable{
 
    String getHeader(Header header);
 
-   void processContent(Consumer<InputStream> contentProcessor);
+   <T> T processContent(Function<InputStream, T> contentProcessor);
 }

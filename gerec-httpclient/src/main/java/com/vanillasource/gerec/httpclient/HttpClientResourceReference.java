@@ -27,6 +27,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.net.URI;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +41,11 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
       super(catalogSupplier);
       this.httpClientSupplier = httpClientSupplier;
       this.resourceUri = resourceUri;
+   }
+
+   @Override
+   public URI toURI() {
+      return resourceUri;
    }
 
    @Override
@@ -93,10 +99,10 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
             }
 
             @Override
-            public void processContent(Consumer<InputStream> contentProcessor) {
+            public <T> T processContent(Function<InputStream, T> contentProcessor) {
                try {
                   try (InputStream input = httpResponse.getEntity().getContent()) {
-                     contentProcessor.accept(input);
+                     return contentProcessor.apply(input);
                   }
                } catch (IOException e) {
                   throw new GerecException("exception while reading http response", e);
