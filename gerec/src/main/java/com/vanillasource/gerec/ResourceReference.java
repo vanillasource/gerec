@@ -16,11 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.resource;
+package com.vanillasource.gerec;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
-import com.vanillasource.gerec.http.HttpRequest;
 import java.net.URI;
 
 /**
@@ -29,17 +28,17 @@ import java.net.URI;
 public interface ResourceReference extends Serializable {
    URI toURI();
 
-   <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change);
+   <T> Response<T> get(MediaType<T> type, HttpRequest.HttpRequestChange change);
 
-   default <T> Response<T> get(Class<T> type) {
+   default <T> Response<T> get(MediaType<T> type) {
       return get(type, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type) {
+   default <T> CompletableFuture<Response<T>> getAsync(MediaType<T> type) {
       return CompletableFuture.supplyAsync(() -> get(type));
    }
 
-   default <T> CompletableFuture<Response<T>> getAsync(Class<T> type, HttpRequest.HttpRequestChange change) {
+   default <T> CompletableFuture<Response<T>> getAsync(MediaType<T> type, HttpRequest.HttpRequestChange change) {
       return CompletableFuture.supplyAsync(() -> get(type, change));
    }
 

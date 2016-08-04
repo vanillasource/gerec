@@ -16,39 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.mediatype;
+package com.vanillasource.gerec.reference;
 
-import com.vanillasource.gerec.http.HttpRequest;
-import com.vanillasource.gerec.http.HttpResponse;
-import com.vanillasource.gerec.http.HttpStatusCode;
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.http.SingleHeaderValue;
-import com.vanillasource.gerec.http.Header;
-import com.vanillasource.gerec.resource.ResourceReference;
-import com.vanillasource.gerec.resource.Response;
+import com.vanillasource.gerec.Header;
+import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.Response;
+import com.vanillasource.gerec.MediaType;
 import java.util.function.Supplier;
 import java.net.URI;
 
 public abstract class MediaTypeAwareResourceReference implements ResourceReference {
-   private Supplier<MediaTypeCatalog> catalogSupplier;
-
-   /**
-    * @param catalogSupplier Object that can supply a catalog. It does not directly depend
-    * on a catalog to be able to decouple it from serialization. The supplier has to be
-    * serializable.
-    */
-   public MediaTypeAwareResourceReference(Supplier<MediaTypeCatalog> catalogSupplier) {
-      this.catalogSupplier = catalogSupplier;
-   }
-
-   protected Supplier<MediaTypeCatalog> getCatalogSupplier() {
-      return catalogSupplier;
-   }
-
    @Override
-   public <T> Response<T> get(Class<T> type, HttpRequest.HttpRequestChange change) {
-      MediaTypes<T> types = catalogSupplier.get().getMediaTypesFor(type);
-      HttpResponse response = get(change.and(types.getAcceptType()));
-      T media = types.getAcceptType().deserialize(response, this::follow);
+   public <T> Response<T> get(MediaType<T> type, HttpRequest.HttpRequestChange change) {
+      HttpResponse response = get(change.and(type.getAcceptType()));
+      T media = type.getAcceptType().deserialize(response, this::follow);
       return new Response<T>() {
          @Override
          public HttpStatusCode getStatusCode() {

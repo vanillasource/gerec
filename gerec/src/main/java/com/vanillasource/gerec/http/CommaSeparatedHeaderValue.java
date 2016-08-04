@@ -18,6 +18,9 @@
 
 package com.vanillasource.gerec.http;
 
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Header;
+
 /**
  * Set the specified value to the given header, and separate with comma if there was
  * already a value assigned.

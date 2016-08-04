@@ -18,9 +18,9 @@
 
 package com.vanillasource.gerec.mediatype.jackson;
 
-import com.vanillasource.gerec.resource.ResourceReference;
-import com.vanillasource.gerec.http.HttpRequest;
-import com.vanillasource.gerec.http.HttpResponse;
+import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.mediatype.NamedMediaType;
 import java.util.function.Function;
 import java.util.function.Consumer;

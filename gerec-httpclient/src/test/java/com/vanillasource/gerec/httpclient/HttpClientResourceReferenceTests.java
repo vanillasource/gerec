@@ -18,8 +18,7 @@
 
 package com.vanillasource.gerec.httpclient;
 
-import com.vanillasource.gerec.http.*;
-import com.vanillasource.gerec.GerecException;
+import com.vanillasource.gerec.*;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
@@ -71,7 +70,7 @@ public class HttpClientResourceReferenceTests {
    protected void setUp() {
       change = mock(HttpRequest.HttpRequestChange.class);
       httpClient = HttpClientBuilder.create().build();
-      reference = new HttpClientResourceReference(null, () -> httpClient, URI.create("http://localhost:8091/nini"));
+      reference = new HttpClientResourceReference(() -> httpClient, URI.create("http://localhost:8091/nini"));
       WireMock.reset();
    }
 

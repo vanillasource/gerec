@@ -23,10 +23,10 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import java.util.function.Function;
 import java.net.URI;
-import com.vanillasource.gerec.resource.ResourceReference;
-import com.vanillasource.gerec.http.HttpRequest;
-import com.vanillasource.gerec.http.HttpResponse;
-import com.vanillasource.gerec.http.Header;
+import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.Header;
 
 @Test
 public class NamedMediaTypeTests {

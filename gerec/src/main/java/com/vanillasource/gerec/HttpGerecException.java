@@ -16,18 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.http;
+package com.vanillasource.gerec;
 
-import java.io.InputStream;
-import java.util.function.Function;
-import java.io.Serializable;
+/**
+ * Indicates that a HTTP request was made, but server reported error (4xx or 5xx codes).
+ */
+public class HttpGerecException extends GerecException {
+   private final HttpResponse response; 
 
-public interface HttpResponse extends Serializable{
-   HttpStatusCode getStatusCode();
+   public HttpGerecException(String msg, HttpResponse response) {
+      super(msg);
+      this.response = response;
+   }
 
-   boolean hasHeader(Header header);
-
-   String getHeader(Header header);
-
-   <T> T processContent(Function<InputStream, T> contentProcessor);
+   public HttpResponse getResponse() {
+      return response;
+   }
 }
+

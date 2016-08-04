@@ -16,16 +16,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.mediatype;
+package com.vanillasource.gerec;
 
-/**
- * A catalog of all known media-types.
- */
-public interface MediaTypeCatalog {
-   /**
-    * Get all matching media-types for the given class. There may be multiple media-types for
-    * each class, for example a json and an xml representation, or multiple versions of the same.
-    */
-   <T> MediaTypes<T> getMediaTypesFor(Class<T> type);
+import org.testng.annotations.*;
+import static org.testng.Assert.*;
+
+@Test
+public class HttpStatusCodeTests {
+   public void test200EqualToOk() {
+      assertEquals(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+   }
+
+   public void test200SameAsOk() {
+      assertSame(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
+   }
+
+   public void testNonExistingCodeStillGetsValue() {
+      assertNotNull(HttpStatusCode.valueOf(299));
+   }
 }
-

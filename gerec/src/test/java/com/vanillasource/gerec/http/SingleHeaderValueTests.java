@@ -18,6 +18,8 @@
 
 package com.vanillasource.gerec.http;
 
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Header;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;

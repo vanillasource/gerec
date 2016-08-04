@@ -18,6 +18,9 @@
 
 package com.vanillasource.gerec.http;
 
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Header;
+
 /**
  * Set a header value on the request. If the header is already present, this change will
  * fail with an exception.

@@ -16,11 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.mediatype;
+package com.vanillasource.gerec;
 
-import com.vanillasource.gerec.resource.ResourceReference;
-import com.vanillasource.gerec.http.HttpRequest;
-import com.vanillasource.gerec.http.HttpResponse;
 import java.io.Serializable;
 import java.util.function.Function;
 import java.net.URI;

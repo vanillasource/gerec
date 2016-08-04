@@ -18,19 +18,20 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.resource.ResourceReference;
-import com.vanillasource.gerec.http.HttpRequest;
-import com.vanillasource.gerec.http.HttpResponse;
+import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.http.SingleHeaderValue;
 import com.vanillasource.gerec.http.CommaSeparatedHeaderValue;
-import com.vanillasource.gerec.http.Header;
+import com.vanillasource.gerec.Header;
+import com.vanillasource.gerec.MediaType;
 import java.util.function.Function;
 import java.net.URI;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * A media type that has a static name.
+ * A media type that has a static name and quality value.
  */
 public abstract class NamedMediaType<T> implements MediaType {
    private final String mediaTypeName;

@@ -18,10 +18,11 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.resource.ResourceReference;
-import com.vanillasource.gerec.http.HttpRequest;
-import com.vanillasource.gerec.http.HttpResponse;
+import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.GerecException;
+import com.vanillasource.gerec.MediaType;
 import java.util.List;
 import java.util.function.Function;
 import java.net.URI;

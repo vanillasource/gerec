@@ -16,22 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.http;
+package com.vanillasource.gerec;
 
-import org.testng.annotations.*;
-import static org.testng.Assert.*;
+import java.io.InputStream;
+import java.util.function.Function;
+import java.io.Serializable;
 
-@Test
-public class HttpStatusCodeTests {
-   public void test200EqualToOk() {
-      assertEquals(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
-   }
+public interface HttpResponse extends Serializable{
+   HttpStatusCode getStatusCode();
 
-   public void test200SameAsOk() {
-      assertSame(HttpStatusCode.valueOf(200), HttpStatusCode.OK);
-   }
+   boolean hasHeader(Header header);
 
-   public void testNonExistingCodeStillGetsValue() {
-      assertNotNull(HttpStatusCode.valueOf(299));
-   }
+   String getHeader(Header header);
+
+   <T> T processContent(Function<InputStream, T> contentProcessor);
 }

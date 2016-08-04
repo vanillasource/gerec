@@ -19,9 +19,8 @@
 package com.vanillasource.gerec.httpclient;
 
 import com.vanillasource.gerec.GerecException;
-import com.vanillasource.gerec.resource.*;
-import com.vanillasource.gerec.http.*;
-import com.vanillasource.gerec.mediatype.*;
+import com.vanillasource.gerec.*;
+import com.vanillasource.gerec.reference.MediaTypeAwareResourceReference;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -37,8 +36,7 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    private final Supplier<HttpClient> httpClientSupplier;
    private final URI resourceUri;
 
-   public HttpClientResourceReference(Supplier<MediaTypeCatalog> catalogSupplier, Supplier<HttpClient> httpClientSupplier, URI resourceUri) {
-      super(catalogSupplier);
+   public HttpClientResourceReference(Supplier<HttpClient> httpClientSupplier, URI resourceUri) {
       this.httpClientSupplier = httpClientSupplier;
       this.resourceUri = resourceUri;
    }
@@ -50,7 +48,7 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
 
    @Override
    protected ResourceReference follow(URI link) {
-      return new HttpClientResourceReference(getCatalogSupplier(), httpClientSupplier, resourceUri.resolve(link));
+      return new HttpClientResourceReference(httpClientSupplier, resourceUri.resolve(link));
    }
 
    @Override
