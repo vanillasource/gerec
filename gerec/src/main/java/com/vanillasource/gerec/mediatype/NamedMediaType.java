@@ -31,9 +31,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * A media type that has a static name and quality value.
+ * A media type that has a static name and quality value and applies that
+ * to requests and responses.
  */
-public abstract class NamedMediaType<T> implements MediaType {
+public abstract class NamedMediaType<T> implements MediaType<T> {
    private final String mediaTypeName;
    private final double qualityValue;
    private final String headerValue;
@@ -56,41 +57,18 @@ public abstract class NamedMediaType<T> implements MediaType {
    }
 
    @Override
-   public final AcceptType<T> getAcceptType() {
-      return new AcceptType<T>() {
-         @Override
-         public void applyTo(HttpRequest request) {
-            new CommaSeparatedHeaderValue(Header.ACCEPT, headerValue).applyTo(request);
-         }
-
-         @Override
-         public boolean isHandling(HttpResponse response) {
-            return response.hasHeader(Header.CONTENT_TYPE) && response.getHeader(Header.CONTENT_TYPE).equals(mediaTypeName);
-         }
-
-         @Override
-         public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
-            return NamedMediaType.this.deserialize(response, referenceProducer);
-         }
-      };
+   public void applyAsOption(HttpRequest request) {
+      new CommaSeparatedHeaderValue(Header.ACCEPT, headerValue).applyTo(request);
    }
 
-   public final ContentType<T> getContentType() {
-      return new ContentType<T>() {
-         @Override
-         public void applyTo(HttpRequest request) {
-            new SingleHeaderValue(Header.CONTENT_TYPE, mediaTypeName).applyTo(request);
-         }
-
-         @Override
-         public void serialize(T object, HttpRequest request) {
-            NamedMediaType.this.serialize(object, request);
-         }
-      };
+   @Override
+   public boolean isHandling(HttpResponse response) {
+      return response.hasHeader(Header.CONTENT_TYPE) && response.getHeader(Header.CONTENT_TYPE).equals(mediaTypeName);
    }
 
-   protected abstract T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer);
-
-   protected abstract void serialize(T object, HttpRequest request);
+   @Override
+   public void applyAsContent(HttpRequest request) {
+      new SingleHeaderValue(Header.CONTENT_TYPE, mediaTypeName).applyTo(request);
+   }
 }
 

@@ -25,15 +25,15 @@ import com.vanillasource.gerec.http.SingleHeaderValue;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.Response;
-import com.vanillasource.gerec.MediaType;
+import com.vanillasource.gerec.AcceptMediaType;
 import java.util.function.Supplier;
 import java.net.URI;
 
 public abstract class MediaTypeAwareResourceReference implements ResourceReference {
    @Override
-   public <T> Response<T> get(MediaType<T> type, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = get(change.and(type.getAcceptType()));
-      T media = type.getAcceptType().deserialize(response, this::follow);
+   public <T> Response<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      HttpResponse response = get(change.and(acceptType::applyAsOption));
+      T media = acceptType.deserialize(response, this::follow);
       return new Response<T>() {
          @Override
          public HttpStatusCode getStatusCode() {

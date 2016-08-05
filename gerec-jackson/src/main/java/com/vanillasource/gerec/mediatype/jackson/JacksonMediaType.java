@@ -56,7 +56,7 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
    }
 
    @Override
-   protected T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+   public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
       return response.processContent(inputStream -> {
          try {
             return createDeserializerObjectMapper(referenceProducer).readValue(inputStream, type);
@@ -81,7 +81,7 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
    }
 
    @Override
-   protected void serialize(T object, HttpRequest request) {
+   public void serialize(T object, HttpRequest request) {
       request.processContent(outputStream -> {
          try {
             createSerializerObjectMapper().writeValue(outputStream, object);

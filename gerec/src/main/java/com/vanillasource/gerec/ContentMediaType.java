@@ -21,5 +21,11 @@ package com.vanillasource.gerec;
 import java.util.function.Function;
 import java.net.URI;
 
-public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
+public interface ContentMediaType<T> {
+   /**
+    * Apply this media type as being the content's media type for the given request.
+    */
+   void applyAsContent(HttpRequest request);
+
+   void serialize(T object, HttpRequest request);
 }

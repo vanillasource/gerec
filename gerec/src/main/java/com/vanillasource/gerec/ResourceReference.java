@@ -28,18 +28,18 @@ import java.net.URI;
 public interface ResourceReference extends Serializable {
    URI toURI();
 
-   <T> Response<T> get(MediaType<T> type, HttpRequest.HttpRequestChange change);
+   <T> Response<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> Response<T> get(MediaType<T> type) {
-      return get(type, HttpRequest.HttpRequestChange.NO_CHANGE);
+   default <T> Response<T> get(AcceptMediaType<T> acceptType) {
+      return get(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <T> CompletableFuture<Response<T>> getAsync(MediaType<T> type) {
-      return CompletableFuture.supplyAsync(() -> get(type));
+   default <T> CompletableFuture<Response<T>> getAsync(AcceptMediaType<T> acceptType) {
+      return CompletableFuture.supplyAsync(() -> get(acceptType));
    }
 
-   default <T> CompletableFuture<Response<T>> getAsync(MediaType<T> type, HttpRequest.HttpRequestChange change) {
-      return CompletableFuture.supplyAsync(() -> get(type, change));
+   default <T> CompletableFuture<Response<T>> getAsync(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return CompletableFuture.supplyAsync(() -> get(acceptType, change));
    }
 
    // TODO: different standard types (list of Ts, other methods: POST, DELETE, etc.)

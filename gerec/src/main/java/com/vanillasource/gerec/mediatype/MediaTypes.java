@@ -41,43 +41,32 @@ public final class MediaTypes<T> implements MediaType<T> {
    }
 
    @Override
-   public AcceptType<T> getAcceptType() {
-      return new AcceptType<T>() {
-         @Override
-         public void applyTo(HttpRequest request) {
-            mediaTypes.forEach(mediaType -> mediaType.getAcceptType().applyTo(request));
-         }
-
-         @Override
-         public boolean isHandling(HttpResponse response) {
-            return mediaTypes.stream().anyMatch(mediaType -> mediaType.getAcceptType().isHandling(response));
-         }
-
-         @Override
-         public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
-            return mediaTypes.stream()
-               .filter(mediaType -> mediaType.getAcceptType().isHandling(response))
-               .findFirst()
-               .orElseThrow(() -> new GerecException("no matching media types found for "+response+", possible media types were: "+mediaTypes))
-               .getAcceptType()
-               .deserialize(response, referenceProducer);
-         }
-      };
+   public void applyAsOption(HttpRequest request) {
+      mediaTypes.forEach(mediaType -> mediaType.applyAsOption(request));
    }
 
    @Override
-   public ContentType<T> getContentType() {
-      return new ContentType<T>() {
-         @Override
-         public void applyTo(HttpRequest request) {
-            mediaTypes.get(0).getContentType().applyTo(request);
-         }
+   public boolean isHandling(HttpResponse response) {
+      return mediaTypes.stream().anyMatch(mediaType -> mediaType.isHandling(response));
+   }
 
-         @Override
-         public void serialize(T object, HttpRequest request) {
-            mediaTypes.get(0).getContentType().serialize(object, request);
-         }
-      };
+   @Override
+   public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+      return mediaTypes.stream()
+         .filter(mediaType -> mediaType.isHandling(response))
+         .findFirst()
+         .orElseThrow(() -> new GerecException("no matching media types found for "+response+", possible media types were: "+mediaTypes))
+         .deserialize(response, referenceProducer);
+   }
+
+   @Override
+   public void applyAsContent(HttpRequest request) {
+      mediaTypes.get(0).applyAsContent(request);
+   }
+
+   @Override
+   public void serialize(T object, HttpRequest request) {
+      mediaTypes.get(0).serialize(object, request);
    }
 }
 

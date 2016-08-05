@@ -41,7 +41,7 @@ public class JacksonMediaTypeTests {
 
    public void testTestObjectGetsSerialized() {
       JacksonMediaType<TestObject> mediaType = new JacksonMediaType<>(TestObject.class, "application/vnd.vanillasource.testobject+json");
-      mediaType.getContentType().serialize(new TestObject("John", 34), request);
+      mediaType.serialize(new TestObject("John", 34), request);
 
       assertEquals(content, "{\"name\":\"John\",\"age\":34}");
    }
@@ -50,7 +50,7 @@ public class JacksonMediaTypeTests {
       JacksonMediaType<TestObject> mediaType = new JacksonMediaType<>(TestObject.class, "application/vnd.vanillasource.testobject+json");
       content = "{\"name\":\"John\",\"age\":34}";
       
-      TestObject object = mediaType.getAcceptType().deserialize(response, uri -> null);
+      TestObject object = mediaType.deserialize(response, uri -> null);
 
       assertEquals(object.getName(), "John");
       assertEquals(object.getAge(), 34);
@@ -61,7 +61,7 @@ public class JacksonMediaTypeTests {
       ResourceReference reference = mock(ResourceReference.class);
       when(reference.toURI()).thenReturn(URI.create("/relative/uri"));
 
-      mediaType.getContentType().serialize(new ReferenceObject(reference), request);
+      mediaType.serialize(new ReferenceObject(reference), request);
 
       assertEquals(content, "{\"reference\":\"/relative/uri\"}");
    }
@@ -74,7 +74,7 @@ public class JacksonMediaTypeTests {
       ResourceReference reference = mock(ResourceReference.class);
       when(referenceFactory.apply(URI.create("/relative/uri"))).thenReturn(reference);
 
-      ReferenceObject object = mediaType.getAcceptType().deserialize(response, referenceFactory);
+      ReferenceObject object = mediaType.deserialize(response, referenceFactory);
 
       assertSame(object.getReference(), reference);
    }

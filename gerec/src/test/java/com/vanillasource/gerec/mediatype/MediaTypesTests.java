@@ -27,7 +27,6 @@ import static java.util.Collections.*;
 
 @Test
 public class MediaTypesTests {
-   private MediaType.AcceptType<String> acceptType;
    private MediaType<String> mediaType;
    private HttpResponse response = mock(HttpResponse.class);
    private HttpRequest request = mock(HttpRequest.class);
@@ -40,46 +39,44 @@ public class MediaTypesTests {
    public void testAllTypesAreApplied() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 
-      types.getAcceptType().applyTo(request);
+      types.applyAsOption(request);
 
-      verify(mediaType.getAcceptType()).applyTo(request);
+      verify(mediaType).applyAsOption(request);
    }
 
    public void testTypesDoesNotHandleResponseIfTypeIsNotHandling() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 
-      assertFalse(types.getAcceptType().isHandling(response));
+      assertFalse(types.isHandling(response));
    }
 
    public void testTypesDoHandleResponseIfTypeDoes() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
-      when(mediaType.getAcceptType().isHandling(response)).thenReturn(true);
+      when(mediaType.isHandling(response)).thenReturn(true);
 
-      assertTrue(types.getAcceptType().isHandling(response));
+      assertTrue(types.isHandling(response));
    }
 
    @Test(expectedExceptions = GerecException.class)
    public void testIfTypeNotHandlingResponseDeserializationThrowsException() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
 
-      types.getAcceptType().deserialize(response, null);
+      types.deserialize(response, null);
    }
 
    @SuppressWarnings("unchecked")
    public void testHandlingTypeDeserializesForTypes() {
       MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
-      when(mediaType.getAcceptType().isHandling(response)).thenReturn(true);
-      when(mediaType.getAcceptType().deserialize(response, null)).thenReturn("abc");
+      when(mediaType.isHandling(response)).thenReturn(true);
+      when(mediaType.deserialize(response, null)).thenReturn("abc");
 
-      assertEquals(types.getAcceptType().deserialize(response, null), "abc");
+      assertEquals(types.deserialize(response, null), "abc");
    }
 
    @BeforeMethod
    @SuppressWarnings("unchecked")
    public void setUp() {
-      acceptType = mock(MediaType.AcceptType.class);
       mediaType = mock(MediaType.class);
-      when(mediaType.getAcceptType()).thenReturn(acceptType);
    }
 }
 

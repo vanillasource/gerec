@@ -36,7 +36,7 @@ public class NamedMediaTypeTests {
    public void testAcceptsTypeIfNonePresentYet() {
       TestType type = new TestType("text/html");
 
-      type.getAcceptType().applyTo(request);
+      type.applyAsOption(request);
 
       verify(request).setHeader(Header.ACCEPT, "text/html;q=1");
    }
@@ -46,7 +46,7 @@ public class NamedMediaTypeTests {
       when(request.hasHeader(Header.ACCEPT)).thenReturn(true);
       when(request.getHeader(Header.ACCEPT)).thenReturn("image/png");
 
-      type.getAcceptType().applyTo(request);
+      type.applyAsOption(request);
 
       verify(request).setHeader(Header.ACCEPT, "image/png, text/html;q=1");
    }
@@ -64,7 +64,7 @@ public class NamedMediaTypeTests {
    public void testQualityWillBeScaledToMaximumThreeDigits() {
       TestType type = new TestType("text/html", 0.5012d);
 
-      type.getAcceptType().applyTo(request);
+      type.applyAsOption(request);
 
       verify(request).setHeader(Header.ACCEPT, "text/html;q=0.502");
    }
@@ -72,7 +72,7 @@ public class NamedMediaTypeTests {
    public void testDoesNotHandleResponsesWithNoContentType() {
       TestType type = new TestType("text/html");
 
-      assertFalse(type.getAcceptType().isHandling(response));
+      assertFalse(type.isHandling(response));
    }
 
    public void testDoesNotHandleResponsesWithOtherContentType() {
@@ -80,7 +80,7 @@ public class NamedMediaTypeTests {
       when(response.hasHeader(Header.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Header.CONTENT_TYPE)).thenReturn("image/png");
 
-      assertFalse(type.getAcceptType().isHandling(response));
+      assertFalse(type.isHandling(response));
    }
 
    public void testDoesHandleResponsesWithSameContentType() {
@@ -88,13 +88,13 @@ public class NamedMediaTypeTests {
       when(response.hasHeader(Header.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Header.CONTENT_TYPE)).thenReturn("text/html");
 
-      assertTrue(type.getAcceptType().isHandling(response));
+      assertTrue(type.isHandling(response));
    }
 
    public void testWillSetContentType() {
       TestType type = new TestType("text/html");
 
-      type.getContentType().applyTo(request);
+      type.applyAsContent(request);
 
       verify(request).setHeader(Header.CONTENT_TYPE, "text/html");
    }
@@ -115,12 +115,12 @@ public class NamedMediaTypeTests {
       }
 
       @Override
-      protected String deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+      public String deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
          return null;
       }
 
       @Override
-      protected void serialize(String object, HttpRequest request) {
+      public void serialize(String object, HttpRequest request) {
       }
    }
 }
