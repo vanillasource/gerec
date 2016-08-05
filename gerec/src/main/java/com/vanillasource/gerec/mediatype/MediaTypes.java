@@ -34,6 +34,9 @@ public final class MediaTypes<T> implements MediaType<T> {
    private List<MediaType<T>> mediaTypes;
 
    public MediaTypes(List<MediaType<T>> mediaTypes) {
+      if (mediaTypes.isEmpty()) {
+         throw new IllegalArgumentException("can not construct with no actual media types");
+      }
       this.mediaTypes = mediaTypes;
    }
 

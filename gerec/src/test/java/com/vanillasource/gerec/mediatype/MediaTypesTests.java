@@ -32,10 +32,9 @@ public class MediaTypesTests {
    private HttpResponse response = mock(HttpResponse.class);
    private HttpRequest request = mock(HttpRequest.class);
 
-   public void testNoTypesDontApply() {
-      MediaTypes<String> types = new MediaTypes<>(emptyList());
-
-      types.getAcceptType().applyTo(request);
+   @Test(expectedExceptions = IllegalArgumentException.class)
+   public void testNoTypesThrowException() {
+      new MediaTypes<>(emptyList());
    }
 
    public void testAllTypesAreApplied() {
@@ -44,12 +43,6 @@ public class MediaTypesTests {
       types.getAcceptType().applyTo(request);
 
       verify(mediaType.getAcceptType()).applyTo(request);
-   }
-
-   public void testNoTypesDontHandleResponse() {
-      MediaTypes<String> types = new MediaTypes<>(emptyList());
-
-      assertFalse(types.getAcceptType().isHandling(response));
    }
 
    public void testTypesDoesNotHandleResponseIfTypeIsNotHandling() {
@@ -63,13 +56,6 @@ public class MediaTypesTests {
       when(mediaType.getAcceptType().isHandling(response)).thenReturn(true);
 
       assertTrue(types.getAcceptType().isHandling(response));
-   }
-
-   @Test(expectedExceptions = GerecException.class)
-   public void testNoTypesThrowsExceptionOnDeserialize() {
-      MediaTypes<String> types = new MediaTypes<>(emptyList());
-
-      types.getAcceptType().deserialize(response, null);
    }
 
    @Test(expectedExceptions = GerecException.class)
