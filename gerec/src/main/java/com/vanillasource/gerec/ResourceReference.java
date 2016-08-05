@@ -34,13 +34,5 @@ public interface ResourceReference extends Serializable {
       return get(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <T> CompletableFuture<Response<T>> getAsync(AcceptMediaType<T> acceptType) {
-      return CompletableFuture.supplyAsync(() -> get(acceptType));
-   }
-
-   default <T> CompletableFuture<Response<T>> getAsync(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return CompletableFuture.supplyAsync(() -> get(acceptType, change));
-   }
-
    // TODO: different standard types (list of Ts, other methods: POST, DELETE, etc.)
 }
