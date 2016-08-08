@@ -19,6 +19,7 @@
 package com.vanillasource.gerec;
 
 public enum Header {
+   CACHE_CONTROL("Cache-Control"),
    ETAG("ETag"),
    DATE("Date"),
    CONTENT_TYPE("Content-Type"),

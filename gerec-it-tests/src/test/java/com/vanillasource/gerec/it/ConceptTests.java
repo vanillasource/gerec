@@ -23,6 +23,7 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.vanillasource.gerec.Response;
+import static com.vanillasource.gerec.http.CacheControl.*;
 
 @Test
 public class ConceptTests extends HttpTestsBase {
@@ -49,6 +50,14 @@ public class ConceptTests extends HttpTestsBase {
       reference().get(Person.TYPE, personResponse.ifMatch());
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("If-Match", equalTo("ABCD")));
+   }
+
+   public void testUsingMultipleRequestChanges() {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}").withHeader("ETag","ABCD")));
+
+      reference().get(Person.TYPE, maxAge(10).and(maxStale(10)));
+
+      verify(getRequestedFor(urlEqualTo("/")).withHeader("Cache-Control", equalTo("max-age=10, max-stale=10")));
    }
 }
 
