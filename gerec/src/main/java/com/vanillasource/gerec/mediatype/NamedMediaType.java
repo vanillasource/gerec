@@ -70,5 +70,10 @@ public abstract class NamedMediaType<T> implements MediaType<T> {
    public void applyAsContent(HttpRequest request) {
       new SingleHeaderValue(Header.CONTENT_TYPE, mediaTypeName).applyTo(request);
    }
+
+   @Override
+   public String toString() {
+      return headerValue;
+   }
 }
 

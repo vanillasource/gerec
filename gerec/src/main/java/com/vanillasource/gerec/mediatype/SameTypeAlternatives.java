@@ -23,6 +23,7 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.GerecException;
 import com.vanillasource.gerec.MediaType;
+import com.vanillasource.gerec.ContentMediaType;
 import java.util.List;
 import java.util.function.Function;
 import java.net.URI;
@@ -30,43 +31,25 @@ import java.net.URI;
 /**
  * A collection of media-types that all produce the same java type. The content type is the first media type given.
  */
-public final class SameTypeAlternatives<T> implements MediaType<T> {
-   private List<MediaType<T>> mediaTypes;
+public class SameTypeAlternatives<T> extends PolymorphicTypes<T> implements MediaType<T> {
+   private ContentMediaType<T> contentType;
 
    public SameTypeAlternatives(List<MediaType<T>> mediaTypes) {
+      super(mediaTypes);
       if (mediaTypes.isEmpty()) {
          throw new IllegalArgumentException("can not construct with no actual media types");
       }
-      this.mediaTypes = mediaTypes;
-   }
-
-   @Override
-   public void applyAsOption(HttpRequest request) {
-      mediaTypes.forEach(mediaType -> mediaType.applyAsOption(request));
-   }
-
-   @Override
-   public boolean isHandling(HttpResponse response) {
-      return mediaTypes.stream().anyMatch(mediaType -> mediaType.isHandling(response));
-   }
-
-   @Override
-   public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
-      return mediaTypes.stream()
-         .filter(mediaType -> mediaType.isHandling(response))
-         .findFirst()
-         .orElseThrow(() -> new GerecException("no matching media types found for "+response+", possible media types were: "+mediaTypes))
-         .deserialize(response, referenceProducer);
+      contentType = mediaTypes.get(0);
    }
 
    @Override
    public void applyAsContent(HttpRequest request) {
-      mediaTypes.get(0).applyAsContent(request);
+      contentType.applyAsContent(request);
    }
 
    @Override
    public void serialize(T object, HttpRequest request) {
-      mediaTypes.get(0).serialize(object, request);
+      contentType.serialize(object, request);
    }
 }
 
