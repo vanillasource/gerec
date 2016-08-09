@@ -47,11 +47,30 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       return new HttpResponseResponse<>(response, media);
    }
 
+   @Override
+   public <R, T> Response<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      HttpResponse response = put(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
+            request -> contentType.serialize(content, request)));
+      T media = acceptType.deserialize(response, this::follow);
+      return new HttpResponseResponse<>(response, media);
+   }
+
+   @Override
+   public <T> Response<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      HttpResponse response = delete(change.and(acceptType::applyAsOption));
+      T media = acceptType.deserialize(response, this::follow);
+      return new HttpResponseResponse<>(response, media);
+   }
+
    protected abstract ResourceReference follow(URI link);
 
    protected abstract HttpResponse get(HttpRequest.HttpRequestChange change);
 
    protected abstract HttpResponse post(HttpRequest.HttpRequestChange change);
+
+   protected abstract HttpResponse put(HttpRequest.HttpRequestChange change);
+
+   protected abstract HttpResponse delete(HttpRequest.HttpRequestChange change);
 
    private class HttpResponseResponse<T> implements Response<T> {
       private HttpResponse response;

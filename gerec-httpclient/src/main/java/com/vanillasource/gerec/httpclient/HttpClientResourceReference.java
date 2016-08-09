@@ -62,6 +62,16 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
       return execute(new HttpPost(resourceUri), change);
    }
 
+   @Override
+   protected HttpResponse put(HttpRequest.HttpRequestChange change) {
+      return execute(new HttpPut(resourceUri), change);
+   }
+
+   @Override
+   protected HttpResponse delete(HttpRequest.HttpRequestChange change) {
+      return execute(new HttpDelete(resourceUri), change);
+   }
+
    private HttpResponse execute(HttpEntityEnclosingRequestBase request, HttpRequest.HttpRequestChange change) {
       change.applyTo(new HttpRequest() {
          @Override

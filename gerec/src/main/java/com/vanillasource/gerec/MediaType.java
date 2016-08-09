@@ -22,4 +22,31 @@ import java.util.function.Function;
 import java.net.URI;
 
 public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
+   /**
+    * A MediaType that simply discards any response content if there is any, and does not
+    * have any content as a request.
+    */
+   MediaType<Void> NONE = new MediaType<Void>() {
+      @Override
+      public void applyAsOption(HttpRequest request) {
+      }
+
+      @Override
+      public void applyAsContent(HttpRequest request) {
+      }
+
+      @Override
+      public boolean isHandling(HttpResponse response) {
+         return true;
+      }
+
+      @Override
+      public Void deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+         return response.processContent(inputStream -> null);
+      }
+
+      @Override
+      public void serialize(Void object, HttpRequest request) {
+      }
+   };
 }

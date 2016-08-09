@@ -42,10 +42,34 @@ public class HttpClientResourceReferenceTests {
       HttpResponse response = reference.get(change);
    }
 
-   public void testResourceOkReturnsResponseOk() {
+   public void testGetResourceOkReturnsResponseOk() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
       HttpResponse response = reference.get(change);
+
+      assertTrue(response.getStatusCode() == HttpStatusCode.OK);
+   }
+
+   public void testPostResourceOkReturnsResponseOk() {
+      stubFor(post(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
+
+      HttpResponse response = reference.post(change);
+
+      assertTrue(response.getStatusCode() == HttpStatusCode.OK);
+   }
+
+   public void testPutResourceOkReturnsResponseOk() {
+      stubFor(put(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
+
+      HttpResponse response = reference.put(change);
+
+      assertTrue(response.getStatusCode() == HttpStatusCode.OK);
+   }
+
+   public void testDeleteResourceOkReturnsResponseOk() {
+      stubFor(delete(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
+
+      HttpResponse response = reference.delete(change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
