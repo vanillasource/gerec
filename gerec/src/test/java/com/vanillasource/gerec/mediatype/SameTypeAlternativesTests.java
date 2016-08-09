@@ -26,18 +26,18 @@ import static org.mockito.Mockito.*;
 import static java.util.Collections.*;
 
 @Test
-public class MediaTypesTests {
+public class SameTypeAlternativesTests {
    private MediaType<String> mediaType;
    private HttpResponse response = mock(HttpResponse.class);
    private HttpRequest request = mock(HttpRequest.class);
 
    @Test(expectedExceptions = IllegalArgumentException.class)
    public void testNoTypesThrowException() {
-      new MediaTypes<>(emptyList());
+      new SameTypeAlternatives<>(emptyList());
    }
 
    public void testAllTypesAreApplied() {
-      MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
+      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
 
       types.applyAsOption(request);
 
@@ -45,13 +45,13 @@ public class MediaTypesTests {
    }
 
    public void testTypesDoesNotHandleResponseIfTypeIsNotHandling() {
-      MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
+      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
 
       assertFalse(types.isHandling(response));
    }
 
    public void testTypesDoHandleResponseIfTypeDoes() {
-      MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
+      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
 
       assertTrue(types.isHandling(response));
@@ -59,14 +59,14 @@ public class MediaTypesTests {
 
    @Test(expectedExceptions = GerecException.class)
    public void testIfTypeNotHandlingResponseDeserializationThrowsException() {
-      MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
+      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
 
       types.deserialize(response, null);
    }
 
    @SuppressWarnings("unchecked")
    public void testHandlingTypeDeserializesForTypes() {
-      MediaTypes<String> types = new MediaTypes<>(singletonList(mediaType));
+      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
       when(mediaType.deserialize(response, null)).thenReturn("abc");
 

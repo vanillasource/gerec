@@ -30,10 +30,10 @@ import java.net.URI;
 /**
  * A collection of media-types that all produce the same java type. The content type is the first media type given.
  */
-public final class MediaTypes<T> implements MediaType<T> {
+public final class SameTypeAlternatives<T> implements MediaType<T> {
    private List<MediaType<T>> mediaTypes;
 
-   public MediaTypes(List<MediaType<T>> mediaTypes) {
+   public SameTypeAlternatives(List<MediaType<T>> mediaTypes) {
       if (mediaTypes.isEmpty()) {
          throw new IllegalArgumentException("can not construct with no actual media types");
       }
