@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.vanillasource.gerec.Response;
 import static com.vanillasource.gerec.http.CacheControl.*;
+import com.vanillasource.gerec.mediatype.MediaTypes;
 
 @Test
 public class ConceptTests extends HttpTestsBase {
@@ -66,6 +67,15 @@ public class ConceptTests extends HttpTestsBase {
       reference().post(Person.TYPE, new Person("Jack", 50));
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
+   }
+
+   public void testPostCanHaveDifferentMediaTypesForContentAndAccept() {
+      stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("OK")));
+
+      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.TEXT_PLAIN).getContent();
+
+      verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
+      assertEquals(result, "OK");
    }
 }
 
