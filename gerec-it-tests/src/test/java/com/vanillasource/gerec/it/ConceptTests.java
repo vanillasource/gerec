@@ -69,6 +69,22 @@ public class ConceptTests extends HttpTestsBase {
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
    }
 
+   public void testPutSubmitsCorrectJsonData() {
+      stubFor(put(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
+
+      reference().put(Person.TYPE, new Person("Jack", 50));
+
+      verify(putRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
+   }
+
+   public void testEmptyDeleteReturnsOk() {
+      stubFor(delete(urlEqualTo("/")).willReturn(aResponse()));
+
+      reference().delete();
+
+      verify(deleteRequestedFor(urlEqualTo("/")));
+   }
+
    public void testPostCanHaveDifferentMediaTypesForContentAndAccept() {
       stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("OK")));
 
