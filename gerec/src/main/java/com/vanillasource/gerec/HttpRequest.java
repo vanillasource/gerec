@@ -19,7 +19,8 @@
 package com.vanillasource.gerec;
 
 import java.util.function.Consumer;
-import java.io.OutputStream;
+import java.util.function.Supplier;
+import java.io.InputStream;
 
 public interface HttpRequest {
    boolean hasHeader(Header header);
@@ -28,7 +29,9 @@ public interface HttpRequest {
 
    void setHeader(Header header, String value);
 
-   void processContent(Consumer<OutputStream> contentProcessor);
+   void setContent(Supplier<InputStream> contentSupplier);
+
+   void setContent(Supplier<InputStream> contentSupplier, long length);
 
    public interface HttpRequestChange {
       HttpRequestChange NO_CHANGE = new HttpRequestChange() {

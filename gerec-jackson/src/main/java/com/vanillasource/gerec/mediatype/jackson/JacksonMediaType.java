@@ -28,6 +28,7 @@ import java.net.URI;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.UncheckedIOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -82,13 +83,12 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
 
    @Override
    public void serialize(T object, HttpRequest request) {
-      request.processContent(outputStream -> {
-         try {
-            createSerializerObjectMapper().writeValue(outputStream, object);
-         } catch (IOException e) {
-            throw new UncheckedIOException("error serializing object: "+object, e);
-         }
-      });
+      try {
+         byte[] objectAsBytes = createSerializerObjectMapper().writeValueAsBytes(object);
+         request.setContent(() -> new ByteArrayInputStream(objectAsBytes), objectAsBytes.length);
+      } catch (IOException e) {
+         throw new UncheckedIOException("error serializing object: "+object, e);
+      }
    }
 
    private ObjectMapper createSerializerObjectMapper() {

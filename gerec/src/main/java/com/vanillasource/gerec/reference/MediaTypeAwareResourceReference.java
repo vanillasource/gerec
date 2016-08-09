@@ -26,7 +26,9 @@ import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.ContentMediaType;
 import java.util.function.Supplier;
+import java.util.function.Consumer;
 import java.net.URI;
 
 public abstract class MediaTypeAwareResourceReference implements ResourceReference {
@@ -34,71 +36,91 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
    public <T> Response<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = get(change.and(acceptType::applyAsOption));
       T media = acceptType.deserialize(response, this::follow);
-      return new Response<T>() {
-         @Override
-         public HttpStatusCode getStatusCode() {
-            return response.getStatusCode();
-         }
+      return new HttpResponseResponse<>(response, media);
+   }
 
-         @Override
-         public boolean hasIdentity() {
-            return response.hasHeader(Header.ETAG);
-         }
-
-         @Override
-         public HttpRequest.HttpRequestChange ifMatch() {
-            return new SingleHeaderValue(Header.IF_MATCH, response.getHeader(Header.ETAG));
-         }
-
-         @Override
-         public HttpRequest.HttpRequestChange ifNotMatch() {
-            return new SingleHeaderValue(Header.IF_NONE_MATCH, response.getHeader(Header.ETAG));
-         }
-
-         @Override
-         public HttpRequest.HttpRequestChange ifModifiedSince() {
-            return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.DATE));
-         }
-
-         @Override
-         public HttpRequest.HttpRequestChange ifUnmodifiedSince() {
-            return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.DATE));
-         }
-
-         @Override
-         public boolean hasLastModified() {
-            return response.hasHeader(Header.LAST_MODIFIED);
-         }
-
-         @Override
-         public HttpRequest.HttpRequestChange ifModifiedSinceLastModified() {
-            return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
-         }
-
-         @Override
-         public HttpRequest.HttpRequestChange ifUnmodifiedSinceLastModified() {
-            return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
-         }
-
-         @Override
-         public boolean hasLocation() {
-            return response.hasHeader(Header.LOCATION);
-         }
-
-         @Override
-         public ResourceReference followLocation() {
-            return follow(URI.create(response.getHeader(Header.LOCATION)));
-         }
-
-         @Override
-         public T getContent() {
-            return media;
-         }
-      };
+   @Override
+   public <R, T> Response<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      HttpResponse response = post(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
+            request -> contentType.serialize(content, request)));
+      T media = acceptType.deserialize(response, this::follow);
+      return new HttpResponseResponse<>(response, media);
    }
 
    protected abstract ResourceReference follow(URI link);
 
    protected abstract HttpResponse get(HttpRequest.HttpRequestChange change);
+
+   protected abstract HttpResponse post(HttpRequest.HttpRequestChange change);
+
+   private class HttpResponseResponse<T> implements Response<T> {
+      private HttpResponse response;
+      private T media;
+
+      public HttpResponseResponse(HttpResponse response, T media) {
+         this.response = response;
+         this.media = media;
+      }
+
+      @Override
+      public HttpStatusCode getStatusCode() {
+         return response.getStatusCode();
+      }
+
+      @Override
+      public boolean hasIdentity() {
+         return response.hasHeader(Header.ETAG);
+      }
+
+      @Override
+      public HttpRequest.HttpRequestChange ifMatch() {
+         return new SingleHeaderValue(Header.IF_MATCH, response.getHeader(Header.ETAG));
+      }
+
+      @Override
+      public HttpRequest.HttpRequestChange ifNotMatch() {
+         return new SingleHeaderValue(Header.IF_NONE_MATCH, response.getHeader(Header.ETAG));
+      }
+
+      @Override
+      public HttpRequest.HttpRequestChange ifModifiedSince() {
+         return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.DATE));
+      }
+
+      @Override
+      public HttpRequest.HttpRequestChange ifUnmodifiedSince() {
+         return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.DATE));
+      }
+
+      @Override
+      public boolean hasLastModified() {
+         return response.hasHeader(Header.LAST_MODIFIED);
+      }
+
+      @Override
+      public HttpRequest.HttpRequestChange ifModifiedSinceLastModified() {
+         return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
+      }
+
+      @Override
+      public HttpRequest.HttpRequestChange ifUnmodifiedSinceLastModified() {
+         return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
+      }
+
+      @Override
+      public boolean hasLocation() {
+         return response.hasHeader(Header.LOCATION);
+      }
+
+      @Override
+      public ResourceReference followLocation() {
+         return follow(URI.create(response.getHeader(Header.LOCATION)));
+      }
+
+      @Override
+      public T getContent() {
+         return media;
+      }
+   }
 }
 

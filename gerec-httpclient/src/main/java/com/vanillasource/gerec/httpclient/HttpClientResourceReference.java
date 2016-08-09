@@ -22,8 +22,9 @@ import com.vanillasource.gerec.GerecException;
 import com.vanillasource.gerec.*;
 import com.vanillasource.gerec.reference.MediaTypeAwareResourceReference;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.InputStreamEntity;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -56,6 +57,41 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
       return execute(new HttpGet(resourceUri), change);
    }
 
+   @Override
+   protected HttpResponse post(HttpRequest.HttpRequestChange change) {
+      return execute(new HttpPost(resourceUri), change);
+   }
+
+   private HttpResponse execute(HttpEntityEnclosingRequestBase request, HttpRequest.HttpRequestChange change) {
+      change.applyTo(new HttpRequest() {
+         @Override
+         public boolean hasHeader(Header header) {
+            return request.containsHeader(header.value());
+         }
+
+         @Override
+         public String getHeader(Header header) {
+            return request.getFirstHeader(header.value()).getValue();
+         }
+
+         @Override
+         public void setHeader(Header header, String value) {
+            request.setHeader(header.value(), value);
+         }
+
+         @Override
+         public void setContent(Supplier<InputStream> contentSupplier, long length) {
+            request.setEntity(new SuppliedInputStreamHttpEntity(contentSupplier, length));
+         }
+
+         @Override
+         public void setContent(Supplier<InputStream> contentSupplier) {
+            request.setEntity(new SuppliedInputStreamHttpEntity(contentSupplier));
+         }
+      });
+      return execute(request);
+   }
+
    private HttpResponse execute(HttpRequestBase request, HttpRequest.HttpRequestChange change) {
       change.applyTo(new HttpRequest() {
          @Override
@@ -74,10 +110,19 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
          }
 
          @Override
-         public void processContent(Consumer<OutputStream> contentProcessor) {
-            throw new UnsupportedOperationException("can not modify outpustream at this stage");
+         public void setContent(Supplier<InputStream> contentSupplier, long length) {
+            throw new UnsupportedOperationException("can not modify outpustream for this operation");
+         }
+
+         @Override
+         public void setContent(Supplier<InputStream> contentSupplier) {
+            throw new UnsupportedOperationException("can not modify outpustream for this operation");
          }
       });
+      return execute(request);
+   }
+
+   private HttpResponse execute(HttpRequestBase request) {
       try {
          org.apache.http.HttpResponse httpResponse = httpClientSupplier.get().execute(request);
          HttpResponse response = new HttpResponse() {
@@ -113,6 +158,72 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
          return response;
       } catch (IOException e) {
          throw new GerecException("error while making http call", e);
+      }
+   }
+
+   private static class SuppliedInputStreamHttpEntity implements HttpEntity {
+      private final Supplier<InputStream> inputStreamSupplier;
+      private final long length;
+      private InputStream inputStream;
+
+      public SuppliedInputStreamHttpEntity(Supplier<InputStream> inputStreamSupplier, long length) {
+         this.inputStreamSupplier = inputStreamSupplier;
+         this.length = length;
+      }
+
+      public SuppliedInputStreamHttpEntity(Supplier<InputStream> inputStreamSupplier) {
+         this(inputStreamSupplier, -1);
+      }
+
+      @Override
+      @SuppressWarnings("deprecation")
+      public void consumeContent() throws IOException {
+         if (inputStream != null) {
+            inputStream.close();
+         }
+      }
+
+      @Override
+      public InputStream getContent() {
+         if (inputStream == null) {
+            inputStream = inputStreamSupplier.get();
+         }
+         return inputStream;
+      }
+
+      @Override
+      public org.apache.http.Header getContentEncoding() {
+         return null;
+      }
+
+      @Override
+      public long getContentLength() {
+         return length;
+      }
+
+      @Override
+      public org.apache.http.Header getContentType() {
+         return null;
+      }
+
+      @Override
+      public boolean isChunked() {
+         return false;
+      }
+
+      @Override
+      public boolean isRepeatable() {
+         return false;
+      }
+
+      @Override
+      public boolean isStreaming() {
+         return true;
+      }
+
+      @Override
+      public void writeTo(OutputStream outputStream) throws IOException {
+         new InputStreamEntity(getContent(), getContentLength()).writeTo(outputStream);
       }
    }
 }

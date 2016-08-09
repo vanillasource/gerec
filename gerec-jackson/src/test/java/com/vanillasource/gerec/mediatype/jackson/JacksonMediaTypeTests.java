@@ -25,13 +25,10 @@ import org.mockito.Mockito;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.ResourceReference;
-import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.net.URI;
 import java.util.function.Function;
-import java.io.OutputStream;
-import java.io.InputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
+import java.io.*;
 
 @Test
 public class JacksonMediaTypeTests {
@@ -85,16 +82,11 @@ public class JacksonMediaTypeTests {
       request = mock(HttpRequest.class);
       content = null;
       doAnswer(invocation -> {
-         Consumer<OutputStream> processor = (Consumer<OutputStream>)invocation.getArguments()[0];
-         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-         try {
-            processor.accept(byteArrayOutputStream);
-         } finally {
-            byteArrayOutputStream.close();
-         }
-         content = byteArrayOutputStream.toString("UTF-8");
+         Supplier<InputStream> inputStreamSupplier = (Supplier<InputStream>)invocation.getArguments()[0];
+         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStreamSupplier.get()));
+         content = reader.readLine();
          return null;
-      }).when(request).processContent(any());
+      }).when(request).setContent(any(), anyLong());
       response = mock(HttpResponse.class);
       when(response.processContent(any())).thenAnswer(invocation -> {
          Function<InputStream, Object> processor = (Function<InputStream, Object>)invocation.getArguments()[0];

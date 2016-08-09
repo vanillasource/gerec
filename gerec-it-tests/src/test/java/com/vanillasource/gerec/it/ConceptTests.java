@@ -59,6 +59,14 @@ public class ConceptTests extends HttpTestsBase {
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("Cache-Control", equalTo("max-age=10, max-stale=10")));
    }
+
+   public void testPostSubmitsCorrectJsonData() {
+      stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
+
+      reference().post(Person.TYPE, new Person("Jack", 50));
+
+      verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
+   }
 }
 
 

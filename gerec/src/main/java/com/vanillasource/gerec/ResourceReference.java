@@ -34,5 +34,15 @@ public interface ResourceReference extends Serializable {
       return get(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
+   <R, T> Response<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+
+   default <T> Response<T> post(MediaType<T> type, T content) {
+      return post(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <R, T> Response<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+      return post(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
    // TODO: different standard types (list of Ts, other methods: POST, DELETE, etc.)
 }
