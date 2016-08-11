@@ -16,26 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.gerec.mediatype;
 
-import java.io.InputStream;
-import java.util.function.Function;
 import java.util.function.Consumer;
-import java.io.Serializable;
 
-public interface HttpResponse extends Serializable {
-   HttpStatusCode getStatusCode();
-
-   boolean hasHeader(Header header);
-
-   String getHeader(Header header);
-
-   <T> T processContent(Function<InputStream, T> contentProcessor);
-
-   default void processContent(Consumer<InputStream> contentProcessor) {
-      processContent(inputStream -> {
-         contentProcessor.accept(inputStream);
-         return null;
-      });
-   }
+public interface Processor<T> {
+   void process(Consumer<T> consumer);
 }

@@ -88,7 +88,7 @@ public class JacksonMediaTypeTests {
          return null;
       }).when(request).setContent(any(), anyLong());
       response = mock(HttpResponse.class);
-      when(response.processContent(any())).thenAnswer(invocation -> {
+      when(response.processContent(any(Function.class))).thenAnswer(invocation -> {
          Function<InputStream, Object> processor = (Function<InputStream, Object>)invocation.getArguments()[0];
          try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes())) {
             return processor.apply(inputStream);

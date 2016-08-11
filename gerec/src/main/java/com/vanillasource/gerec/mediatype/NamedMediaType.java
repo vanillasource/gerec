@@ -34,46 +34,18 @@ import java.math.RoundingMode;
  * A media type that has a static name and quality value and applies that
  * to requests and responses.
  */
-public abstract class NamedMediaType<T> implements MediaType<T> {
-   private final String mediaTypeName;
-   private final double qualityValue;
-   private final String headerValue;
-
+public abstract class NamedMediaType<T> extends NamedAcceptType<T> implements MediaType<T> {
    public NamedMediaType(String mediaTypeName, double qualityValue) {
-      this.mediaTypeName = mediaTypeName;
-      this.qualityValue = qualityValue;
-      if (qualityValue <= 0 || qualityValue > 1) {
-         throw new IllegalArgumentException("quality value most be between 0 (exclusive) and 1 (inclusive), but was: "+qualityValue+" for "+mediaTypeName);
-      }
-      BigDecimal qualityDecimal = new BigDecimal(qualityValue);
-      if (qualityDecimal.scale() > 3) {
-         qualityDecimal = qualityDecimal.setScale(3, RoundingMode.UP);
-      }
-      headerValue = mediaTypeName + ";q="+qualityDecimal.toString();
+      super(mediaTypeName, qualityValue);
    }
 
    public NamedMediaType(String mediaTypeName) {
-      this(mediaTypeName, 1.0d);
-   }
-
-   @Override
-   public void applyAsOption(HttpRequest request) {
-      new CommaSeparatedHeaderValue(Header.ACCEPT, headerValue).applyTo(request);
-   }
-
-   @Override
-   public boolean isHandling(HttpResponse response) {
-      return response.hasHeader(Header.CONTENT_TYPE) && response.getHeader(Header.CONTENT_TYPE).equals(mediaTypeName);
+      super(mediaTypeName);
    }
 
    @Override
    public void applyAsContent(HttpRequest request) {
-      new SingleHeaderValue(Header.CONTENT_TYPE, mediaTypeName).applyTo(request);
-   }
-
-   @Override
-   public String toString() {
-      return headerValue;
+      new SingleHeaderValue(Header.CONTENT_TYPE, getMediaTypeName()).applyTo(request);
    }
 }
 
