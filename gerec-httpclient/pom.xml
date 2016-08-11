@@ -23,10 +23,25 @@
         <version>4.5</version>
      </dependency>
      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>2.6.2</version>
+     </dependency>
+     <dependency>
         <groupId>com.github.tomakehurst</groupId>
         <artifactId>wiremock</artifactId>
         <version>1.52</version>
         <scope>test</scope>
+        <exclusions>
+           <exclusion>
+              <groupId>org.apache.httpcomponents</groupId>
+              <artifactId>httpclient</artifactId>
+           </exclusion>
+           <exclusion>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-annotations</artifactId>
+           </exclusion>
+        </exclusions>
      </dependency>
   </dependencies>
 </project>
