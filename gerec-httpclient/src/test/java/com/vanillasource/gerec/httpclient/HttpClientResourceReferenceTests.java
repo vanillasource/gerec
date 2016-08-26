@@ -39,13 +39,21 @@ public class HttpClientResourceReferenceTests {
 
    @Test(expectedExceptions = HttpGerecException.class)
    public void testResourceNotFoundThrowsException() {
-      HttpResponse response = reference.get(change);
+      HttpResponse response = reference.doGet(change);
    }
 
    public void testGetResourceOkReturnsResponseOk() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.get(change);
+      HttpResponse response = reference.doGet(change);
+
+      assertTrue(response.getStatusCode() == HttpStatusCode.OK);
+   }
+
+   public void testHeadResourceOkReturnsResponseOk() {
+      stubFor(head(urlEqualTo("/nini")).willReturn(aResponse().withBody("")));
+
+      HttpResponse response = reference.doHead(change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -53,7 +61,7 @@ public class HttpClientResourceReferenceTests {
    public void testPostResourceOkReturnsResponseOk() {
       stubFor(post(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.post(change);
+      HttpResponse response = reference.doPost(change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -61,7 +69,7 @@ public class HttpClientResourceReferenceTests {
    public void testPutResourceOkReturnsResponseOk() {
       stubFor(put(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.put(change);
+      HttpResponse response = reference.doPut(change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -69,7 +77,7 @@ public class HttpClientResourceReferenceTests {
    public void testDeleteResourceOkReturnsResponseOk() {
       stubFor(delete(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.delete(change);
+      HttpResponse response = reference.doDelete(change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -77,7 +85,7 @@ public class HttpClientResourceReferenceTests {
    public void testChangeIsAppliedToRequest() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.get(change);
+      HttpResponse response = reference.doGet(change);
 
       verify(change).applyTo(any(HttpRequest.class));
    }
@@ -85,7 +93,7 @@ public class HttpClientResourceReferenceTests {
    public void testLocationHeaderCanBeRead() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Location", "nunu").withBody("ABC")));
 
-      HttpResponse response = reference.get(change);
+      HttpResponse response = reference.doGet(change);
 
       assertEquals(response.getHeader(Header.LOCATION), "nunu");
    }

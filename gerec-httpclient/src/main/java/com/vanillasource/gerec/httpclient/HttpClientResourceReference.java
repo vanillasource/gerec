@@ -53,22 +53,27 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    }
 
    @Override
-   protected HttpResponse get(HttpRequest.HttpRequestChange change) {
+   protected HttpResponse doHead(HttpRequest.HttpRequestChange change) {
+      return execute(new HttpHead(resourceUri), change);
+   }
+
+   @Override
+   protected HttpResponse doGet(HttpRequest.HttpRequestChange change) {
       return execute(new HttpGet(resourceUri), change);
    }
 
    @Override
-   protected HttpResponse post(HttpRequest.HttpRequestChange change) {
+   protected HttpResponse doPost(HttpRequest.HttpRequestChange change) {
       return execute(new HttpPost(resourceUri), change);
    }
 
    @Override
-   protected HttpResponse put(HttpRequest.HttpRequestChange change) {
+   protected HttpResponse doPut(HttpRequest.HttpRequestChange change) {
       return execute(new HttpPut(resourceUri), change);
    }
 
    @Override
-   protected HttpResponse delete(HttpRequest.HttpRequestChange change) {
+   protected HttpResponse doDelete(HttpRequest.HttpRequestChange change) {
       return execute(new HttpDelete(resourceUri), change);
    }
 

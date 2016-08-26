@@ -31,6 +31,12 @@ import java.net.URI;
 public interface ResourceReference extends Serializable {
    URI toURI();
 
+   Response head(HttpRequest.HttpRequestChange change);
+
+   default Response head() {
+      return head(HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
    <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
    default <T> ContentResponse<T> get(AcceptMediaType<T> acceptType) {
