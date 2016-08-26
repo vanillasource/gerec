@@ -24,7 +24,7 @@ import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.http.SingleHeaderValue;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.ResourceReference;
-import com.vanillasource.gerec.Response;
+import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
 import java.util.function.Supplier;
@@ -37,33 +37,33 @@ import java.net.URI;
  */
 public abstract class MediaTypeAwareResourceReference implements ResourceReference {
    @Override
-   public <T> Response<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = get(change.and(acceptType::applyAsOption));
       T media = acceptType.deserialize(response, this::follow);
-      return new HttpResponseResponse<>(response, media);
+      return new HttpContentResponse<>(response, media);
    }
 
    @Override
-   public <R, T> Response<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = post(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)));
       T media = acceptType.deserialize(response, this::follow);
-      return new HttpResponseResponse<>(response, media);
+      return new HttpContentResponse<>(response, media);
    }
 
    @Override
-   public <R, T> Response<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = put(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)));
       T media = acceptType.deserialize(response, this::follow);
-      return new HttpResponseResponse<>(response, media);
+      return new HttpContentResponse<>(response, media);
    }
 
    @Override
-   public <T> Response<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = delete(change.and(acceptType::applyAsOption));
       T media = acceptType.deserialize(response, this::follow);
-      return new HttpResponseResponse<>(response, media);
+      return new HttpContentResponse<>(response, media);
    }
 
    protected abstract ResourceReference follow(URI link);
@@ -76,11 +76,11 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
 
    protected abstract HttpResponse delete(HttpRequest.HttpRequestChange change);
 
-   private class HttpResponseResponse<T> implements Response<T> {
+   private class HttpContentResponse<T> implements ContentResponse<T> {
       private HttpResponse response;
       private T media;
 
-      public HttpResponseResponse(HttpResponse response, T media) {
+      public HttpContentResponse(HttpResponse response, T media) {
          this.response = response;
          this.media = media;
       }

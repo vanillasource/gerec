@@ -22,7 +22,7 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import com.vanillasource.gerec.Response;
+import com.vanillasource.gerec.ContentResponse;
 import static com.vanillasource.gerec.http.CacheControl.*;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 
@@ -47,7 +47,7 @@ public class ConceptTests extends HttpTestsBase {
    public void testUsingMatchUsesETag() {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}").withHeader("ETag","ABCD")));
 
-      Response<Person> personResponse = reference().get(Person.TYPE);
+      ContentResponse<Person> personResponse = reference().get(Person.TYPE);
       reference().get(Person.TYPE, personResponse.ifMatch());
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("If-Match", equalTo("ABCD")));

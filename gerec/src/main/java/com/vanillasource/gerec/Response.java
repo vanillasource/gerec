@@ -21,13 +21,12 @@ package com.vanillasource.gerec;
 import java.util.List;
 
 /**
- * A server response after interacting with a resource. The response contains the object deserialize
- * with the help of the proper accept media-type, and also contains methods to be able to make
+ * A server response after interacting with a resource. The response contains methods to be able to make
  * conditional requests. All the <code>if..()</code> methods produce request changers that can be supplied,
  * potentially combined, to subsequent requests. All preconditions are checked on the server side,
  * and will be answered with the HTTP error code <code>412</code> if not fulfilled.
  */
-public interface Response<T> {
+public interface Response {
    HttpStatusCode getStatusCode();
 
    /**
@@ -81,7 +80,5 @@ public interface Response<T> {
     * Follow the 'Location' header received from the server.
     */
    ResourceReference followLocation();
-
-   T getContent();
 }
 
