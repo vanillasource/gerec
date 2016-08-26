@@ -25,6 +25,7 @@ public enum Header {
    CACHE_CONTROL("Cache-Control"),
    ETAG("ETag"),
    DATE("Date"),
+   ALLOW("Allow"),
    CONTENT_TYPE("Content-Type"),
    ACCEPT("Accept"),
    IF_MATCH("If-Match"),

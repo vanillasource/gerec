@@ -77,6 +77,23 @@ public interface Response {
    boolean hasLocation();
 
    /**
+    * @return True if the 'Allow' header is present. This is to be expected as response to OPTIONS request, for
+    * 405 (Method not allowed) response codes, and might be present for PUT requests relating to the created/modified
+    * resource.
+    */
+   boolean hasAllow();
+
+   boolean isGetAllowed();
+
+   boolean isPostAllowed();
+
+   boolean isPutAllowed();
+
+   boolean isDeleteAllowed();
+
+   boolean isHeadAllowed();
+
+   /**
     * Follow the 'Location' header received from the server.
     */
    ResourceReference followLocation();

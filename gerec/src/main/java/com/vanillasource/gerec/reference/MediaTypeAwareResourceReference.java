@@ -73,9 +73,18 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       return new HttpContentResponse<>(response, media);
    }
 
+   @Override
+   public <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+      HttpResponse response = doOptions(HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption));
+      T media = acceptType.deserialize(response, this::follow);
+      return new HttpContentResponse<>(response, media);
+   }
+
    protected abstract ResourceReference follow(URI link);
 
    protected abstract HttpResponse doHead(HttpRequest.HttpRequestChange change);
+
+   protected abstract HttpResponse doOptions(HttpRequest.HttpRequestChange change);
 
    protected abstract HttpResponse doGet(HttpRequest.HttpRequestChange change);
 
@@ -147,6 +156,40 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       @Override
       public ResourceReference followLocation() {
          return follow(URI.create(response.getHeader(Header.LOCATION)));
+      }
+
+      @Override
+      public boolean hasAllow() {
+         return response.hasHeader(Header.ALLOW);
+      }
+
+      @Override
+      public boolean isGetAllowed() {
+         return isMethodAllowed("GET");
+      }
+
+      @Override
+      public boolean isPostAllowed() {
+         return isMethodAllowed("POST");
+      }
+
+      @Override
+      public boolean isPutAllowed() {
+         return isMethodAllowed("PUT");
+      }
+
+      @Override
+      public boolean isDeleteAllowed() {
+         return isMethodAllowed("DELETE");
+      }
+
+      @Override
+      public boolean isHeadAllowed() {
+         return isMethodAllowed("HEAD");
+      }
+
+      private boolean isMethodAllowed(String method) {
+         return response.getHeader(Header.ALLOW).contains(method);
       }
 
       @Override

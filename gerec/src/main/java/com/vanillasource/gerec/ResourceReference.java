@@ -72,5 +72,15 @@ public interface ResourceReference extends Serializable {
    default Response delete() {
       return delete(MediaType.NONE);
    }
+
+   <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
+   
+   default <T> ContentResponse<T> options(MediaType<T> type, T content) {
+      return options(type, content, type);
+   }
+
+   default Response options() {
+      return options(MediaType.NONE, null);
+   }
 }
 

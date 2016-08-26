@@ -98,6 +98,14 @@ public class HttpClientResourceReferenceTests {
       assertEquals(response.getHeader(Header.LOCATION), "nunu");
    }
 
+   public void testAllowsHeaderCanBeReadIfPresent() {
+      stubFor(options(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("ABC")));
+
+      HttpResponse response = reference.doOptions(change);
+
+      assertEquals(response.getHeader(Header.ALLOW), "GET, POST");
+   }
+
    @BeforeMethod
    protected void setUp() {
       change = mock(HttpRequest.HttpRequestChange.class);

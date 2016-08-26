@@ -23,6 +23,7 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.vanillasource.gerec.ContentResponse;
+import com.vanillasource.gerec.Response;
 import static com.vanillasource.gerec.http.CacheControl.*;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 
@@ -92,6 +93,22 @@ public class ConceptTests extends HttpTestsBase {
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
       assertEquals(result, "OK");
+   }
+
+   public void testIndicatesAllowedIsPresentIfHeaderSupplied() {
+      stubFor(options(urlEqualTo("/")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("OK")));
+
+      Response response = reference().options();
+
+      assertTrue(response.hasAllow());
+   }
+
+   public void testIndicatesGetMethodAllowedWhenSupplied() {
+      stubFor(options(urlEqualTo("/")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("OK")));
+
+      Response response = reference().options();
+
+      assertTrue(response.isGetAllowed());
    }
 }
 
