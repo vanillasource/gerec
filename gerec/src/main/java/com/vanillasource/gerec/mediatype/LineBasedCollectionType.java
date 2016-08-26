@@ -33,6 +33,16 @@ import java.io.UncheckedIOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+/**
+ * An accept type that with another (delegate) accept type will lazily deserialize
+ * single lines into single items. This is suitable for messages where each (non-empty)
+ * line in the response corresponds to one deserializable object, which is done by the delegate
+ * accept type. 
+ * Because the response is processed lazily (with the help of a callback mechanism),
+ * this type can be used for long-polling basically indefinitely.
+ * Because only non-empty lines are deserialized, empty lines (line breaks) can be used by
+ * the server to keep the connection alive.
+ */
 public class LineBasedCollectionType<T> extends NamedAcceptType<Processor<T>> {
    private AcceptMediaType<T> acceptType;
 

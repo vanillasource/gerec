@@ -21,6 +21,10 @@ package com.vanillasource.gerec.http;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.Header;
 
+/**
+ * Cache control directives which can be combined and attached to requests to
+ * control privacy, freshness or staleness of responses.
+ */
 public class CacheControl {
    private CacheControl() {
    }

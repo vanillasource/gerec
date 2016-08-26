@@ -29,7 +29,8 @@ import java.util.function.Function;
 
 /**
  * An accept-type that can await several media types that are mapping to a 
- * class hierarchy, returning the base class.
+ * class hierarchy, returning the base class. This means this type can actually
+ * map representations into an inheritance hierarchy. 
  */
 public class PolymorphicTypes<T> implements AcceptMediaType<T> {
    private List<? extends AcceptMediaType<? extends T>> acceptTypes;

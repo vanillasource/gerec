@@ -22,18 +22,25 @@ import java.util.function.Function;
 import java.net.URI;
 
 /**
- * A possible accepted media type.
+ * The part of a media-type for receiving the given type. This includes adding the necessary
+ * modifications to a request, as parsing it in the response.
  */
 public interface AcceptMediaType<T> {
    /**
-    * Apply this media-type as a possible option for a server to respond with.
+    * Apply this media-type as a possible option for a server to respond with. Note: the server may still
+    * decide to answer with a different media-type.
     */
    void applyAsOption(HttpRequest request);
 
    /**
-    * Determine whether the given response fits this accepted media type.
+    * Determine whether the given response contains this accepted media type.
     */
    boolean isHandling(HttpResponse response);
 
+   /**
+    * Deserialize the contents of the response to the given object type.
+    * @param referenceProducer Used by the deserialization process to resolve potentially relative URIs
+    * to full resource references.
+    */
    T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer);
 }

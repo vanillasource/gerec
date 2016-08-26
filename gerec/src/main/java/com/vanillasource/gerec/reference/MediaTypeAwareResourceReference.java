@@ -31,6 +31,10 @@ import java.util.function.Supplier;
 import java.util.function.Consumer;
 import java.net.URI;
 
+/**
+ * Implement all media-type related functionality (serialization, deserialization) and request
+ * modification. Subclasses "only" need to implement the direct HTTP related functionality.
+ */
 public abstract class MediaTypeAwareResourceReference implements ResourceReference {
    @Override
    public <T> Response<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {

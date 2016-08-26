@@ -21,11 +21,18 @@ package com.vanillasource.gerec;
 import java.util.function.Function;
 import java.net.URI;
 
+/**
+ * The part of a media-type for sending the given type. This includes adding the necessary
+ * modifications to the request, and serializing the object to the request.
+ */
 public interface ContentMediaType<T> {
    /**
     * Apply this media type as being the content's media type for the given request.
     */
    void applyAsContent(HttpRequest request);
 
+   /**
+    * Serialize the given object to the request.
+    */
    void serialize(T object, HttpRequest request);
 }

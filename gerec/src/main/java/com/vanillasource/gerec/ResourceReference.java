@@ -23,7 +23,10 @@ import java.util.concurrent.CompletableFuture;
 import java.net.URI;
 
 /**
- * References a remote HTTP resource which can be accessed by given methods.
+ * References to resources are the main method by which users of this library should interact
+ * with RESTful HTTP resources. All actions to the resources should go through classes from this
+ * interface. All implementations should be serializable, without serializing any underlying
+ * infrastructure, like caches.
  */
 public interface ResourceReference extends Serializable {
    URI toURI();

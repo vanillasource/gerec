@@ -21,7 +21,11 @@ package com.vanillasource.gerec;
 import java.util.List;
 
 /**
- * A server response after calling a HTTP Method.
+ * A server response after interacting with a resource. The response contains the object deserialize
+ * with the help of the proper accept media-type, and also contains methods to be able to make
+ * conditional requests. All the <code>if..()</code> methods produce request changers that can be supplied,
+ * potentially combined, to subsequent requests. All preconditions are checked on the server side,
+ * and will be answered with the HTTP error code <code>412</code> if not fulfilled.
  */
 public interface Response<T> {
    HttpStatusCode getStatusCode();
@@ -32,24 +36,24 @@ public interface Response<T> {
    boolean hasIdentity();
 
    /**
-    * Request will only be attempted if the resource matches the identity in this response.
+    * Request processing will only be attempted if the resource matches the identity in this response.
     * If response does not contain the identity, this method fails with an exception.
     */
    HttpRequest.HttpRequestChange ifMatch();
 
    /**
-    * Request will only be attempted if the resource does not match the identity in this response.
+    * Request processing will only be attempted if the resource does <strong>not</strong> match the identity in this response.
     * If response does not contain the identity, this method fails with an exception.
     */
    HttpRequest.HttpRequestChange ifNotMatch();
 
    /**
-    * Request will only be attempted if the resource has been modified since this response.
+    * Request processing will only be attempted if the resource has been modified since this response.
     */
    HttpRequest.HttpRequestChange ifModifiedSince();
 
    /**
-    * Request will only be attempted if the resource has not been modified since this response.
+    * Request processing will only be attempted if the resource has <strong>not</strong> been modified since this response.
     */
    HttpRequest.HttpRequestChange ifUnmodifiedSince();
 
@@ -68,8 +72,14 @@ public interface Response<T> {
     */
    HttpRequest.HttpRequestChange ifUnmodifiedSinceLastModified();
 
+   /**
+    * @return True, if the response contains a 'Location' header. This header indicates the content's URI.
+    */
    boolean hasLocation();
 
+   /**
+    * Follow the 'Location' header received from the server.
+    */
    ResourceReference followLocation();
 
    T getContent();

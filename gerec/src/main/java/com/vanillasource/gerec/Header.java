@@ -18,6 +18,9 @@
 
 package com.vanillasource.gerec;
 
+/**
+ * List of HTTP header names as used in requests and responses.
+ */
 public enum Header {
    CACHE_CONTROL("Cache-Control"),
    ETAG("ETag"),

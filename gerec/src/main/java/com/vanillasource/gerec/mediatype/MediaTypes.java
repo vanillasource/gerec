@@ -29,10 +29,17 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+/**
+ * A collections of some basic media types and their serializers/deserializers.
+ */
 public final class MediaTypes {
    private MediaTypes() {
    }
 
+   /**
+    * The media-type "text/plain" which is mapped to type <code>String</code>. The encoding is
+    * hardcoded to "UTF-8" for the moment.
+    */
    public static final MediaType<String> TEXT_PLAIN = new NamedMediaType<String>("text/plain") {
       @Override
       public String deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
@@ -44,7 +51,7 @@ public final class MediaTypes {
                while ((length = inputStream.read(buffer)) >= 0) {
                       result.write(buffer, 0, length);
                }
-               return result.toString("UTF-8"); // TODO: get encoding from http response
+               return result.toString("UTF-8"); // TODO: get encoding from http response?
             } catch (IOException e) {
                throw new UncheckedIOException(e);
             }
@@ -54,7 +61,7 @@ public final class MediaTypes {
       @Override
       public void serialize(String object, HttpRequest request) {
          try {
-            byte[] bytes = object.getBytes("UTF-8"); // TODO: set encoding to http request
+            byte[] bytes = object.getBytes("UTF-8"); // TODO: set encoding to http request?
             request.setContent(() -> new ByteArrayInputStream(bytes), bytes.length);
          } catch (IOException e) {
             throw new UncheckedIOException(e);

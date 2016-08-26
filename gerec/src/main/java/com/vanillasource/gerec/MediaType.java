@@ -21,6 +21,10 @@ package com.vanillasource.gerec;
 import java.util.function.Function;
 import java.net.URI;
 
+/**
+ * A full media-type which can be both serialized to make requests and deserialized back from
+ * responses.
+ */
 public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
    /**
     * A MediaType that simply discards any response content if there is any, and does not

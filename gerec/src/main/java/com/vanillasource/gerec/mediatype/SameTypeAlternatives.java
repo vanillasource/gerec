@@ -29,7 +29,10 @@ import java.util.function.Function;
 import java.net.URI;
 
 /**
- * A collection of media-types that all produce the same java type. The content type is the first media type given.
+ * A collection of media-types that all produce the same java type. May be used in cases where
+ * the same object may have different representations, such as XML and JSON representations at the same
+ * time, or different versions of the same representation mapping to the same java class.
+ * The content type is the first media type given.
  */
 public class SameTypeAlternatives<T> extends PolymorphicTypes<T> implements MediaType<T> {
    private ContentMediaType<T> contentType;
