@@ -45,49 +45,75 @@ public class Headers {
    }
 
    public static Header<String> singleStringHeader(String name) {
-      return new Header<String>() {
+      return singleValueHeader(name, new StringFormat());
+   }
+
+   public static <T> Header<T> singleValueHeader(String name, ValueFormat<T> format) {
+      return new Header<T>() {
          @Override
          public String getName() {
             return name;
          }
 
          @Override
-         public String deserialize(List<String> headerValues) {
+         public T deserialize(List<String> headerValues) {
             if (headerValues.size() != 1) {
                throw new IllegalArgumentException("header values were: "+headerValues+", but expecting a single one for header: "+name);
             }
-            return headerValues.get(0);
+            return format.deserialize(headerValues.get(0));
          }
 
          @Override
-         public List<String> serialize(String value) {
-            return Collections.singletonList(value);
+         public List<String> serialize(T object) {
+            return Collections.singletonList(format.serialize(object));
          }
       };
    }
 
    public static Header<List<String>> csvStringHeader(String name) {
-      return new Header<List<String>>() {
+      return csvValueHeader(name, new StringFormat());
+   }
+
+   public static <T> Header<List<T>> csvValueHeader(String name, ValueFormat<T> format) {
+      return new Header<List<T>>() {
          @Override
          public String getName() {
             return name;
          }
 
          @Override
-         public List<String> deserialize(List<String> headerValues) {
-            List<String> values = new LinkedList<>();
+         public List<T> deserialize(List<String> headerValues) {
+            List<T> values = new LinkedList<>();
             for (String headerValue: headerValues) {
                for (String value: headerValue.split(",")) {
-                  values.add(value.trim());
+                  values.add(format.deserialize(value.trim()));
                }
             }
             return values;
          }
 
          @Override
-         public List<String> serialize(List<String> value) {
-            return Collections.singletonList(value.stream().collect(Collectors.joining(", ")));
+         public List<String> serialize(List<T> value) {
+            return Collections.singletonList(value.stream().map(format::serialize).collect(Collectors.joining(", ")));
          }
       };
+   }
+
+   public interface ValueFormat<T> {
+      T deserialize(String value);
+
+      String serialize(T object);
+   }
+
+   public static class StringFormat implements ValueFormat<String> { 
+      @Override
+      public String deserialize(String value) {
+         return value;
+      }
+
+      @Override
+      public String serialize(String object) {
+         return object;
+      }
    }
 }
