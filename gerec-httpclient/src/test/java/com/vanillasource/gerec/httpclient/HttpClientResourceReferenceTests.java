@@ -99,6 +99,14 @@ public class HttpClientResourceReferenceTests {
       assertEquals(response.getHeader(Headers.LOCATION), "nunu");
    }
 
+   public void testLocationHeaderIsReadEvenIfNotCapitalized() {
+      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withHeader("location", "nunu").withBody("ABC")));
+
+      HttpResponse response = reference.doGet(change);
+
+      assertEquals(response.getHeader(Headers.LOCATION), "nunu");
+   }
+
    public void testAllowsHeaderCanBeReadIfPresent() {
       stubFor(options(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("ABC")));
 
