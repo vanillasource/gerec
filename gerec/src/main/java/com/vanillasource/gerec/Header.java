@@ -18,30 +18,29 @@
 
 package com.vanillasource.gerec;
 
+import java.util.List;
+
 /**
- * List of HTTP header names as used in requests and responses.
+ * Represents a logical header. This is different from a physical header in that
+ * it contains all values to the header "name", even if those are read from multiple
+ * header lines.
+ * @param T The type of value expected in the header.
  */
-public enum Header {
-   CACHE_CONTROL("Cache-Control"),
-   ETAG("ETag"),
-   DATE("Date"),
-   ALLOW("Allow"),
-   CONTENT_TYPE("Content-Type"),
-   ACCEPT("Accept"),
-   IF_MATCH("If-Match"),
-   IF_NONE_MATCH("If-None-Match"),
-   IF_MODIFIED_SINCE("If-Modified-Since"),
-   IF_UNMODIFIED_SINCE("If-Unmodified-Since"),
-   LAST_MODIFIED("Last-Modified"),
-   LOCATION("Location");
+public interface Header<T> {
+   /**
+    * Get the name/key of this header. This is the "field-name" of the header. This value
+    * will be used case-insensitively.
+    */
+   String getName();
 
-   private final String value;
+   /**
+    * Deserialize multiple physical header lines into a single value.
+    */
+   T deserialize(List<String> headerValues);
 
-   private Header(String value) {
-      this.value = value;
-   }
-   
-   public String value() {
-      return value;
-   }
+   /**
+    * Serialize the given value to possibly multiple header values.
+    */
+   List<String> serialize(T value);
 }
+

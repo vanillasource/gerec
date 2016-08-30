@@ -22,7 +22,6 @@ import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.ResourceReference;
-import com.vanillasource.gerec.GerecException;
 import java.util.List;
 import java.net.URI;
 import java.util.function.Function;
@@ -54,7 +53,7 @@ public class PolymorphicTypes<T> implements AcceptMediaType<T> {
       return acceptTypes.stream()
          .filter(acceptType -> acceptType.isHandling(response))
          .findFirst()
-         .orElseThrow(() -> new GerecException("no matching media types found for "+response+", possible media types were: "+acceptTypes))
+         .orElseThrow(() -> new IllegalStateException("no matching media types found for "+response+", possible media types were: "+acceptTypes))
          .deserialize(response, referenceProducer);
    }
 }

@@ -19,6 +19,7 @@
 package com.vanillasource.gerec.httpclient;
 
 import com.vanillasource.gerec.*;
+import com.vanillasource.gerec.http.*;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
@@ -37,7 +38,7 @@ public class HttpClientResourceReferenceTests {
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
    private HttpRequest.HttpRequestChange change;
 
-   @Test(expectedExceptions = HttpGerecException.class)
+   @Test(expectedExceptions = HttpErrorException.class)
    public void testResourceNotFoundThrowsException() {
       HttpResponse response = reference.doGet(change);
    }
@@ -95,7 +96,7 @@ public class HttpClientResourceReferenceTests {
 
       HttpResponse response = reference.doGet(change);
 
-      assertEquals(response.getHeader(Header.LOCATION), "nunu");
+      assertEquals(response.getHeader(Headers.LOCATION), "nunu");
    }
 
    public void testAllowsHeaderCanBeReadIfPresent() {
@@ -103,7 +104,7 @@ public class HttpClientResourceReferenceTests {
 
       HttpResponse response = reference.doOptions(change);
 
-      assertEquals(response.getHeader(Header.ALLOW), "GET, POST");
+      assertEquals(response.getHeader(Headers.ALLOW), "GET, POST");
    }
 
    @BeforeMethod

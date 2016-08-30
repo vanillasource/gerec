@@ -23,11 +23,11 @@ import java.util.function.Supplier;
 import java.io.InputStream;
 
 public interface HttpRequest {
-   boolean hasHeader(Header header);
+   boolean hasHeader(Header<?> header);
 
-   String getHeader(Header header);
+   <T> T getHeader(Header<T> header);
 
-   void setHeader(Header header, String value);
+   <T> void setHeader(Header<T> header, T value);
 
    void setContent(Supplier<InputStream> contentSupplier);
 

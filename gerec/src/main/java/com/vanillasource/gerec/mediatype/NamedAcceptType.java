@@ -21,8 +21,8 @@ package com.vanillasource.gerec.mediatype;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.http.SingleHeaderValue;
-import com.vanillasource.gerec.http.CommaSeparatedHeaderValue;
+import com.vanillasource.gerec.http.MultiValueHeaderAdd;
+import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.AcceptMediaType;
 import java.util.function.Function;
@@ -58,12 +58,12 @@ public abstract class NamedAcceptType<T> implements AcceptMediaType<T> {
 
    @Override
    public void applyAsOption(HttpRequest request) {
-      new CommaSeparatedHeaderValue(Header.ACCEPT, headerValue).applyTo(request);
+      new MultiValueHeaderAdd(Headers.ACCEPT, headerValue).applyTo(request);
    }
 
    @Override
    public boolean isHandling(HttpResponse response) {
-      return response.hasHeader(Header.CONTENT_TYPE) && response.getHeader(Header.CONTENT_TYPE).equals(mediaTypeName);
+      return response.hasHeader(Headers.CONTENT_TYPE) && response.getHeader(Headers.CONTENT_TYPE).equals(mediaTypeName);
    }
 
    @Override

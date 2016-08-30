@@ -21,7 +21,8 @@ package com.vanillasource.gerec.reference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpStatusCode;
-import com.vanillasource.gerec.http.SingleHeaderValue;
+import com.vanillasource.gerec.http.SingleHeaderValueSet;
+import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
@@ -110,57 +111,57 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
 
       @Override
       public boolean hasIdentity() {
-         return response.hasHeader(Header.ETAG);
+         return response.hasHeader(Headers.ETAG);
       }
 
       @Override
       public HttpRequest.HttpRequestChange ifMatch() {
-         return new SingleHeaderValue(Header.IF_MATCH, response.getHeader(Header.ETAG));
+         return new SingleHeaderValueSet(Headers.IF_MATCH, response.getHeader(Headers.ETAG));
       }
 
       @Override
       public HttpRequest.HttpRequestChange ifNotMatch() {
-         return new SingleHeaderValue(Header.IF_NONE_MATCH, response.getHeader(Header.ETAG));
+         return new SingleHeaderValueSet(Headers.IF_NONE_MATCH, response.getHeader(Headers.ETAG));
       }
 
       @Override
       public HttpRequest.HttpRequestChange ifModifiedSince() {
-         return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.DATE));
+         return new SingleHeaderValueSet(Headers.IF_MODIFIED_SINCE, response.getHeader(Headers.DATE));
       }
 
       @Override
       public HttpRequest.HttpRequestChange ifUnmodifiedSince() {
-         return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.DATE));
+         return new SingleHeaderValueSet(Headers.IF_UNMODIFIED_SINCE, response.getHeader(Headers.DATE));
       }
 
       @Override
       public boolean hasLastModified() {
-         return response.hasHeader(Header.LAST_MODIFIED);
+         return response.hasHeader(Headers.LAST_MODIFIED);
       }
 
       @Override
       public HttpRequest.HttpRequestChange ifModifiedSinceLastModified() {
-         return new SingleHeaderValue(Header.IF_MODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
+         return new SingleHeaderValueSet(Headers.IF_MODIFIED_SINCE, response.getHeader(Headers.LAST_MODIFIED));
       }
 
       @Override
       public HttpRequest.HttpRequestChange ifUnmodifiedSinceLastModified() {
-         return new SingleHeaderValue(Header.IF_UNMODIFIED_SINCE, response.getHeader(Header.LAST_MODIFIED));
+         return new SingleHeaderValueSet(Headers.IF_UNMODIFIED_SINCE, response.getHeader(Headers.LAST_MODIFIED));
       }
 
       @Override
       public boolean hasLocation() {
-         return response.hasHeader(Header.LOCATION);
+         return response.hasHeader(Headers.LOCATION);
       }
 
       @Override
       public ResourceReference followLocation() {
-         return follow(URI.create(response.getHeader(Header.LOCATION)));
+         return follow(URI.create(response.getHeader(Headers.LOCATION)));
       }
 
       @Override
       public boolean hasAllow() {
-         return response.hasHeader(Header.ALLOW);
+         return response.hasHeader(Headers.ALLOW);
       }
 
       @Override
@@ -189,7 +190,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       }
 
       private boolean isMethodAllowed(String method) {
-         return response.getHeader(Header.ALLOW).contains(method);
+         return response.getHeader(Headers.ALLOW).contains(method);
       }
 
       @Override

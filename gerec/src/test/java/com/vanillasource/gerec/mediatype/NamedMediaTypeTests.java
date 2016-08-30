@@ -26,7 +26,8 @@ import java.net.URI;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.Header;
+import com.vanillasource.gerec.http.Headers;
+import static java.util.Arrays.asList;
 
 @Test
 public class NamedMediaTypeTests {
@@ -38,17 +39,17 @@ public class NamedMediaTypeTests {
 
       type.applyAsOption(request);
 
-      verify(request).setHeader(Header.ACCEPT, "text/html;q=1");
+      verify(request).setHeader(Headers.ACCEPT, asList("text/html;q=1"));
    }
 
    public void testAppendsAcceptTypeIfAlreadyPresent() {
       TestType type = new TestType("text/html");
-      when(request.hasHeader(Header.ACCEPT)).thenReturn(true);
-      when(request.getHeader(Header.ACCEPT)).thenReturn("image/png");
+      when(request.hasHeader(Headers.ACCEPT)).thenReturn(true);
+      when(request.getHeader(Headers.ACCEPT)).thenReturn(asList("image/png"));
 
       type.applyAsOption(request);
 
-      verify(request).setHeader(Header.ACCEPT, "image/png, text/html;q=1");
+      verify(request).setHeader(Headers.ACCEPT, asList("image/png", "text/html;q=1"));
    }
 
    @Test(expectedExceptions = IllegalArgumentException.class)
@@ -66,7 +67,7 @@ public class NamedMediaTypeTests {
 
       type.applyAsOption(request);
 
-      verify(request).setHeader(Header.ACCEPT, "text/html;q=0.502");
+      verify(request).setHeader(Headers.ACCEPT, asList("text/html;q=0.502"));
    }
 
    public void testDoesNotHandleResponsesWithNoContentType() {
@@ -77,16 +78,16 @@ public class NamedMediaTypeTests {
 
    public void testDoesNotHandleResponsesWithOtherContentType() {
       TestType type = new TestType("text/html");
-      when(response.hasHeader(Header.CONTENT_TYPE)).thenReturn(true);
-      when(response.getHeader(Header.CONTENT_TYPE)).thenReturn("image/png");
+      when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
+      when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn("image/png");
 
       assertFalse(type.isHandling(response));
    }
 
    public void testDoesHandleResponsesWithSameContentType() {
       TestType type = new TestType("text/html");
-      when(response.hasHeader(Header.CONTENT_TYPE)).thenReturn(true);
-      when(response.getHeader(Header.CONTENT_TYPE)).thenReturn("text/html");
+      when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
+      when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn("text/html");
 
       assertTrue(type.isHandling(response));
    }
@@ -96,7 +97,7 @@ public class NamedMediaTypeTests {
 
       type.applyAsContent(request);
 
-      verify(request).setHeader(Header.CONTENT_TYPE, "text/html");
+      verify(request).setHeader(Headers.CONTENT_TYPE, "text/html");
    }
 
    @BeforeMethod

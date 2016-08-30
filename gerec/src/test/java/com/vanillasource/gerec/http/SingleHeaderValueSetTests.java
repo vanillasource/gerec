@@ -20,26 +20,33 @@ package com.vanillasource.gerec.http;
 
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.Header;
+import org.testng.annotations.*;
+import static org.testng.Assert.*;
+import static org.mockito.Mockito.*;
 
-/**
- * Set the specified value to the given header, and separate with comma if there was
- * already a value assigned.
- */
-public class CommaSeparatedHeaderValue implements HttpRequest.HttpRequestChange {
-   private final Header header;
-   private final String value;
+@Test
+public class SingleHeaderValueSetTests {
+   private HttpRequest request;
 
-   public CommaSeparatedHeaderValue(Header header, String value) {
-      this.header = header;
-      this.value = value;
+   public void testHeaderValueIsSetIfNotPresent() {
+      SingleHeaderValueSet value = new SingleHeaderValueSet(Headers.ETAG, "123");
+
+      value.applyTo(request);
+
+      verify(request).setHeader(Headers.ETAG, "123");
    }
 
-   @Override
-   public void applyTo(HttpRequest request) {
-      String aggregatedValue = value;
-      if (request.hasHeader(header)) {
-         aggregatedValue = request.getHeader(header)+", "+aggregatedValue;
-      }
-      request.setHeader(header, aggregatedValue);
+   @Test(expectedExceptions = IllegalStateException.class)
+   public void testThrowsExceptionIfAlreadyExists() {
+      SingleHeaderValueSet value = new SingleHeaderValueSet(Headers.ETAG, "123");
+      when(request.hasHeader(Headers.ETAG)).thenReturn(true);
+
+      value.applyTo(request);
+   }
+
+   @BeforeMethod
+   protected void setUp() {
+      request = mock(HttpRequest.class);
    }
 }
+

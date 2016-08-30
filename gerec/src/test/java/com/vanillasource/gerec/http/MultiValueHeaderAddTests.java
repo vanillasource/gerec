@@ -19,29 +19,31 @@
 package com.vanillasource.gerec.http;
 
 import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.gerec.Header;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
+import static java.util.Arrays.asList;
 
 @Test
-public class SingleHeaderValueTests {
+public class MultiValueHeaderAddTests {
    private HttpRequest request;
 
    public void testHeaderValueIsSetIfNotPresent() {
-      SingleHeaderValue value = new SingleHeaderValue(Header.ETAG, "123");
+      MultiValueHeaderAdd value = new MultiValueHeaderAdd(Headers.ACCEPT, "123");
 
       value.applyTo(request);
 
-      verify(request).setHeader(Header.ETAG, "123");
+      verify(request).setHeader(Headers.ACCEPT, asList("123"));
    }
 
-   @Test(expectedExceptions = IllegalStateException.class)
-   public void testThrowsExceptionIfAlreadyExists() {
-      SingleHeaderValue value = new SingleHeaderValue(Header.ETAG, "123");
-      when(request.hasHeader(Header.ETAG)).thenReturn(true);
+   public void testHeaderValueWillBeCommaSeparatedIfAlreadyPresent() {
+      MultiValueHeaderAdd value = new MultiValueHeaderAdd(Headers.ACCEPT, "123");
+      when(request.hasHeader(Headers.ACCEPT)).thenReturn(true);
+      when(request.getHeader(Headers.ACCEPT)).thenReturn(asList("abc"));
 
       value.applyTo(request);
+
+      verify(request).setHeader(Headers.ACCEPT, asList("abc", "123"));
    }
 
    @BeforeMethod

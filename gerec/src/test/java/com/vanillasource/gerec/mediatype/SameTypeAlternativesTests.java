@@ -57,7 +57,7 @@ public class SameTypeAlternativesTests {
       assertTrue(types.isHandling(response));
    }
 
-   @Test(expectedExceptions = GerecException.class)
+   @Test(expectedExceptions = IllegalStateException.class)
    public void testIfTypeNotHandlingResponseDeserializationThrowsException() {
       SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
 

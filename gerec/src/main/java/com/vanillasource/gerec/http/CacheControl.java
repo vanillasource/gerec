@@ -34,7 +34,7 @@ public class CacheControl {
     * of more than the given amount.
     */
    public static HttpRequest.HttpRequestChange maxAge(int seconds) {
-      return new CommaSeparatedHeaderValue(Header.CACHE_CONTROL, "max-age="+seconds);
+      return new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "max-age="+seconds);
    }
 
    /**
@@ -42,7 +42,7 @@ public class CacheControl {
     * but only the given seconds at most.
     */
    public static HttpRequest.HttpRequestChange maxStale(int seconds) {
-      return new CommaSeparatedHeaderValue(Header.CACHE_CONTROL, "max-stale="+seconds);
+      return new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "max-stale="+seconds);
    }
 
    /**
@@ -50,7 +50,7 @@ public class CacheControl {
     * fresh for the given amount of seconds.
     */
    public static HttpRequest.HttpRequestChange minFresh(int seconds) {
-      return new CommaSeparatedHeaderValue(Header.CACHE_CONTROL, "min-fresh="+seconds);
+      return new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "min-fresh="+seconds);
    }
 
    /**
@@ -59,7 +59,7 @@ public class CacheControl {
     * the server.
     */
    public static HttpRequest.HttpRequestChange noCache() {
-      return new CommaSeparatedHeaderValue(Header.CACHE_CONTROL, "no-cache");
+      return new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "no-cache");
    }
 
    /**
@@ -67,11 +67,11 @@ public class CacheControl {
     * response is already cached.
     */
    public static HttpRequest.HttpRequestChange noStore() {
-      return new CommaSeparatedHeaderValue(Header.CACHE_CONTROL, "no-store");
+      return new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "no-store");
    }
 
    public static HttpRequest.HttpRequestChange noTransform() {
-      return new CommaSeparatedHeaderValue(Header.CACHE_CONTROL, "no-transform");
+      return new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "no-transform");
    }
 
    /**
@@ -79,7 +79,7 @@ public class CacheControl {
     * if there is no cached response.
     */
    public static HttpRequest.HttpRequestChange onlyIfCached() {
-      return new CommaSeparatedHeaderValue(Header.CACHE_CONTROL, "only-if-cached");
+      return new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "only-if-cached");
    }
 }
 

@@ -26,9 +26,9 @@ import java.io.Serializable;
 public interface HttpResponse extends Serializable {
    HttpStatusCode getStatusCode();
 
-   boolean hasHeader(Header header);
+   boolean hasHeader(Header<?> header);
 
-   String getHeader(Header header);
+   <T> T getHeader(Header<T> header);
 
    <T> T processContent(Function<InputStream, T> contentProcessor);
 

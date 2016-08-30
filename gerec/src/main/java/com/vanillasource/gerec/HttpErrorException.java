@@ -16,29 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.http;
-
-import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.gerec.Header;
+package com.vanillasource.gerec;
 
 /**
- * Set a header value on the request. If the header is already present, this change will
- * fail with an exception.
+ * Indicates that a HTTP request was made, but server reported an error (4xx or 5xx codes).
  */
-public class SingleHeaderValue implements HttpRequest.HttpRequestChange {
-   private final Header header;
-   private final String value;
+public class HttpErrorException extends RuntimeException {
+   private final HttpResponse response; 
 
-   public SingleHeaderValue(Header header, String value) {
-      this.header = header;
-      this.value = value;
+   public HttpErrorException(String msg, HttpResponse response) {
+      super(msg);
+      this.response = response;
    }
 
-   @Override
-   public void applyTo(HttpRequest request) {
-      if (request.hasHeader(header)) {
-         throw new IllegalStateException("request already had header: "+header+", with value: "+request.getHeader(header)+", tried to set single value: "+value);
-      }
-      request.setHeader(header, value);
+   public HttpResponse getResponse() {
+      return response;
    }
 }
+

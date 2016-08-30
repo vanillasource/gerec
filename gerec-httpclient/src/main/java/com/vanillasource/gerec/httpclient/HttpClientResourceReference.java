@@ -18,7 +18,6 @@
 
 package com.vanillasource.gerec.httpclient;
 
-import com.vanillasource.gerec.GerecException;
 import com.vanillasource.gerec.*;
 import com.vanillasource.gerec.reference.MediaTypeAwareResourceReference;
 import org.apache.http.client.HttpClient;
@@ -28,10 +27,13 @@ import org.apache.http.entity.InputStreamEntity;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.List;
+import java.util.ArrayList;
 import java.net.URI;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
 public final class HttpClientResourceReference extends MediaTypeAwareResourceReference {
    private final Supplier<HttpClient> httpClientSupplier;
@@ -85,18 +87,26 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    private HttpResponse execute(HttpEntityEnclosingRequestBase request, HttpRequest.HttpRequestChange change) {
       change.applyTo(new HttpRequest() {
          @Override
-         public boolean hasHeader(Header header) {
-            return request.containsHeader(header.value());
+         public boolean hasHeader(Header<?> header) {
+            return request.containsHeader(header.getName());
          }
 
          @Override
-         public String getHeader(Header header) {
-            return request.getFirstHeader(header.value()).getValue();
+         public <T> T getHeader(Header<T> header) {
+            org.apache.http.Header[] httpHeaders = request.getHeaders(header.getName());
+            List<String> headerValues = new ArrayList<>(httpHeaders.length);
+            for (org.apache.http.Header httpHeader: httpHeaders) {
+               headerValues.add(httpHeader.getValue());
+            }
+            return header.deserialize(headerValues);
          }
 
          @Override
-         public void setHeader(Header header, String value) {
-            request.setHeader(header.value(), value);
+         public <T> void setHeader(Header<T> header, T value) {
+            request.removeHeaders(header.getName());
+            for (String headerValue: header.serialize(value)) {
+               request.addHeader(header.getName(), headerValue);
+            }
          }
 
          @Override
@@ -115,18 +125,26 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    private HttpResponse execute(HttpRequestBase request, HttpRequest.HttpRequestChange change) {
       change.applyTo(new HttpRequest() {
          @Override
-         public boolean hasHeader(Header header) {
-            return request.containsHeader(header.value());
+         public boolean hasHeader(Header<?> header) {
+            return request.containsHeader(header.getName());
          }
 
          @Override
-         public String getHeader(Header header) {
-            return request.getFirstHeader(header.value()).getValue();
+         public <T> T getHeader(Header<T> header) {
+            org.apache.http.Header[] httpHeaders = request.getHeaders(header.getName());
+            List<String> headerValues = new ArrayList<>(httpHeaders.length);
+            for (org.apache.http.Header httpHeader: httpHeaders) {
+               headerValues.add(httpHeader.getValue());
+            }
+            return header.deserialize(headerValues);
          }
 
          @Override
-         public void setHeader(Header header, String value) {
-            request.setHeader(header.value(), value);
+         public <T> void setHeader(Header<T> header, T value) {
+            request.removeHeaders(header.getName());
+            for (String headerValue: header.serialize(value)) {
+               request.addHeader(header.getName(), headerValue);
+            }
          }
 
          @Override
@@ -152,13 +170,18 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
             }
 
             @Override
-            public boolean hasHeader(Header header) {
-               return httpResponse.containsHeader(header.value());
+            public boolean hasHeader(Header<?> header) {
+               return httpResponse.containsHeader(header.getName());
             }
 
             @Override
-            public String getHeader(Header header) {
-               return httpResponse.getFirstHeader(header.value()).getValue();
+            public <T> T getHeader(Header<T> header) {
+               org.apache.http.Header[] httpHeaders = httpResponse.getHeaders(header.getName());
+               List<String> headerValues = new ArrayList<>(httpHeaders.length);
+               for (org.apache.http.Header httpHeader: httpHeaders) {
+                  headerValues.add(httpHeader.getValue());
+               }
+               return header.deserialize(headerValues);
             }
 
             @Override
@@ -168,16 +191,16 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
                      return contentProcessor.apply(input);
                   }
                } catch (IOException e) {
-                  throw new GerecException("exception while reading http response", e);
+                  throw new UncheckedIOException("exception while reading http response", e);
                }
             }
          };
          if (response.getStatusCode().isError()) {
-            throw new HttpGerecException("received status code: "+response.getStatusCode(), response);
+            throw new HttpErrorException("received status code: "+response.getStatusCode(), response);
          }
          return response;
       } catch (IOException e) {
-         throw new GerecException("error while making http call", e);
+         throw new UncheckedIOException("error while making http call", e);
       }
    }
 

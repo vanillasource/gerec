@@ -73,12 +73,12 @@ public class LineBasedCollectionType<T> extends NamedAcceptType<Processor<T>> {
                            }
 
                            @Override
-                           public boolean hasHeader(Header header) {
+                           public boolean hasHeader(Header<?> header) {
                               return response.hasHeader(header);
                            }
 
                            @Override
-                           public String getHeader(Header header) {
+                           public <T> T getHeader(Header<T> header) {
                               return response.getHeader(header);
                            }
 

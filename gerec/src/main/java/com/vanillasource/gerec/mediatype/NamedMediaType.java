@@ -21,9 +21,8 @@ package com.vanillasource.gerec.mediatype;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.http.SingleHeaderValue;
-import com.vanillasource.gerec.http.CommaSeparatedHeaderValue;
-import com.vanillasource.gerec.Header;
+import com.vanillasource.gerec.http.SingleHeaderValueSet;
+import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.MediaType;
 import java.util.function.Function;
 import java.net.URI;
@@ -45,7 +44,7 @@ public abstract class NamedMediaType<T> extends NamedAcceptType<T> implements Me
 
    @Override
    public void applyAsContent(HttpRequest request) {
-      new SingleHeaderValue(Header.CONTENT_TYPE, getMediaTypeName()).applyTo(request);
+      new SingleHeaderValueSet(Headers.CONTENT_TYPE, getMediaTypeName()).applyTo(request);
    }
 }
 
