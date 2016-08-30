@@ -23,6 +23,7 @@ import com.vanillasource.gerec.reference.MediaTypeAwareResourceReference;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpMessage;
 import org.apache.http.entity.InputStreamEntity;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
@@ -85,30 +86,7 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    }
 
    private HttpResponse execute(HttpEntityEnclosingRequestBase request, HttpRequest.HttpRequestChange change) {
-      change.applyTo(new HttpRequest() {
-         @Override
-         public boolean hasHeader(Header<?> header) {
-            return request.containsHeader(header.getName());
-         }
-
-         @Override
-         public <T> T getHeader(Header<T> header) {
-            org.apache.http.Header[] httpHeaders = request.getHeaders(header.getName());
-            List<String> headerValues = new ArrayList<>(httpHeaders.length);
-            for (org.apache.http.Header httpHeader: httpHeaders) {
-               headerValues.add(httpHeader.getValue());
-            }
-            return header.deserialize(headerValues);
-         }
-
-         @Override
-         public <T> void setHeader(Header<T> header, T value) {
-            request.removeHeaders(header.getName());
-            for (String headerValue: header.serialize(value)) {
-               request.addHeader(header.getName(), headerValue);
-            }
-         }
-
+      change.applyTo(new HeaderAwareHttpRequest(request) {
          @Override
          public void setContent(Supplier<InputStream> contentSupplier, long length) {
             request.setEntity(new SuppliedInputStreamHttpEntity(contentSupplier, length));
@@ -123,30 +101,7 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    }
 
    private HttpResponse execute(HttpRequestBase request, HttpRequest.HttpRequestChange change) {
-      change.applyTo(new HttpRequest() {
-         @Override
-         public boolean hasHeader(Header<?> header) {
-            return request.containsHeader(header.getName());
-         }
-
-         @Override
-         public <T> T getHeader(Header<T> header) {
-            org.apache.http.Header[] httpHeaders = request.getHeaders(header.getName());
-            List<String> headerValues = new ArrayList<>(httpHeaders.length);
-            for (org.apache.http.Header httpHeader: httpHeaders) {
-               headerValues.add(httpHeader.getValue());
-            }
-            return header.deserialize(headerValues);
-         }
-
-         @Override
-         public <T> void setHeader(Header<T> header, T value) {
-            request.removeHeaders(header.getName());
-            for (String headerValue: header.serialize(value)) {
-               request.addHeader(header.getName(), headerValue);
-            }
-         }
-
+      change.applyTo(new HeaderAwareHttpRequest(request) {
          @Override
          public void setContent(Supplier<InputStream> contentSupplier, long length) {
             throw new UnsupportedOperationException("can not modify outpustream for this operation");
@@ -163,25 +118,10 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    private HttpResponse execute(HttpRequestBase request) {
       try {
          org.apache.http.HttpResponse httpResponse = httpClientSupplier.get().execute(request);
-         HttpResponse response = new HttpResponse() {
+         HttpResponse response = new HeaderAwareHttpResponse(httpResponse) {
             @Override
             public HttpStatusCode getStatusCode() {
                return HttpStatusCode.valueOf(httpResponse.getStatusLine().getStatusCode());
-            }
-
-            @Override
-            public boolean hasHeader(Header<?> header) {
-               return httpResponse.containsHeader(header.getName());
-            }
-
-            @Override
-            public <T> T getHeader(Header<T> header) {
-               org.apache.http.Header[] httpHeaders = httpResponse.getHeaders(header.getName());
-               List<String> headerValues = new ArrayList<>(httpHeaders.length);
-               for (org.apache.http.Header httpHeader: httpHeaders) {
-                  headerValues.add(httpHeader.getValue());
-               }
-               return header.deserialize(headerValues);
             }
 
             @Override
@@ -201,6 +141,46 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
          return response;
       } catch (IOException e) {
          throw new UncheckedIOException("error while making http call", e);
+      }
+   }
+
+   private static class HeaderAwareMessage {
+      private HttpMessage message;
+
+      public HeaderAwareMessage(HttpMessage message) {
+         this.message = message;
+      }
+
+      public boolean hasHeader(Header<?> header) {
+         return message.containsHeader(header.getName());
+      }
+
+      public <T> T getHeader(Header<T> header) {
+         org.apache.http.Header[] httpHeaders = message.getHeaders(header.getName());
+         List<String> headerValues = new ArrayList<>(httpHeaders.length);
+         for (org.apache.http.Header httpHeader: httpHeaders) {
+            headerValues.add(httpHeader.getValue());
+         }
+         return header.deserialize(headerValues);
+      }
+
+      public <T> void setHeader(Header<T> header, T value) {
+         message.removeHeaders(header.getName());
+         for (String headerValue: header.serialize(value)) {
+            message.addHeader(header.getName(), headerValue);
+         }
+      }
+   }
+
+   private static abstract class HeaderAwareHttpRequest extends HeaderAwareMessage implements HttpRequest {
+      private HeaderAwareHttpRequest(HttpMessage message) {
+         super(message);
+      }
+   }
+
+   private static abstract class HeaderAwareHttpResponse extends HeaderAwareMessage implements HttpResponse {
+      private HeaderAwareHttpResponse(HttpMessage message) {
+         super(message);
       }
    }
 
