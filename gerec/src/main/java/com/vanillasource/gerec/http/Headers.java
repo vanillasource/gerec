@@ -54,7 +54,7 @@ public class Headers {
          @Override
          public String deserialize(List<String> headerValues) {
             if (headerValues.size() != 1) {
-               throw new IllegalStateException("header values were: "+headerValues+", but expecting a single one for header: "+name);
+               throw new IllegalArgumentException("header values were: "+headerValues+", but expecting a single one for header: "+name);
             }
             return headerValues.get(0);
          }
