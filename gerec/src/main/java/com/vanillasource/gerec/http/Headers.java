@@ -31,7 +31,7 @@ public class Headers {
    public static final Header<List<String>> CACHE_CONTROL = csvStringHeader("Cache-Control");
    public static final Header<String> ETAG = singleStringHeader("ETag");
    public static final Header<String> DATE = singleStringHeader("Date");
-   public static final Header<String> ALLOW = singleStringHeader("Allow");
+   public static final Header<List<String>> ALLOW = csvStringHeader("Allow");
    public static final Header<String> CONTENT_TYPE = singleStringHeader("Content-Type");
    public static final Header<List<String>> ACCEPT = csvStringHeader("Accept");
    public static final Header<String> IF_MATCH = singleStringHeader("If-Match");

@@ -30,6 +30,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static java.util.Arrays.asList;
 
 @Test
 public class HttpClientResourceReferenceTests {
@@ -112,7 +113,7 @@ public class HttpClientResourceReferenceTests {
 
       HttpResponse response = reference.doOptions(change);
 
-      assertEquals(response.getHeader(Headers.ALLOW), "GET, POST");
+      assertEquals(response.getHeader(Headers.ALLOW), asList("GET", "POST"));
    }
 
    @BeforeMethod
