@@ -23,69 +23,69 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import java.util.Map;
 import java.util.HashMap;
+import static com.vanillasource.gerec.http.ValueWithParameter.FORMAT;
 
 @Test
 public class ValueWithParameterFormatTests {
-   private ValueWithParameterFormat format = new ValueWithParameterFormat();
 
-   public void testParsesValueWithoutParameters() {
-      ValueWithParameter value = format.deserialize("text/plain");
+   public void testMatchesValueWithoutParameters() {
+      ValueWithParameter value = FORMAT.deserialize("text/plain");
 
-      assertEquals(value.getValue(), "text/plain");
+      assertTrue(value.matchesValue("text/plain"));
    }
 
-   public void testParsesValueWithoutSpaces() {
-      ValueWithParameter value = format.deserialize(" text/plain ");
+   public void testMatchesValueWithoutSpaces() {
+      ValueWithParameter value = FORMAT.deserialize(" text/plain ");
 
-      assertEquals(value.getValue(), "text/plain");
+      assertTrue(value.matchesValue("text/plain"));
    }
 
-   public void testMakesValueLowerCase() {
-      ValueWithParameter value = format.deserialize("text/PLAIN");
+   public void testMatchesValueCaseInsensitively() {
+      ValueWithParameter value = FORMAT.deserialize("text/PLAIN");
 
-      assertEquals(value.getValue(), "text/plain");
+      assertTrue(value.matchesValue("text/plain"));
    }
 
-   public void testRemovesQuotesFromValue() {
-      ValueWithParameter value = format.deserialize("\"text/PLAIN\"");
+   public void testMatchesValueWithoutQuotes() {
+      ValueWithParameter value = FORMAT.deserialize("\"text/PLAIN\"");
 
-      assertEquals(value.getValue(), "text/plain");
+      assertTrue(value.matchesValue("text/plain"));
    }
 
-   public void testParsesParameterKeyWithoutValue() {
-      ValueWithParameter value = format.deserialize("text/plain;notreally");
+   public void testHasParameterKeyWithoutValue() {
+      ValueWithParameter value = FORMAT.deserialize("text/plain;notreally");
 
       assertTrue(value.hasParameter("notreally"));
    }
 
    public void testParsesParameterKeyRemovesSpaces() {
-      ValueWithParameter value = format.deserialize("text/plain; notreally ");
+      ValueWithParameter value = FORMAT.deserialize("text/plain; notreally ");
 
       assertTrue(value.hasParameter("notreally"));
    }
 
    public void testMakesParameterKeysLowerCase() {
-      ValueWithParameter value = format.deserialize("text/plain;NOTREALLY");
+      ValueWithParameter value = FORMAT.deserialize("text/plain;NOTREALLY");
 
       assertTrue(value.hasParameter("notreally"));
    }
 
    public void testParsesValuesToParameters() {
-      ValueWithParameter value = format.deserialize("text/plain; q=1.0");
+      ValueWithParameter value = FORMAT.deserialize("text/plain; q=1.0");
 
-      assertEquals(value.getParameterValue("q"), "1.0");
+      assertEquals(value.getParameterValue("q", null), "1.0");
    }
 
    public void testParsesValuesToParametersRemovesQuotes() {
-      ValueWithParameter value = format.deserialize("text/plain; q=\"1.0\"");
+      ValueWithParameter value = FORMAT.deserialize("text/plain; q=\"1.0\"");
 
-      assertEquals(value.getParameterValue("q"), "1.0");
+      assertEquals(value.getParameterValue("q", null), "1.0");
    }
 
    public void testParsedParameterValueHasCase() {
-      ValueWithParameter value = format.deserialize("text/plain; q=AbC");
+      ValueWithParameter value = FORMAT.deserialize("text/plain; q=AbC");
 
-      assertEquals(value.getParameterValue("q"), "AbC");
+      assertEquals(value.getParameterValue("q", null), "AbC");
    }
 
    public void testSerializesValuesAndParameters() {
@@ -94,7 +94,7 @@ public class ValueWithParameterFormatTests {
       parameters.put("test", "TEST");
       ValueWithParameter value = new ValueWithParameter("Value", parameters);
 
-      String headerValue = format.serialize(value);
+      String headerValue = FORMAT.serialize(value);
 
       assertEquals(headerValue, "Value; q=1.0; test=TEST");
    }
@@ -104,7 +104,7 @@ public class ValueWithParameterFormatTests {
       parameters.put("test", null);
       ValueWithParameter value = new ValueWithParameter("Value", parameters);
 
-      String headerValue = format.serialize(value);
+      String headerValue = FORMAT.serialize(value);
 
       assertEquals(headerValue, "Value; test");
    }

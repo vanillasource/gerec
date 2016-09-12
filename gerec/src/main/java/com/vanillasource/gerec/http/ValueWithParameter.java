@@ -35,20 +35,73 @@ public class ValueWithParameter {
       this.parameters = parameters;
    }
 
-   public String getValue() {
-      return value;
-   }
-
-   public Map<String, String> getParameters() {
-      return parameters;
+   public boolean matchesValue(String value) {
+      return this.value.equalsIgnoreCase(value);
    }
 
    public boolean hasParameter(String parameterName) {
-      return parameters.containsKey(parameterName);
+      return parameters.containsKey(parameterName.toLowerCase());
    }
 
-   public String getParameterValue(String parameterName) {
-      return parameters.get(parameterName);
+   public String getParameterValue(String parameterName, String defaultValue) {
+      String parameterValue = parameters.get(parameterName.toLowerCase());
+      if (parameterValue == null) {
+         return defaultValue;
+      }
+      return parameterValue;
    }
+
+   /**
+    * The standard header values with parameters are case-insensitive, in both the value
+    * and the parameter keys. In addition both the value and the parameter values may be 
+    * in quotes. The deserialized object has the value and parameter keys in lower case,
+    * parameter values are left as-is.
+    * Serialization does not produce quotes at the moment, so values which would require
+    * quotes will not work.
+    */
+   public static final Headers.ValueFormat<ValueWithParameter> FORMAT = new Headers.ValueFormat<ValueWithParameter>() {
+      @Override
+      public ValueWithParameter deserialize(String headerValue) {
+         String[] split = headerValue.split(";");
+         String value = null;
+         Map<String, String> parameters = new HashMap<>();
+         for (int i=0; i<split.length; i++) {
+            if (i == 0) {
+               value = removeQuotes(split[i].trim().toLowerCase());
+            } else {
+               String[] keyValue = split[i].trim().split("=");
+               if (keyValue.length == 1) {
+                  parameters.put(keyValue[0].toLowerCase(), null);
+               } else {
+                  parameters.put(keyValue[0].toLowerCase(), removeQuotes(keyValue[1]));
+               }
+            }
+         }
+         return new ValueWithParameter(value, parameters);
+      }
+
+      private String removeQuotes(String value) {
+         if (value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length()-1);
+         } else {
+            return value;
+         }
+      }
+
+      @Override
+      public String serialize(ValueWithParameter object) {
+         StringBuilder builder = new StringBuilder();
+         builder.append(object.value);
+         for (Map.Entry<String, String> entry: object.parameters.entrySet()) {
+            builder.append("; ");
+            builder.append(entry.getKey());
+            if (entry.getValue() != null) {
+               builder.append("=");
+               builder.append(entry.getValue());
+            }
+         }
+         return builder.toString();
+      }
+   };
 }
 
