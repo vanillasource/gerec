@@ -22,6 +22,7 @@ import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.http.Headers;
 import java.util.function.Function;
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
@@ -51,7 +52,11 @@ public final class MediaTypes {
                while ((length = inputStream.read(buffer)) >= 0) {
                       result.write(buffer, 0, length);
                }
-               return result.toString("UTF-8"); // TODO: get encoding from http response?
+               String encoding = "UTF-8";
+               if (response.hasHeader(Headers.CONTENT_TYPE)) {
+                  encoding = response.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", "UTF-8");
+               }
+               return result.toString(encoding);
             } catch (IOException e) {
                throw new UncheckedIOException(e);
             }
