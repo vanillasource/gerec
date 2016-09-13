@@ -26,6 +26,9 @@ import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.Response;
 import static com.vanillasource.gerec.http.CacheControl.*;
 import com.vanillasource.gerec.mediatype.MediaTypes;
+import com.vanillasource.gerec.mediatype.SameTypeAlternatives;
+import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
+import static java.util.Arrays.asList;
 
 @Test
 public class ConceptTests extends HttpTestsBase {
@@ -42,7 +45,7 @@ public class ConceptTests extends HttpTestsBase {
 
       Person person = reference().get(Person.TYPE).getContent();
 
-      verify(getRequestedFor(urlEqualTo("/")).withHeader("Accept", equalTo("application/vnd.test.person;q=1")));
+      verify(getRequestedFor(urlEqualTo("/")).withHeader("Accept", equalTo("application/vnd.test.person; q=1")));
    }
 
    public void testUsingMatchUsesETag() {
@@ -109,6 +112,25 @@ public class ConceptTests extends HttpTestsBase {
       Response response = reference().options();
 
       assertTrue(response.isGetAllowed());
+   }
+
+   @Test(expectedExceptions = IllegalStateException.class)
+   public void testExceptionIfAlternativeIsNotFound() {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withHeader("Content-type", "text/html; charset=UTF-8").withBody("OK")));
+
+      reference().get(
+            new SameTypeAlternatives<>(asList(
+               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
+               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2"))));
+   }
+
+   public void testAlternativeContentTypeIsSelected() {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withHeader("Content-type", "application/vnd.test.person-v1; charset=UTF-8").withBody("{\"name\":\"John\", \"age\": 35}")));
+
+      Person person = reference().get(
+            new SameTypeAlternatives<>(asList(
+               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
+               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2")))).getContent();
    }
 }
 

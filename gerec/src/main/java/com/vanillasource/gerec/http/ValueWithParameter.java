@@ -26,9 +26,23 @@ import java.util.HashMap;
  * one or more parameters associated. The parameters themselves
  * are composed of key-value pairs, some without explicit value.
  */
-public class ValueWithParameter {
+public final class ValueWithParameter {
    private String value;
    private Map<String, String> parameters;
+
+   public ValueWithParameter(String value) {
+      this(value, new HashMap<>());
+   }
+
+   public ValueWithParameter(String value, String parameterKey, String parameterValue) {
+      this(value, parameters(parameterKey, parameterValue));
+   }
+
+   private static Map<String, String> parameters(String key, String value) {
+      Map<String, String> parameters = new HashMap<>();
+      parameters.put(key, value);
+      return parameters;
+   }
 
    public ValueWithParameter(String value, Map<String, String> parameters) {
       this.value = value;
@@ -49,6 +63,25 @@ public class ValueWithParameter {
          return defaultValue;
       }
       return parameterValue;
+   }
+
+   @Override
+   public String toString() {
+      return FORMAT.serialize(this);
+   }
+
+   @Override
+   public int hashCode() {
+      return 11*value.hashCode() + 13*parameters.hashCode();
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      if ((o == null) || (!(o instanceof ValueWithParameter))) {
+         return false;
+      }
+      ValueWithParameter other = (ValueWithParameter) o;
+      return other.value.equals(value) && other.parameters.equals(parameters);
    }
 
    /**

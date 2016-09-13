@@ -29,21 +29,21 @@ public class MultiValueHeaderAddTests {
    private HttpRequest request;
 
    public void testHeaderValueIsSetIfNotPresent() {
-      MultiValueHeaderAdd value = new MultiValueHeaderAdd(Headers.ACCEPT, "123");
+      MultiValueHeaderAdd value = new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "123");
 
       value.applyTo(request);
 
-      verify(request).setHeader(Headers.ACCEPT, asList("123"));
+      verify(request).setHeader(Headers.CACHE_CONTROL, asList("123"));
    }
 
    public void testHeaderValueWillBeCommaSeparatedIfAlreadyPresent() {
-      MultiValueHeaderAdd value = new MultiValueHeaderAdd(Headers.ACCEPT, "123");
-      when(request.hasHeader(Headers.ACCEPT)).thenReturn(true);
-      when(request.getHeader(Headers.ACCEPT)).thenReturn(asList("abc"));
+      MultiValueHeaderAdd value = new MultiValueHeaderAdd(Headers.CACHE_CONTROL, "123");
+      when(request.hasHeader(Headers.CACHE_CONTROL)).thenReturn(true);
+      when(request.getHeader(Headers.CACHE_CONTROL)).thenReturn(asList("abc"));
 
       value.applyTo(request);
 
-      verify(request).setHeader(Headers.ACCEPT, asList("abc", "123"));
+      verify(request).setHeader(Headers.CACHE_CONTROL, asList("abc", "123"));
    }
 
    @BeforeMethod

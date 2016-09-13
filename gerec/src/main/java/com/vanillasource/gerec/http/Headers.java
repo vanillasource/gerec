@@ -32,8 +32,8 @@ public class Headers {
    public static final Header<String> ETAG = singleStringHeader("ETag");
    public static final Header<String> DATE = singleStringHeader("Date");
    public static final Header<List<String>> ALLOW = csvStringHeader("Allow");
-   public static final Header<String> CONTENT_TYPE = singleStringHeader("Content-Type");
-   public static final Header<List<String>> ACCEPT = csvStringHeader("Accept");
+   public static final Header<ValueWithParameter> CONTENT_TYPE = singleValueHeader("Content-Type", ValueWithParameter.FORMAT);
+   public static final Header<List<ValueWithParameter>> ACCEPT = csvValueHeader("Accept", ValueWithParameter.FORMAT);
    public static final Header<String> IF_MATCH = singleStringHeader("If-Match");
    public static final Header<String> IF_NONE_MATCH = singleStringHeader("If-None-Match");
    public static final Header<String> IF_MODIFIED_SINCE = singleStringHeader("If-Modified-Since");

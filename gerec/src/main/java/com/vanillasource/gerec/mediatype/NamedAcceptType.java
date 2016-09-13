@@ -25,19 +25,20 @@ import com.vanillasource.gerec.http.MultiValueHeaderAdd;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.http.ValueWithParameter;
 import java.util.function.Function;
+import java.util.Map;
+import java.util.HashMap;
 import java.net.URI;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public abstract class NamedAcceptType<T> implements AcceptMediaType<T> {
    private final String mediaTypeName;
-   private final double qualityValue;
-   private final String headerValue;
+   private final String qualityValue;
 
    public NamedAcceptType(String mediaTypeName, double qualityValue) {
       this.mediaTypeName = mediaTypeName;
-      this.qualityValue = qualityValue;
       if (qualityValue <= 0 || qualityValue > 1) {
          throw new IllegalArgumentException("quality value most be between 0 (exclusive) and 1 (inclusive), but was: "+qualityValue+" for "+mediaTypeName);
       }
@@ -45,30 +46,30 @@ public abstract class NamedAcceptType<T> implements AcceptMediaType<T> {
       if (qualityDecimal.scale() > 3) {
          qualityDecimal = qualityDecimal.setScale(3, RoundingMode.UP);
       }
-      headerValue = mediaTypeName + ";q="+qualityDecimal.toString();
+      this.qualityValue = qualityDecimal.toString();
    }
 
    public NamedAcceptType(String mediaTypeName) {
       this(mediaTypeName, 1.0d);
    }
 
-   protected String getMediaTypeName() {
-      return mediaTypeName;
-   }
-
    @Override
    public void applyAsOption(HttpRequest request) {
-      new MultiValueHeaderAdd(Headers.ACCEPT, headerValue).applyTo(request);
+      new MultiValueHeaderAdd(Headers.ACCEPT, getTypeValue()).applyTo(request);
+   }
+
+   protected ValueWithParameter getTypeValue() {
+      return new ValueWithParameter(mediaTypeName, "q", qualityValue);
    }
 
    @Override
    public boolean isHandling(HttpResponse response) {
-      return response.hasHeader(Headers.CONTENT_TYPE) && response.getHeader(Headers.CONTENT_TYPE).equals(mediaTypeName);
+      return response.hasHeader(Headers.CONTENT_TYPE) && response.getHeader(Headers.CONTENT_TYPE).matchesValue(mediaTypeName);
    }
 
    @Override
    public String toString() {
-      return headerValue;
+      return getTypeValue().toString();
    }
 }
 

@@ -44,7 +44,7 @@ public abstract class NamedMediaType<T> extends NamedAcceptType<T> implements Me
 
    @Override
    public void applyAsContent(HttpRequest request) {
-      new SingleHeaderValueSet(Headers.CONTENT_TYPE, getMediaTypeName()).applyTo(request);
+      new SingleHeaderValueSet(Headers.CONTENT_TYPE, getTypeValue()).applyTo(request);
    }
 }
 
