@@ -22,6 +22,7 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.HttpRequest;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ import com.vanillasource.gerec.http.ValueWithParameter;
 @Test
 public class MediaTypesTests {
    private HttpResponse response;
+   private HttpRequest request;
 
    public void testAsciiStringIsDeserializedWithoutContentType() {
       responseContent("abc", "UTF-8");
@@ -62,6 +64,12 @@ public class MediaTypesTests {
       assertEquals(result, "éáü");
    }
 
+   public void testUtfCharsetIsSetInRequest() {
+      TEXT_PLAIN.applyAsContent(request);
+
+      verify(request).setHeader(Headers.CONTENT_TYPE, new ValueWithParameter("text/plain", "charset", "UTF-8"));
+   }
+
    @SuppressWarnings("unchecked")
    private void responseContent(String content, String encoding) {
       doAnswer(invocation -> {
@@ -75,5 +83,6 @@ public class MediaTypesTests {
    @SuppressWarnings("unchecked")
    protected void setUp() {
       response = mock(HttpResponse.class);
+      request = mock(HttpRequest.class);
    }
 }

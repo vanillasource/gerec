@@ -41,9 +41,10 @@ public final class MediaTypes {
 
    /**
     * The media-type "text/plain" which is mapped to type <code>String</code>. The charset when using with
-    * a request will always be UTF-8.
+    * a request will always be UTF-8. The charset from the response will be used to deserialize messages.
+    * Please note that the default charset for text/plain is US-ASCII if not explicitly defined otherwise.
     */
-   public static final MediaType<String> TEXT_PLAIN = new NamedMediaType<String>("text/plain") {
+   public static final MediaType<String> TEXT_PLAIN = new NamedMediaType<String>("text/plain", "charset", "UTF-8") {
       @Override
       public String deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
          return response.processContent(inputStream -> {
@@ -68,7 +69,7 @@ public final class MediaTypes {
       @Override
       public void serialize(String object, HttpRequest request) {
          try {
-            byte[] bytes = object.getBytes("UTF-8"); // TODO: set encoding to http request
+            byte[] bytes = object.getBytes("UTF-8");
             request.setContent(() -> new ByteArrayInputStream(bytes), bytes.length);
          } catch (IOException e) {
             throw new UncheckedIOException(e);

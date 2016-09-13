@@ -23,28 +23,47 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
+import com.vanillasource.gerec.http.ValueWithParameter;
 import com.vanillasource.gerec.MediaType;
 import java.util.function.Function;
 import java.net.URI;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * A media type that has a static name and quality value and applies that
  * to requests and responses.
  */
 public abstract class NamedMediaType<T> extends NamedAcceptType<T> implements MediaType<T> {
-   public NamedMediaType(String mediaTypeName, double qualityValue) {
+   private String mediaTypeName;
+   private Map<String, String> parameters;
+
+   public NamedMediaType(String mediaTypeName, double qualityValue, String parameterKey, String parameterValue) {
       super(mediaTypeName, qualityValue);
+      this.mediaTypeName = mediaTypeName;
+      this.parameters = new HashMap<>();
+      if (parameterKey != null) {
+         this.parameters.put(parameterKey, parameterValue);
+      }
+   }
+
+   public NamedMediaType(String mediaTypeName, double qualityValue) {
+      this(mediaTypeName, qualityValue, null, null);
    }
 
    public NamedMediaType(String mediaTypeName) {
-      super(mediaTypeName);
+      this(mediaTypeName, 1.0d, null, null);
+   }
+
+   public NamedMediaType(String mediaTypeName, String parameterKey, String parameterValue) {
+      this(mediaTypeName, 1.0d, parameterKey, parameterValue);
    }
 
    @Override
    public void applyAsContent(HttpRequest request) {
-      new SingleHeaderValueSet(Headers.CONTENT_TYPE, getTypeValue()).applyTo(request);
+      new SingleHeaderValueSet(Headers.CONTENT_TYPE, new ValueWithParameter(mediaTypeName, parameters)).applyTo(request);
    }
 }
 

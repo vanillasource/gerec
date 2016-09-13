@@ -58,7 +58,7 @@ public abstract class NamedAcceptType<T> implements AcceptMediaType<T> {
       new MultiValueHeaderAdd(Headers.ACCEPT, getTypeValue()).applyTo(request);
    }
 
-   protected ValueWithParameter getTypeValue() {
+   private ValueWithParameter getTypeValue() {
       return new ValueWithParameter(mediaTypeName, "q", qualityValue);
    }
 

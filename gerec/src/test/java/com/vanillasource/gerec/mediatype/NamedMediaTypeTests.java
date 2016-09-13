@@ -99,7 +99,7 @@ public class NamedMediaTypeTests {
 
       type.applyAsContent(request);
 
-      verify(request).setHeader(Headers.CONTENT_TYPE, new ValueWithParameter("text/html", "q", "1"));
+      verify(request).setHeader(Headers.CONTENT_TYPE, new ValueWithParameter("text/html"));
    }
 
    @BeforeMethod
