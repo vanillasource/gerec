@@ -25,7 +25,7 @@ These references are not instantiated by the user, as often is the case with oth
 frameworks, but they are created when following links. The only exception is the very
 first reference, created from a bookmark to some entry point into a web of resources.
 
-The reference contains the usualy method to manipulate the resource it points to:
+The reference contains the usual methods to manipulate the resource it points to:
 * `GET`
 * `POST`
 * `PUT`
