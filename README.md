@@ -55,7 +55,7 @@ Person person = reference.get(Person.TYPE).getContent();
 The given media type will be properly communicated to the server, using the normal HTTP
 content negotiation mechanisms.
 
-You can easily make conditional requests. The followin example gets a mutable _Person_ object, modifies it,
+You can easily make conditional requests. The following example gets a mutable _Person_ object, modifies it,
 then tries to update the server, but only if it did not change since it was requested. (Also
 known as optimistic locking):
 
