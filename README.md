@@ -1,4 +1,4 @@
-![Build Status](https://img.shields.io/travis/vanillasource/jaywire.svg)
+![Build Status](https://img.shields.io/travis/vanillasource/gerec.svg)
 ![Published Version](https://img.shields.io/maven-central/v/com.vanillasource.gerec/gerec-parent.svg)
 
 Gerec, the Generic REST HTTP Client
