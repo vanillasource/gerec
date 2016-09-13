@@ -151,6 +151,27 @@ public class ConceptTests extends HttpTestsBase {
          assertEquals(e.getResponse().getBody(MediaTypes.TEXT_PLAIN), "Nelson: Haha!");
       }
    }
+
+   public void testConnectionIsConsumedAfterCall() {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
+
+      reference().get(Person.TYPE).getContent();
+
+      assertEquals(0, connectionManager().getTotalStats().getLeased());
+   }
+
+   public void testConnectionIsConsumedAfterErrorEvenIfExceptionContentIsNotRequested() {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404).withBody("ERROR")));
+
+      try {
+         reference().get(Person.TYPE).getContent();
+         fail("should have thrown error");
+      } catch (HttpErrorException e) {
+         // Ok
+      }
+
+      assertEquals(0, connectionManager().getTotalStats().getLeased());
+   }
 }
 
 

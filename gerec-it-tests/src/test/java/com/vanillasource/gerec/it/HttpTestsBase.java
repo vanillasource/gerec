@@ -24,6 +24,8 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import java.net.URI;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -33,6 +35,7 @@ import com.vanillasource.gerec.httpclient.HttpClientResourceReference;
 
 public class HttpTestsBase {
    private HttpClientResourceReference reference;
+   private PoolingHttpClientConnectionManager connectionManager;
    private CloseableHttpClient httpClient;
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
 
@@ -40,9 +43,17 @@ public class HttpTestsBase {
       return reference;
    }
 
+   protected PoolingHttpClientConnectionManager connectionManager() {
+      return connectionManager;
+   }
+
    @BeforeMethod
    protected void setUp() {
-      httpClient = HttpClientBuilder.create().build();
+      connectionManager = new PoolingHttpClientConnectionManager();
+      httpClient = HttpClientBuilder
+         .create()
+         .setConnectionManager(connectionManager)
+         .build();
       reference = new HttpClientResourceReference(() -> httpClient, URI.create("http://localhost:8091/"));
       WireMock.reset();
    }

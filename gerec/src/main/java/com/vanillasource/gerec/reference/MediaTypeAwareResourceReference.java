@@ -34,6 +34,12 @@ import com.vanillasource.gerec.ContentMediaType;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
 import java.net.URI;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.UncheckedIOException;
+import java.util.function.Function;
+import java.io.InputStream;
 
 /**
  * Implement all media-type related functionality (serialization, deserialization) and request
@@ -55,7 +61,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
    private <T> ContentResponse<T> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
       if (response.getStatusCode().isError()) {
          throw new HttpErrorException("error in response, status code: "+response.getStatusCode(),
-               new HttpContentResponse<Void>(response, null));
+               new HttpErrorResponse(response));
       }
       T media = null;
       if (acceptType != null) {
@@ -104,28 +110,11 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
 
    protected abstract HttpResponse doDelete(HttpRequest.HttpRequestChange change);
 
-   private class HttpContentResponse<T> implements ContentResponse<T>, ErrorResponse {
-      private HttpResponse response;
-      private T media;
+   private class HttpBaseResponse<T> implements Response {
+      protected HttpResponse response;
 
-      public HttpContentResponse(HttpResponse response, T media) {
+      public HttpBaseResponse(HttpResponse response) {
          this.response = response;
-         this.media = media;
-      }
-
-      @Override
-      public boolean hasBody() {
-         return response.hasHeader(Headers.CONTENT_TYPE);
-      }
-
-      @Override
-      public boolean hasBody(AcceptMediaType<?> acceptType) {
-         return acceptType.isHandling(response);
-      }
-
-      @Override
-      public <T> T getBody(AcceptMediaType<T> acceptType) {
-         return acceptType.deserialize(response, MediaTypeAwareResourceReference.this::follow);
       }
 
       @Override
@@ -216,10 +205,91 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       private boolean isMethodAllowed(String method) {
          return response.getHeader(Headers.ALLOW).contains(method);
       }
+   }
+
+   private class HttpContentResponse<T> extends HttpBaseResponse implements ContentResponse<T> {
+      private T media;
+
+      public HttpContentResponse(HttpResponse response, T media) {
+         super(response);
+         this.media = media;
+      }
 
       @Override
       public T getContent() {
          return media;
+      }
+   }
+
+   /**
+    * Makes it possible to read the error content from an exception. Note: this
+    * implementation copies the full error content into memory, to avoid unclosed
+    * resources in case the user is not interested in the contents.
+    */
+   private class HttpErrorResponse extends HttpBaseResponse implements ErrorResponse {
+      private byte[] errorBody;
+
+      public HttpErrorResponse(HttpResponse response) {
+         super(response);
+         consumeResponse();
+      }
+
+      private void consumeResponse() {
+            response.processContent(input -> {
+               try {
+                  ByteArrayOutputStream output = new ByteArrayOutputStream();
+                  byte[] buffer = new byte[2048];
+                  int len = 0;
+                  while ( (len = input.read(buffer)) >= 0) {
+                     output.write(buffer, 0, len);
+                  }
+                  output.close();
+                  errorBody = output.toByteArray();
+               } catch (IOException e) {
+                  throw new UncheckedIOException(e);
+               }
+            });
+      }
+
+      @Override
+      public boolean hasBody() {
+         return response.hasHeader(Headers.CONTENT_TYPE);
+      }
+
+      @Override
+      public boolean hasBody(AcceptMediaType<?> acceptType) {
+         return acceptType.isHandling(response);
+      }
+
+      @Override
+      public <T> T getBody(AcceptMediaType<T> acceptType) {
+         return acceptType.deserialize(new HttpResponse() {
+            @Override
+            public HttpStatusCode getStatusCode() {
+               return response.getStatusCode();
+            }
+
+            @Override
+            public boolean hasHeader(Header<?> header) {
+               return response.hasHeader(header);
+            }
+
+            @Override
+            public <T> T getHeader(Header<T> header) {
+               return response.getHeader(header);
+            }
+
+            @Override
+            public <T> T processContent(Function<InputStream, T> contentProcessor) {
+               try {
+                  try (InputStream input = new ByteArrayInputStream(errorBody)) {
+                     return contentProcessor.apply(input);
+                  }
+               } catch (IOException e) {
+                  throw new UncheckedIOException(e);
+               }
+            }
+         }, MediaTypeAwareResourceReference.this::follow);
       }
    }
 }

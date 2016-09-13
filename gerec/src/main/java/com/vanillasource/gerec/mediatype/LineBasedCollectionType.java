@@ -42,6 +42,8 @@ import java.io.InputStreamReader;
  * this type can be used for long-polling basically indefinitely.
  * Because only non-empty lines are deserialized, empty lines (line breaks) can be used by
  * the server to keep the connection alive.
+ * <strong>Note:</strong> You <i>have to</i> use the resulting processor, otherwise the resources
+ * associated with the response, as well as the response stream will stay open.
  */
 public class LineBasedCollectionType<T> extends NamedAcceptType<Processor<T>> {
    private AcceptMediaType<T> acceptType;
