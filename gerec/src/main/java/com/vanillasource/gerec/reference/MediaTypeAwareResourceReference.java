@@ -21,11 +21,13 @@ package com.vanillasource.gerec.reference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpStatusCode;
+import com.vanillasource.gerec.HttpErrorException;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
+import com.vanillasource.gerec.ErrorResponse;
 import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
@@ -41,13 +43,24 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
    @Override
    public Response head(HttpRequest.HttpRequestChange change) {
       HttpResponse response = doHead(change);
-      return new HttpContentResponse<>(response, null);
+      return createResponse(response, null);
    }
 
    @Override
    public <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = doGet(change.and(acceptType::applyAsOption));
-      T media = acceptType.deserialize(response, this::follow);
+      return createResponse(response, acceptType);
+   }
+
+   private <T> ContentResponse<T> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
+      if (response.getStatusCode().isError()) {
+         throw new HttpErrorException("error in response, status code: "+response.getStatusCode(),
+               new HttpContentResponse<Void>(response, null));
+      }
+      T media = null;
+      if (acceptType != null) {
+         media = acceptType.deserialize(response, this::follow);
+      }
       return new HttpContentResponse<>(response, media);
    }
 
@@ -55,30 +68,26 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
    public <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = doPost(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)));
-      T media = acceptType.deserialize(response, this::follow);
-      return new HttpContentResponse<>(response, media);
+      return createResponse(response, acceptType);
    }
 
    @Override
    public <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = doPut(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)));
-      T media = acceptType.deserialize(response, this::follow);
-      return new HttpContentResponse<>(response, media);
+      return createResponse(response, acceptType);
    }
 
    @Override
    public <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       HttpResponse response = doDelete(change.and(acceptType::applyAsOption));
-      T media = acceptType.deserialize(response, this::follow);
-      return new HttpContentResponse<>(response, media);
+      return createResponse(response, acceptType);
    }
 
    @Override
    public <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       HttpResponse response = doOptions(HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption));
-      T media = acceptType.deserialize(response, this::follow);
-      return new HttpContentResponse<>(response, media);
+      return createResponse(response, acceptType);
    }
 
    protected abstract ResourceReference follow(URI link);
@@ -95,13 +104,28 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
 
    protected abstract HttpResponse doDelete(HttpRequest.HttpRequestChange change);
 
-   private class HttpContentResponse<T> implements ContentResponse<T> {
+   private class HttpContentResponse<T> implements ContentResponse<T>, ErrorResponse {
       private HttpResponse response;
       private T media;
 
       public HttpContentResponse(HttpResponse response, T media) {
          this.response = response;
          this.media = media;
+      }
+
+      @Override
+      public boolean hasBody() {
+         return response.hasHeader(Headers.CONTENT_TYPE);
+      }
+
+      @Override
+      public boolean hasBody(AcceptMediaType<?> acceptType) {
+         return acceptType.isHandling(response);
+      }
+
+      @Override
+      public <T> T getBody(AcceptMediaType<T> acceptType) {
+         return acceptType.deserialize(response, MediaTypeAwareResourceReference.this::follow);
       }
 
       @Override

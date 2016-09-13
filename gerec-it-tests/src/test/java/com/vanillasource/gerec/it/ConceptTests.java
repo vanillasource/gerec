@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.Response;
+import com.vanillasource.gerec.HttpErrorException;
 import static com.vanillasource.gerec.http.CacheControl.*;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import com.vanillasource.gerec.mediatype.SameTypeAlternatives;
@@ -131,6 +132,24 @@ public class ConceptTests extends HttpTestsBase {
             new SameTypeAlternatives<>(asList(
                new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
                new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2")))).getContent();
+   }
+
+   @Test(expectedExceptions = HttpErrorException.class)
+   public void testNotFoundIsThrownAsException() {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404)));
+
+      reference().get(Person.TYPE);
+   }
+
+   public void testErrorBodyCanBeParsed() {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404).withBody("Nelson: Haha!")));
+
+      try {
+         reference().get(Person.TYPE);
+         fail("should have thrown exception");
+      } catch (HttpErrorException e) {
+         assertEquals(e.getResponse().getBody(MediaTypes.TEXT_PLAIN), "Nelson: Haha!");
+      }
    }
 }
 

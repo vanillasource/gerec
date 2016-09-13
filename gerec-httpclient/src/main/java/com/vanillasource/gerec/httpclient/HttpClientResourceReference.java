@@ -118,7 +118,7 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    private HttpResponse execute(HttpRequestBase request) {
       try {
          org.apache.http.HttpResponse httpResponse = httpClientSupplier.get().execute(request);
-         HttpResponse response = new HeaderAwareHttpResponse(httpResponse) {
+         return new HeaderAwareHttpResponse(httpResponse) {
             @Override
             public HttpStatusCode getStatusCode() {
                return HttpStatusCode.valueOf(httpResponse.getStatusLine().getStatusCode());
@@ -135,10 +135,6 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
                }
             }
          };
-         if (response.getStatusCode().isError()) {
-            throw new HttpErrorException("received status code: "+response.getStatusCode(), response);
-         }
-         return response;
       } catch (IOException e) {
          throw new UncheckedIOException("error while making http call", e);
       }

@@ -18,19 +18,25 @@
 
 package com.vanillasource.gerec;
 
+import java.util.List;
+
 /**
- * Indicates that a HTTP request was made, but server reported an error (4xx or 5xx codes).
+ * A server response after interacting with a resource that results in error.
  */
-public class HttpErrorException extends RuntimeException {
-   private final ErrorResponse response; 
+public interface ErrorResponse extends Response {
+   /**
+    * @return True iff error contained a body.
+    */
+   boolean hasBody();
 
-   public HttpErrorException(String msg, ErrorResponse response) {
-      super(msg);
-      this.response = response;
-   }
+   /**
+    * @return True iff error contains a body with the specified accept type.
+    */
+   boolean hasBody(AcceptMediaType<?> acceptType);
 
-   public ErrorResponse getResponse() {
-      return response;
-   }
+   /**
+    * Get the content of this error.
+    */
+   <T> T getBody(AcceptMediaType<T> acceptType);
 }
 

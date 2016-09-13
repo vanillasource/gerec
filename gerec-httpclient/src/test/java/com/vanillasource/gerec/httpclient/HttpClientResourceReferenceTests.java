@@ -39,11 +39,6 @@ public class HttpClientResourceReferenceTests {
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
    private HttpRequest.HttpRequestChange change;
 
-   @Test(expectedExceptions = HttpErrorException.class)
-   public void testResourceNotFoundThrowsException() {
-      HttpResponse response = reference.doGet(change);
-   }
-
    public void testGetResourceOkReturnsResponseOk() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
