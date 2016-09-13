@@ -34,12 +34,12 @@ import com.vanillasource.gerec.http.ValueWithParameter;
 public class MediaTypesTests {
    private HttpResponse response;
 
-   public void testUtfStringIsDeserializedWithoutContentType() {
-      responseContent("αβγ", "UTF-8");
+   public void testAsciiStringIsDeserializedWithoutContentType() {
+      responseContent("abc", "UTF-8");
 
       String result = TEXT_PLAIN.deserialize(response, null);
 
-      assertEquals(result, "αβγ");
+      assertEquals(result, "abc");
    }
 
    public void testUtfStringIsDeserializedWithContentTypeWithoutCharset() {

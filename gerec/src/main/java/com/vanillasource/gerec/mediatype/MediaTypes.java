@@ -34,12 +34,14 @@ import java.io.UncheckedIOException;
  * A collections of some basic media types and their serializers/deserializers.
  */
 public final class MediaTypes {
+   private static final String DEFAULT_ENCODING = "US-ASCII";
+
    private MediaTypes() {
    }
 
    /**
-    * The media-type "text/plain" which is mapped to type <code>String</code>. The encoding is
-    * hardcoded to "UTF-8" for the moment.
+    * The media-type "text/plain" which is mapped to type <code>String</code>. The charset when using with
+    * a request will always be UTF-8.
     */
    public static final MediaType<String> TEXT_PLAIN = new NamedMediaType<String>("text/plain") {
       @Override
@@ -52,9 +54,9 @@ public final class MediaTypes {
                while ((length = inputStream.read(buffer)) >= 0) {
                       result.write(buffer, 0, length);
                }
-               String encoding = "UTF-8";
+               String encoding = DEFAULT_ENCODING;
                if (response.hasHeader(Headers.CONTENT_TYPE)) {
-                  encoding = response.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", "UTF-8");
+                  encoding = response.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", DEFAULT_ENCODING);
                }
                return result.toString(encoding);
             } catch (IOException e) {
@@ -66,7 +68,7 @@ public final class MediaTypes {
       @Override
       public void serialize(String object, HttpRequest request) {
          try {
-            byte[] bytes = object.getBytes("UTF-8"); // TODO: set encoding to http request?
+            byte[] bytes = object.getBytes("UTF-8"); // TODO: set encoding to http request
             request.setContent(() -> new ByteArrayInputStream(bytes), bytes.length);
          } catch (IOException e) {
             throw new UncheckedIOException(e);
