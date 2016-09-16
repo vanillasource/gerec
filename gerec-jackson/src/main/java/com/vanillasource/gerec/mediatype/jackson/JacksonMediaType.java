@@ -38,6 +38,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.io.SerializedString;
+import com.fasterxml.jackson.core.JsonParseException;
 
 public class JacksonMediaType<T> extends NamedMediaType<T> {
    private Class<T> type;
@@ -74,7 +77,17 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
       module.addDeserializer(ResourceReference.class, new JsonDeserializer<ResourceReference>() {
          @Override
          public ResourceReference deserialize(JsonParser jp, DeserializationContext context) throws IOException {
-            return referenceProducer.apply(URI.create(jp.getValueAsString()));
+            // Parse { "href": "<uri>" }, current token is the start of the object
+            if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+               throw new JsonParseException("tried to read a link, but it was not an object", jp.getCurrentLocation());
+            }
+            jp.nextFieldName(new SerializedString("href"));
+            String uri = jp.nextTextValue();
+            JsonToken token = jp.nextToken();
+            if (token != JsonToken.END_OBJECT) {
+               throw new JsonParseException("tried to read a link, but it was not finished after reading href", jp.getCurrentLocation());
+            }
+            return referenceProducer.apply(URI.create(uri));
          }
       });
       mapper.registerModule(module);
@@ -98,7 +111,10 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
       module.addSerializer(ResourceReference.class, new JsonSerializer<ResourceReference>() {
          @Override
          public void serialize(ResourceReference reference, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-            jgen.writeString(reference.toURI().toString());
+            // { "href": "<uri>" }
+            jgen.writeStartObject();
+            jgen.writeStringField("href", reference.toURI().toString());
+            jgen.writeEndObject();
          }
       });
       mapper.registerModule(module);
