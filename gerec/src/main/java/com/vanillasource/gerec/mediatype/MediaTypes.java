@@ -24,6 +24,7 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.http.Headers;
+import com.vanillasource.gerec.ContentMediaType;
 import java.util.function.Function;
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
@@ -39,6 +40,38 @@ public final class MediaTypes {
 
    private MediaTypes() {
    }
+
+   /**
+    * Used for submitting information in HTML FORM POST format, using UTF-8 encoding.
+    */
+   public static final ContentMediaType<String> FORM_URLENCODED = new NamedMediaType<String>("application/x-www-form-urlencoded") {
+      @Override
+      public String deserialize(HttpResponse response, DeserializationContext context) {
+         return response.processContent(inputStream -> {
+            try {
+               ByteArrayOutputStream result = new ByteArrayOutputStream();
+               byte[] buffer = new byte[1024];
+               int length;
+               while ((length = inputStream.read(buffer)) >= 0) {
+                      result.write(buffer, 0, length);
+               }
+               return result.toString("UTF-8");
+            } catch (IOException e) {
+               throw new UncheckedIOException(e);
+            }
+         });
+      }
+
+      @Override
+      public void serialize(String object, HttpRequest request) {
+         try {
+            byte[] bytes = object.getBytes("UTF-8");
+            request.setContent(() -> new ByteArrayInputStream(bytes), bytes.length);
+         } catch (IOException e) {
+            throw new UncheckedIOException(e);
+         }
+      }
+   };
 
    /**
     * The media-type "text/plain" which is mapped to type <code>String</code>. The charset when using with
