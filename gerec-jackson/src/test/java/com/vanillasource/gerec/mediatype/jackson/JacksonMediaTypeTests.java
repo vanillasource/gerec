@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.DeserializationContext;
 import java.util.function.Supplier;
 import java.net.URI;
 import java.util.function.Function;
@@ -34,6 +35,7 @@ import java.io.*;
 public class JacksonMediaTypeTests {
    private HttpRequest request;
    private HttpResponse response;
+   private DeserializationContext context;
    private String content;
 
    public void testTestObjectGetsSerialized() {
@@ -47,7 +49,7 @@ public class JacksonMediaTypeTests {
       JacksonMediaType<TestObject> mediaType = new JacksonMediaType<>(TestObject.class, "application/vnd.vanillasource.testobject+json");
       content = "{\"name\":\"John\",\"age\":34}";
       
-      TestObject object = mediaType.deserialize(response, uri -> null);
+      TestObject object = mediaType.deserialize(response, context);
 
       assertEquals(object.getName(), "John");
       assertEquals(object.getAge(), 34);
@@ -64,21 +66,30 @@ public class JacksonMediaTypeTests {
    }
 
    @SuppressWarnings("unchecked")
-   public void testReferencesGetDeserializedUsedReferenceFactory() {
+   public void testReferencesGetDeserializedUsedReferenceResolver() {
       JacksonMediaType<ReferenceObject> mediaType = new JacksonMediaType<>(ReferenceObject.class, "application/vnd.vanillasource.referenceobject+json");
       content = "{\"reference\":{\"href\":\"/relative/uri\"}}";
-      Function<URI, ResourceReference> referenceFactory = mock(Function.class);
       ResourceReference reference = mock(ResourceReference.class);
-      when(referenceFactory.apply(URI.create("/relative/uri"))).thenReturn(reference);
+      when(context.resolve(URI.create("/relative/uri"))).thenReturn(reference);
 
-      ReferenceObject object = mediaType.deserialize(response, referenceFactory);
+      ReferenceObject object = mediaType.deserialize(response, context);
 
       assertSame(object.getReference(), reference);
+   }
+
+   public void testPostProcessingIsInvokedForDeserializedObject() {
+      JacksonMediaType<TestObject> mediaType = new JacksonMediaType<>(TestObject.class, "application/vnd.vanillasource.testobject+json");
+      content = "{\"name\":\"John\",\"age\":34}";
+      
+      TestObject object = mediaType.deserialize(response, context);
+
+      verify(context).postProcess(object);
    }
 
    @BeforeMethod
    @SuppressWarnings("unchecked")
    protected void setUp() {
+      context = mock(DeserializationContext.class);
       request = mock(HttpRequest.class);
       content = null;
       doAnswer(invocation -> {

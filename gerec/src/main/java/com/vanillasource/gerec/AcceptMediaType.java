@@ -39,8 +39,6 @@ public interface AcceptMediaType<T> {
 
    /**
     * Deserialize the contents of the response to the given object type.
-    * @param referenceProducer Used by the deserialization process to resolve potentially relative URIs
-    * to full resource references.
     */
-   T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer);
+   T deserialize(HttpResponse response, DeserializationContext context);
 }

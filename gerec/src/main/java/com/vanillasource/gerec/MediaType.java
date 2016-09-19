@@ -45,7 +45,7 @@ public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
       }
 
       @Override
-      public Void deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+      public Void deserialize(HttpResponse response, DeserializationContext context) {
          return response.processContent(inputStream -> null);
       }
 

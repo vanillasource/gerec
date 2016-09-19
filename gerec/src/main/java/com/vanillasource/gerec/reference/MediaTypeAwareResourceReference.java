@@ -25,6 +25,7 @@ import com.vanillasource.gerec.HttpErrorException;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
+import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.ErrorResponse;
@@ -65,7 +66,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       }
       T media = null;
       if (acceptType != null) {
-         media = acceptType.deserialize(response, this::follow);
+         media = acceptType.deserialize(response, DeserializationContext.fromResolver(this::follow));
       }
       return new HttpContentResponse<>(response, media);
    }
@@ -289,7 +290,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
                   throw new UncheckedIOException(e);
                }
             }
-         }, MediaTypeAwareResourceReference.this::follow);
+         }, DeserializationContext.fromResolver(MediaTypeAwareResourceReference.this::follow));
       }
    }
 }

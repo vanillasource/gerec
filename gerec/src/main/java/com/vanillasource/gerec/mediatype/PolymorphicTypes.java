@@ -22,6 +22,7 @@ import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.DeserializationContext;
 import java.util.List;
 import java.net.URI;
 import java.util.function.Function;
@@ -49,12 +50,12 @@ public class PolymorphicTypes<T> implements AcceptMediaType<T> {
    }
 
    @Override
-   public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+   public T deserialize(HttpResponse response, DeserializationContext context) {
       return acceptTypes.stream()
          .filter(acceptType -> acceptType.isHandling(response))
          .findFirst()
          .orElseThrow(() -> new IllegalStateException("no matching media types found for "+response+", possible media types were: "+acceptTypes))
-         .deserialize(response, referenceProducer);
+         .deserialize(response, context);
    }
 }
 

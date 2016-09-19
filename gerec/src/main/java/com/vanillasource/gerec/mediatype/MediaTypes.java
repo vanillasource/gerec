@@ -22,6 +22,7 @@ import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.http.Headers;
 import java.util.function.Function;
 import java.net.URI;
@@ -46,7 +47,7 @@ public final class MediaTypes {
     */
    public static final MediaType<String> TEXT_PLAIN = new NamedMediaType<String>("text/plain", "charset", "UTF-8") {
       @Override
-      public String deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+      public String deserialize(HttpResponse response, DeserializationContext context) {
          return response.processContent(inputStream -> {
             try {
                ByteArrayOutputStream result = new ByteArrayOutputStream();

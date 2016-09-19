@@ -21,6 +21,7 @@ package com.vanillasource.gerec.mediatype.jackson;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.mediatype.NamedMediaType;
 import java.util.function.Function;
 import java.util.function.Consumer;
@@ -34,13 +35,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.deser.std.DelegatingDeserializer;
 
 public class JacksonMediaType<T> extends NamedMediaType<T> {
    private Class<T> type;
@@ -60,23 +64,23 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
    }
 
    @Override
-   public T deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+   public T deserialize(HttpResponse response, DeserializationContext context) {
       return response.processContent(inputStream -> {
          try {
-            return createDeserializerObjectMapper(referenceProducer).readValue(inputStream, type);
+            return createDeserializerObjectMapper(context).readValue(inputStream, type);
          } catch (IOException e) {
             throw new UncheckedIOException("error deserializing object of type: "+type, e);
          }
       });
    }
 
-   private ObjectMapper createDeserializerObjectMapper(Function<URI, ResourceReference> referenceProducer) {
+   private ObjectMapper createDeserializerObjectMapper(DeserializationContext context) {
       ObjectMapper mapper = new ObjectMapper();
       mapperCustomizer.accept(mapper);
       SimpleModule module = new SimpleModule();
       module.addDeserializer(ResourceReference.class, new JsonDeserializer<ResourceReference>() {
          @Override
-         public ResourceReference deserialize(JsonParser jp, DeserializationContext context) throws IOException {
+         public ResourceReference deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
             // Parse { "href": "<uri>" }, current token is the start of the object
             if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
                throw new JsonParseException("tried to read a link, but it was not an object", jp.getCurrentLocation());
@@ -87,7 +91,26 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
             if (token != JsonToken.END_OBJECT) {
                throw new JsonParseException("tried to read a link, but it was not finished after reading href", jp.getCurrentLocation());
             }
-            return referenceProducer.apply(URI.create(uri));
+            return context.resolve(URI.create(uri));
+         }
+      });
+      module.setDeserializerModifier(new BeanDeserializerModifier() {
+         @Override
+         public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config,
+               BeanDescription description, JsonDeserializer<?> delegatee) {
+            return new DelegatingDeserializer(delegatee) {
+               @Override
+               protected JsonDeserializer<?> newDelegatingInstance(JsonDeserializer<?> newDelegatee) {
+                  return getDelegatee();
+               }
+
+               @Override
+               public Object deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
+                  Object result = getDelegatee().deserialize(jp, jacksonContext);
+                  context.postProcess(result);
+                  return result;
+               }
+            };
          }
       });
       mapper.registerModule(module);

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 import java.util.function.Function;
 import java.net.URI;
 import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.http.Headers;
@@ -118,7 +119,7 @@ public class NamedMediaTypeTests {
       }
 
       @Override
-      public String deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+      public String deserialize(HttpResponse response, DeserializationContext context) {
          return null;
       }
 

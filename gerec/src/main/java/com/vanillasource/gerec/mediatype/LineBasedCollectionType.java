@@ -23,6 +23,7 @@ import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.Header;
+import com.vanillasource.gerec.DeserializationContext;
 import java.net.URI;
 import java.util.function.Function;
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class LineBasedCollectionType<T> extends NamedAcceptType<Processor<T>> {
    }
 
    @Override
-   public Processor<T> deserialize(HttpResponse response, Function<URI, ResourceReference> referenceProducer) {
+   public Processor<T> deserialize(HttpResponse response, DeserializationContext context) {
       return consumer -> {
          response.processContent(inputStream -> {
             try {
@@ -92,7 +93,7 @@ public class LineBasedCollectionType<T> extends NamedAcceptType<Processor<T>> {
                                  throw new UncheckedIOException(e);
                               }
                            }
-                        }, referenceProducer));
+                        }, context));
                      }
                   }
                }
