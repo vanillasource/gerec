@@ -21,8 +21,8 @@ package com.vanillasource.gerec.it;
 import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
-import com.vanillasource.gerec.forms.Form;
-import com.vanillasource.gerec.forms.FormAwareAcceptMediaType;
+import com.vanillasource.gerec.form.Form;
+import com.vanillasource.gerec.form.FormAwareAcceptMediaType;
 
 public class SearchPage {
    public static final AcceptMediaType<SearchPage> TYPE = new FormAwareAcceptMediaType<>(

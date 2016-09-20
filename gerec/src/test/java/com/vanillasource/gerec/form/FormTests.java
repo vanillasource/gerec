@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.forms;
+package com.vanillasource.gerec.form;
 
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.ResourceReference;
-import com.vanillasource.gerec.forms.Form.Method;
+import com.vanillasource.gerec.form.Form.Method;
 import static java.util.Collections.emptyList;
 import static java.util.Arrays.asList;
 import com.vanillasource.gerec.mediatype.MediaTypes;
