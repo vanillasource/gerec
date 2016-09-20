@@ -70,8 +70,25 @@ public final class Form {
       return data;
    }
 
+   public ResourceReference getTarget() {
+      return target;
+   }
+
+   public Method getMethod() {
+      return method;
+   }
+
    public List<FormComponent> getComponents() {
       return components;
+   }
+
+   public FormComponent getComponent(String name) {
+      for (FormComponent component: components) {
+         if (component.getName().equals(name)) {
+            return component;
+         }
+      }
+      throw new IllegalArgumentException("no such component: "+name);
    }
 
    enum Method {

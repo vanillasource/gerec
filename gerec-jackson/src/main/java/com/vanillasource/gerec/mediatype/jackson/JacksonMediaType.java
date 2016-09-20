@@ -69,7 +69,7 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
          try {
             return createDeserializerObjectMapper(context).readValue(inputStream, type);
          } catch (IOException e) {
-            throw new UncheckedIOException("error deserializing object of type: "+type, e);
+            throw new UncheckedIOException(e);
          }
       });
    }
@@ -123,7 +123,7 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
          byte[] objectAsBytes = createSerializerObjectMapper().writeValueAsBytes(object);
          request.setContent(() -> new ByteArrayInputStream(objectAsBytes), objectAsBytes.length);
       } catch (IOException e) {
-         throw new UncheckedIOException("error serializing object: "+object, e);
+         throw new UncheckedIOException(e);
       }
    }
 

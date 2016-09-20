@@ -131,12 +131,12 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
                      return contentProcessor.apply(input);
                   }
                } catch (IOException e) {
-                  throw new UncheckedIOException("exception while reading http response", e);
+                  throw new UncheckedIOException(e);
                }
             }
          };
       } catch (IOException e) {
-         throw new UncheckedIOException("error while making http call", e);
+         throw new UncheckedIOException(e);
       }
    }
 
