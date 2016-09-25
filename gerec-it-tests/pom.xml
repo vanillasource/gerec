@@ -8,19 +8,19 @@
   <parent>
      <groupId>com.vanillasource.gerec</groupId>
      <artifactId>gerec-parent</artifactId>
-     <version>1.0.0</version>
+     <version>1.0.1-SNAPSHOT</version>
   </parent>
 
   <dependencies>
      <dependency>
         <groupId>com.vanillasource.gerec</groupId>
         <artifactId>gerec-httpclient</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
      </dependency>
      <dependency>
         <groupId>com.vanillasource.gerec</groupId>
         <artifactId>gerec-jackson</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
      </dependency>
      <dependency>
         <groupId>com.github.tomakehurst</groupId>
