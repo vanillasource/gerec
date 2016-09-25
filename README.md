@@ -15,7 +15,19 @@ A small wrapper over HTTP Clients to support building a proper RESTful
 
 ### Getting the library
 
-_Not yet published to maven central._
+Add this dependency to your Maven build:
+
+```xml
+<dependency>
+   <groupId>com.vanillasource.gerec</groupId>
+   <artifactId>gerec</artifactId>
+   <version>1.0.0</version>
+</dependency>
+```
+
+To include the "API" of Gerec. If you want to instantiate a `ResourceReference` you
+need to include `gerec-httpclient` to use the Apache HttpClient implementation.
+And to use Jackson for the media-types, include `gerec-jackson`.
 
 ### The basics
 
