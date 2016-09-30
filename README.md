@@ -83,5 +83,7 @@ upon the person not having been changed since it was requested.
 
 ### Documentation
 
+The Gerec [API Documentation](http://vanillasource.github.io/gerec/apidocs/).
+
 Please visit the [Gerec Wiki](https://github.com/vanillasource/gerec/wiki) for more information.
 
