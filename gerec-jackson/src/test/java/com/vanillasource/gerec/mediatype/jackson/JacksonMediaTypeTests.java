@@ -55,16 +55,6 @@ public class JacksonMediaTypeTests {
       assertEquals(object.getAge(), 34);
    }
 
-   public void testReferencesGetSerializedAsURIs() {
-      JacksonMediaType<ReferenceObject> mediaType = new JacksonMediaType<>(ReferenceObject.class, "application/vnd.vanillasource.referenceobject+json");
-      ResourceReference reference = mock(ResourceReference.class);
-      when(reference.toURI()).thenReturn(URI.create("/relative/uri"));
-
-      mediaType.serialize(new ReferenceObject(reference), request);
-
-      assertEquals(content, "{\"reference\":{\"href\":\"/relative/uri\"}}");
-   }
-
    @SuppressWarnings("unchecked")
    public void testReferencesGetDeserializedUsedReferenceResolver() {
       JacksonMediaType<ReferenceObject> mediaType = new JacksonMediaType<>(ReferenceObject.class, "application/vnd.vanillasource.referenceobject+json");

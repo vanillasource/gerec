@@ -26,7 +26,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.entity.InputStreamEntity;
 import java.util.function.Supplier;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.List;
 import java.util.ArrayList;
@@ -43,11 +42,6 @@ public final class HttpClientResourceReference extends MediaTypeAwareResourceRef
    public HttpClientResourceReference(Supplier<HttpClient> httpClientSupplier, URI resourceUri) {
       this.httpClientSupplier = httpClientSupplier;
       this.resourceUri = resourceUri;
-   }
-
-   @Override
-   public URI toURI() {
-      return resourceUri;
    }
 
    @Override

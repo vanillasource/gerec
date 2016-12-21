@@ -19,8 +19,6 @@
 package com.vanillasource.gerec;
 
 import java.io.Serializable;
-import java.util.concurrent.CompletableFuture;
-import java.net.URI;
 
 /**
  * References to resources are the main method by which users of this library should interact
@@ -29,8 +27,6 @@ import java.net.URI;
  * infrastructure, like caches.
  */
 public interface ResourceReference extends Serializable {
-   URI toURI();
-
    Response head(HttpRequest.HttpRequestChange change);
 
    default Response head() {

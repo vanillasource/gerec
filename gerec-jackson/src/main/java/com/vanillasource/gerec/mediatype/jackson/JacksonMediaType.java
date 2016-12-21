@@ -23,28 +23,18 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.mediatype.NamedMediaType;
-import java.util.function.Function;
 import java.util.function.Consumer;
 import java.net.URI;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.io.UncheckedIOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.deser.std.DelegatingDeserializer;
 
 public class JacksonMediaType<T> extends NamedMediaType<T> {
    private Class<T> type;
@@ -94,24 +84,6 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
             return context.resolve(URI.create(uri));
          }
       });
-      module.setDeserializerModifier(new BeanDeserializerModifier() {
-         @Override
-         public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config,
-               BeanDescription description, JsonDeserializer<?> delegatee) {
-            return new DelegatingDeserializer(delegatee) {
-               @Override
-               protected JsonDeserializer<?> newDelegatingInstance(JsonDeserializer<?> newDelegatee) {
-                  return getDelegatee();
-               }
-
-               @Override
-               public Object deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
-                  Object result = getDelegatee().deserialize(jp, jacksonContext);
-                  return result;
-               }
-            };
-         }
-      });
       mapper.registerModule(module);
       return mapper;
    }
@@ -129,17 +101,6 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
    private ObjectMapper createSerializerObjectMapper() {
       ObjectMapper mapper = new ObjectMapper();
       mapperCustomizer.accept(mapper);
-      SimpleModule module = new SimpleModule();
-      module.addSerializer(ResourceReference.class, new JsonSerializer<ResourceReference>() {
-         @Override
-         public void serialize(ResourceReference reference, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-            // { "href": "<uri>" }
-            jgen.writeStartObject();
-            jgen.writeStringField("href", reference.toURI().toString());
-            jgen.writeEndObject();
-         }
-      });
-      mapper.registerModule(module);
       return mapper;
    }
 }
