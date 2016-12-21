@@ -107,7 +107,6 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
                @Override
                public Object deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
                   Object result = getDelegatee().deserialize(jp, jacksonContext);
-                  context.postProcess(result);
                   return result;
                }
             };

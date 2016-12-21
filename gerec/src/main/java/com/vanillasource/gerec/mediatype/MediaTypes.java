@@ -25,8 +25,6 @@ import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.ContentMediaType;
-import java.util.function.Function;
-import java.net.URI;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

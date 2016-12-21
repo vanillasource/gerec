@@ -16,29 +16,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.it;
+package com.vanillasource.gerec.form;
 
-import com.vanillasource.gerec.MediaType;
+import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
-import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
-import com.vanillasource.gerec.form.Form;
-import com.vanillasource.gerec.form.FormAwareAcceptMediaType;
+import com.vanillasource.gerec.mediatype.MediaTypes;
 
-public class SearchPage {
-   public static final AcceptMediaType<SearchPage> TYPE = new FormAwareAcceptMediaType<>(
-      new JacksonMediaType<>(SearchPage.class, "application/vnd.test.searchpage"));
-   private String greetingMessage;
-   private Form searchForm;
+/**
+ * A form that posts all parameters as form encoded, just like a HTML Form with POST method.
+ */
+public class PostForm extends StringDataForm {
+   private final ResourceReference target;
 
-   protected SearchPage() {
+   public PostForm(ResourceReference target) {
+      this.target = target;
    }
 
-   public Form getSearchForm() {
-      return searchForm;
-   }
-
-   public String getGreetingMessage() {
-      return greetingMessage;
+   @Override
+   public <T> ContentResponse<T> submit(String data, AcceptMediaType<T> acceptType) {
+      return target.post(MediaTypes.FORM_URLENCODED, data, acceptType);
    }
 }
+
 

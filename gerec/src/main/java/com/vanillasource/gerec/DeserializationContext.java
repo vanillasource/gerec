@@ -19,57 +19,11 @@
 package com.vanillasource.gerec;
 
 import java.net.URI;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public interface DeserializationContext {
    /**
     * Resolve the given uri into a resource reference.
     */
    ResourceReference resolve(URI uri);
-
-   /**
-    * Process an object after it was instantiated from the representation.
-    */
-   void postProcess(Object object);
-
-   /**
-    * Generate a completely new context based on resolving only.
-    */
-   static DeserializationContext fromResolver(Function<URI, ResourceReference> resolver) {
-      return new DeserializationContext() {
-         @Override
-         public ResourceReference resolve(URI uri) {
-            return resolver.apply(uri);
-         }
-         
-         @Override
-         public void postProcess(Object object) {
-         }
-      };
-   }
-
-   /**
-    * Generate a new context based on this one with the processing of the given type
-    * added.
-    */
-   default <T> DeserializationContext addPostProcessing(Class<T> type, Consumer<T> postProcessor) {
-      DeserializationContext parent = this;
-      return new DeserializationContext() {
-         @Override
-         public ResourceReference resolve(URI uri) {
-            return parent.resolve(uri);
-         }
-
-         @Override
-         @SuppressWarnings("unchecked")
-         public void postProcess(Object object) {
-            parent.postProcess(object);
-            if (object.getClass().equals(type)) {
-               postProcessor.accept((T) object);
-            }
-         }
-      };
-   }
 }
 

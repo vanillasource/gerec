@@ -18,10 +18,10 @@
 
 package com.vanillasource.gerec.mediatype.jackson;
 
-import org.testng.annotations.*;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import org.mockito.Mockito;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.ResourceReference;
@@ -75,15 +75,6 @@ public class JacksonMediaTypeTests {
       ReferenceObject object = mediaType.deserialize(response, context);
 
       assertSame(object.getReference(), reference);
-   }
-
-   public void testPostProcessingIsInvokedForDeserializedObject() {
-      JacksonMediaType<TestObject> mediaType = new JacksonMediaType<>(TestObject.class, "application/vnd.vanillasource.testobject+json");
-      content = "{\"name\":\"John\",\"age\":34}";
-      
-      TestObject object = mediaType.deserialize(response, context);
-
-      verify(context).postProcess(object);
    }
 
    @BeforeMethod

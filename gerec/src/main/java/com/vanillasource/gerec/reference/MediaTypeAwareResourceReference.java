@@ -32,8 +32,6 @@ import com.vanillasource.gerec.ErrorResponse;
 import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
-import java.util.function.Supplier;
-import java.util.function.Consumer;
 import java.net.URI;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
@@ -66,7 +64,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       }
       T media = null;
       if (acceptType != null) {
-         media = acceptType.deserialize(response, DeserializationContext.fromResolver(this::follow));
+         media = acceptType.deserialize(response, this::follow);
       }
       return new HttpContentResponse<>(response, media);
    }
@@ -290,7 +288,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
                   throw new UncheckedIOException(e);
                }
             }
-         }, DeserializationContext.fromResolver(MediaTypeAwareResourceReference.this::follow));
+         }, MediaTypeAwareResourceReference.this::follow);
       }
    }
 }
