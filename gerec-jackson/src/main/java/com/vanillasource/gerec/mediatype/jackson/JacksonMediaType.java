@@ -18,6 +18,9 @@
 
 package com.vanillasource.gerec.mediatype.jackson;
 
+import com.vanillasource.gerec.form.Form;
+import com.vanillasource.gerec.form.GetForm;
+import com.vanillasource.gerec.form.PostForm;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
@@ -82,6 +85,30 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
                throw new JsonParseException("tried to read a link, but it was not finished after reading href", jp.getCurrentLocation());
             }
             return context.resolve(URI.create(uri));
+         }
+      });
+      module.addDeserializer(Form.class, new JsonDeserializer<Form>() {
+         @Override
+         public Form deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
+            // Parse { "target": "<uri>", "method": "GET" }, current token is the start of the object
+            if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+               throw new JsonParseException("tried to read a form, but it was not an object", jp.getCurrentLocation());
+            }
+            jp.nextFieldName(new SerializedString("target"));
+            String target = jp.nextTextValue();
+            jp.nextFieldName(new SerializedString("method"));
+            String method = jp.nextTextValue();
+            JsonToken token = jp.nextToken();
+            if (token != JsonToken.END_OBJECT) {
+               throw new JsonParseException("tried to read a form, but it was not finished after reading target and method", jp.getCurrentLocation());
+            }
+            if (method.equals("GET")) {
+               return new GetForm(URI.create(target), context::resolve);
+            } else if (method.equals("POST")) {
+               return new PostForm(context.resolve(URI.create(target)));
+            } else {
+               throw new JsonParseException("unknown method for form '"+method+"'", jp.getCurrentLocation());
+            }
          }
       });
       mapper.registerModule(module);
