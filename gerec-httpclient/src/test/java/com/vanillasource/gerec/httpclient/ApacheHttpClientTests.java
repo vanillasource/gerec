@@ -33,8 +33,9 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static java.util.Arrays.asList;
 
 @Test
-public class HttpClientResourceReferenceTests {
-   private HttpClientResourceReference reference;
+public class ApacheHttpClientTests {
+   private ApacheHttpClient client;
+   private URI requestURI = URI.create("http://localhost:8091/nini");
    private CloseableHttpClient httpClient;
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
    private HttpRequest.HttpRequestChange change;
@@ -42,7 +43,7 @@ public class HttpClientResourceReferenceTests {
    public void testGetResourceOkReturnsResponseOk() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.doGet(change);
+      HttpResponse response = client.doGet(requestURI, change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -50,7 +51,7 @@ public class HttpClientResourceReferenceTests {
    public void testHeadResourceOkReturnsResponseOk() {
       stubFor(head(urlEqualTo("/nini")).willReturn(aResponse().withBody("")));
 
-      HttpResponse response = reference.doHead(change);
+      HttpResponse response = client.doHead(requestURI, change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -58,7 +59,7 @@ public class HttpClientResourceReferenceTests {
    public void testPostResourceOkReturnsResponseOk() {
       stubFor(post(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.doPost(change);
+      HttpResponse response = client.doPost(requestURI, change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -66,7 +67,7 @@ public class HttpClientResourceReferenceTests {
    public void testPutResourceOkReturnsResponseOk() {
       stubFor(put(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.doPut(change);
+      HttpResponse response = client.doPut(requestURI, change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -74,7 +75,7 @@ public class HttpClientResourceReferenceTests {
    public void testDeleteResourceOkReturnsResponseOk() {
       stubFor(delete(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.doDelete(change);
+      HttpResponse response = client.doDelete(requestURI, change);
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
@@ -82,7 +83,7 @@ public class HttpClientResourceReferenceTests {
    public void testChangeIsAppliedToRequest() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = reference.doGet(change);
+      HttpResponse response = client.doGet(requestURI, change);
 
       verify(change).applyTo(any(HttpRequest.class));
    }
@@ -90,7 +91,7 @@ public class HttpClientResourceReferenceTests {
    public void testLocationHeaderCanBeRead() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Location", "nunu").withBody("ABC")));
 
-      HttpResponse response = reference.doGet(change);
+      HttpResponse response = client.doGet(requestURI, change);
 
       assertEquals(response.getHeader(Headers.LOCATION), "nunu");
    }
@@ -98,7 +99,7 @@ public class HttpClientResourceReferenceTests {
    public void testLocationHeaderIsReadEvenIfNotCapitalized() {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withHeader("location", "nunu").withBody("ABC")));
 
-      HttpResponse response = reference.doGet(change);
+      HttpResponse response = client.doGet(requestURI, change);
 
       assertEquals(response.getHeader(Headers.LOCATION), "nunu");
    }
@@ -106,7 +107,7 @@ public class HttpClientResourceReferenceTests {
    public void testAllowsHeaderCanBeReadIfPresent() {
       stubFor(options(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("ABC")));
 
-      HttpResponse response = reference.doOptions(change);
+      HttpResponse response = client.doOptions(requestURI, change);
 
       assertEquals(response.getHeader(Headers.ALLOW), asList("GET", "POST"));
    }
@@ -115,7 +116,7 @@ public class HttpClientResourceReferenceTests {
    protected void setUp() {
       change = mock(HttpRequest.HttpRequestChange.class);
       httpClient = HttpClientBuilder.create().build();
-      reference = new HttpClientResourceReference(() -> httpClient, URI.create("http://localhost:8091/nini"));
+      client = new ApacheHttpClient(httpClient);
       WireMock.reset();
    }
 

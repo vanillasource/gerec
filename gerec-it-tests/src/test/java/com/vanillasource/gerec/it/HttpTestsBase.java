@@ -24,14 +24,14 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import java.net.URI;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import com.vanillasource.gerec.httpclient.HttpClientResourceReference;
+import com.vanillasource.gerec.reference.HttpClientResourceReference;
+import com.vanillasource.gerec.httpclient.ApacheHttpClient;
 
 public class HttpTestsBase {
    private HttpClientResourceReference reference;
@@ -54,7 +54,7 @@ public class HttpTestsBase {
          .create()
          .setConnectionManager(connectionManager)
          .build();
-      reference = new HttpClientResourceReference(() -> httpClient, URI.create("http://localhost:8091/"));
+      reference = new HttpClientResourceReference(new ApacheHttpClient(httpClient), URI.create("http://localhost:8091/"));
       WireMock.reset();
    }
 

@@ -19,7 +19,6 @@
 package com.vanillasource.gerec.httpclient;
 
 import com.vanillasource.gerec.*;
-import com.vanillasource.gerec.reference.MediaTypeAwareResourceReference;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
 import org.apache.http.HttpEntity;
@@ -35,48 +34,52 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
-public final class HttpClientResourceReference extends MediaTypeAwareResourceReference {
+public final class ApacheHttpClient implements com.vanillasource.gerec.reference.HttpClient {
    private final Supplier<HttpClient> httpClientSupplier;
-   private final URI resourceUri;
 
-   public HttpClientResourceReference(Supplier<HttpClient> httpClientSupplier, URI resourceUri) {
+   /**
+    * Create an instance that references the real http client only indirectly, useful for
+    * serialization.
+    */
+   public ApacheHttpClient(Supplier<HttpClient> httpClientSupplier) {
       this.httpClientSupplier = httpClientSupplier;
-      this.resourceUri = resourceUri;
+   }
+
+   /**
+    * Create an instance which directly references the http client. This is normally non-serializable.
+    */
+   public ApacheHttpClient(HttpClient httpClient) {
+      this(() -> httpClient);
    }
 
    @Override
-   protected ResourceReference follow(URI link) {
-      return new HttpClientResourceReference(httpClientSupplier, resourceUri.resolve(link));
+   public HttpResponse doHead(URI uri, HttpRequest.HttpRequestChange change) {
+      return execute(new HttpHead(uri), change);
    }
 
    @Override
-   protected HttpResponse doHead(HttpRequest.HttpRequestChange change) {
-      return execute(new HttpHead(resourceUri), change);
+   public HttpResponse doGet(URI uri, HttpRequest.HttpRequestChange change) {
+      return execute(new HttpGet(uri), change);
    }
 
    @Override
-   protected HttpResponse doGet(HttpRequest.HttpRequestChange change) {
-      return execute(new HttpGet(resourceUri), change);
+   public HttpResponse doPost(URI uri, HttpRequest.HttpRequestChange change) {
+      return execute(new HttpPost(uri), change);
    }
 
    @Override
-   protected HttpResponse doPost(HttpRequest.HttpRequestChange change) {
-      return execute(new HttpPost(resourceUri), change);
+   public HttpResponse doPut(URI uri, HttpRequest.HttpRequestChange change) {
+      return execute(new HttpPut(uri), change);
    }
 
    @Override
-   protected HttpResponse doPut(HttpRequest.HttpRequestChange change) {
-      return execute(new HttpPut(resourceUri), change);
+   public HttpResponse doDelete(URI uri, HttpRequest.HttpRequestChange change) {
+      return execute(new HttpDelete(uri), change);
    }
 
    @Override
-   protected HttpResponse doDelete(HttpRequest.HttpRequestChange change) {
-      return execute(new HttpDelete(resourceUri), change);
-   }
-
-   @Override
-   protected HttpResponse doOptions(HttpRequest.HttpRequestChange change) {
-      return execute(new HttpOptions(resourceUri), change);
+   public HttpResponse doOptions(URI uri, HttpRequest.HttpRequestChange change) {
+      return execute(new HttpOptions(uri), change);
    }
 
    private HttpResponse execute(HttpEntityEnclosingRequestBase request, HttpRequest.HttpRequestChange change) {

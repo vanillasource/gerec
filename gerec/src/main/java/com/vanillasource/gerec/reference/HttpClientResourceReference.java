@@ -25,7 +25,6 @@ import com.vanillasource.gerec.HttpErrorException;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
-import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.ErrorResponse;
@@ -41,19 +40,26 @@ import java.util.function.Function;
 import java.io.InputStream;
 
 /**
- * Implement all media-type related functionality (serialization, deserialization) and request
- * modification. Subclasses "only" need to implement the direct HTTP related functionality.
+ * Implement a resource reference using a HTTP Client.
  */
-public abstract class MediaTypeAwareResourceReference implements ResourceReference {
+public class HttpClientResourceReference implements ResourceReference {
+   private final HttpClient httpClient;
+   private final URI uri;
+
+   public HttpClientResourceReference(HttpClient httpClient, URI uri) {
+      this.httpClient = httpClient;
+      this.uri = uri;
+   }
+
    @Override
    public Response head(HttpRequest.HttpRequestChange change) {
-      HttpResponse response = doHead(change);
+      HttpResponse response = httpClient.doHead(uri, change);
       return createResponse(response, null);
    }
 
    @Override
    public <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = doGet(change.and(acceptType::applyAsOption));
+      HttpResponse response = httpClient.doGet(uri, change.and(acceptType::applyAsOption));
       return createResponse(response, acceptType);
    }
 
@@ -69,45 +75,35 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
       return new HttpContentResponse<>(response, media);
    }
 
+   private ResourceReference follow(URI linkUri) {
+      return new HttpClientResourceReference(httpClient, uri.resolve(linkUri));
+   }
+
    @Override
    public <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = doPost(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
+      HttpResponse response = httpClient.doPost(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)));
       return createResponse(response, acceptType);
    }
 
    @Override
    public <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = doPut(change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
+      HttpResponse response = httpClient.doPut(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)));
       return createResponse(response, acceptType);
    }
 
    @Override
    public <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = doDelete(change.and(acceptType::applyAsOption));
+      HttpResponse response = httpClient.doDelete(uri, change.and(acceptType::applyAsOption));
       return createResponse(response, acceptType);
    }
 
    @Override
    public <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      HttpResponse response = doOptions(HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption));
+      HttpResponse response = httpClient.doOptions(uri, HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption));
       return createResponse(response, acceptType);
    }
-
-   protected abstract ResourceReference follow(URI link);
-
-   protected abstract HttpResponse doHead(HttpRequest.HttpRequestChange change);
-
-   protected abstract HttpResponse doOptions(HttpRequest.HttpRequestChange change);
-
-   protected abstract HttpResponse doGet(HttpRequest.HttpRequestChange change);
-
-   protected abstract HttpResponse doPost(HttpRequest.HttpRequestChange change);
-
-   protected abstract HttpResponse doPut(HttpRequest.HttpRequestChange change);
-
-   protected abstract HttpResponse doDelete(HttpRequest.HttpRequestChange change);
 
    private class HttpBaseResponse<T> implements Response {
       protected HttpResponse response;
@@ -288,7 +284,7 @@ public abstract class MediaTypeAwareResourceReference implements ResourceReferen
                   throw new UncheckedIOException(e);
                }
             }
-         }, MediaTypeAwareResourceReference.this::follow);
+         }, HttpClientResourceReference.this::follow);
       }
    }
 }
