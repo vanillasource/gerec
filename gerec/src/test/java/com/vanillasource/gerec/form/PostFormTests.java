@@ -22,17 +22,17 @@ import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 
 @Test
 public class PostFormTests {
-   private ResourceReference target;
+   private AsyncResourceReference target;
 
    public void testPostFormMakesPostToTarget() {
       PostForm form = new PostForm(target);
 
-      form.submit(null);
+      form.submitAsync(null);
 
       verify(target).post(MediaTypes.FORM_URLENCODED, "", null);
    }
@@ -42,13 +42,13 @@ public class PostFormTests {
       form.put("q", "search");
       form.put("lang", "en");
 
-      form.submit(null);
+      form.submitAsync(null);
 
       verify(target).post(MediaTypes.FORM_URLENCODED, "q=search&lang=en", null);
    }
 
    @BeforeMethod
    protected void setUp() {
-      target = mock(ResourceReference.class);
+      target = mock(AsyncResourceReference.class);
    }
 }

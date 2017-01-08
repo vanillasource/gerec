@@ -19,12 +19,10 @@
 package com.vanillasource.gerec.mediatype;
 
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.DeserializationContext;
-import java.net.URI;
 import java.util.function.Function;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

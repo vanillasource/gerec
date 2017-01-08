@@ -78,5 +78,7 @@ public interface ResourceReference extends Serializable {
    default Response options() {
       return options(MediaType.NONE, null);
    }
+
+   AsyncResourceReference async();
 }
 

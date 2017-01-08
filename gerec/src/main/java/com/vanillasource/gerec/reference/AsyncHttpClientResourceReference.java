@@ -25,7 +25,7 @@ import com.vanillasource.gerec.HttpErrorException;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
-import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.ErrorResponse;
 import com.vanillasource.gerec.Response;
@@ -37,30 +37,31 @@ import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.UncheckedIOException;
 import java.util.function.Function;
+import java.util.concurrent.CompletableFuture;
 import java.io.InputStream;
 
 /**
  * Implement a resource reference using a HTTP Client.
  */
-public class HttpClientResourceReference implements ResourceReference {
-   private final HttpClient httpClient;
+public class AsyncHttpClientResourceReference implements AsyncResourceReference {
+   private final AsyncHttpClient asyncHttpClient;
    private final URI uri;
 
-   public HttpClientResourceReference(HttpClient httpClient, URI uri) {
-      this.httpClient = httpClient;
+   public AsyncHttpClientResourceReference(AsyncHttpClient asyncHttpClient, URI uri) {
+      this.asyncHttpClient = asyncHttpClient;
       this.uri = uri;
    }
 
    @Override
-   public Response head(HttpRequest.HttpRequestChange change) {
-      HttpResponse response = httpClient.doHead(uri, change);
-      return createResponse(response, null);
+   public CompletableFuture<Response> head(HttpRequest.HttpRequestChange change) {
+      return asyncHttpClient.doHead(uri, change)
+         .thenApply(response -> createResponse(response, null));
    }
 
    @Override
-   public <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = httpClient.doGet(uri, change.and(acceptType::applyAsOption));
-      return createResponse(response, acceptType);
+   public <T> CompletableFuture<ContentResponse<T>> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return asyncHttpClient.doGet(uri, change.and(acceptType::applyAsOption))
+         .thenApply(response -> createResponse(response, acceptType));
    }
 
    private <T> ContentResponse<T> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
@@ -75,34 +76,34 @@ public class HttpClientResourceReference implements ResourceReference {
       return new HttpContentResponse<>(response, media);
    }
 
-   private ResourceReference follow(URI linkUri) {
-      return new HttpClientResourceReference(httpClient, uri.resolve(linkUri));
+   private AsyncResourceReference follow(URI linkUri) {
+      return new AsyncHttpClientResourceReference(asyncHttpClient, uri.resolve(linkUri));
    }
 
    @Override
-   public <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = httpClient.doPost(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
-            request -> contentType.serialize(content, request)));
-      return createResponse(response, acceptType);
+   public <R, T> CompletableFuture<ContentResponse<T>> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return asyncHttpClient.doPost(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
+            request -> contentType.serialize(content, request)))
+         .thenApply(response -> createResponse(response, acceptType));
    }
 
    @Override
-   public <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = httpClient.doPut(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
-            request -> contentType.serialize(content, request)));
-      return createResponse(response, acceptType);
+   public <R, T> CompletableFuture<ContentResponse<T>> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return asyncHttpClient.doPut(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
+            request -> contentType.serialize(content, request)))
+         .thenApply(response -> createResponse(response, acceptType));
    }
 
    @Override
-   public <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      HttpResponse response = httpClient.doDelete(uri, change.and(acceptType::applyAsOption));
-      return createResponse(response, acceptType);
+   public <T> CompletableFuture<ContentResponse<T>> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return asyncHttpClient.doDelete(uri, change.and(acceptType::applyAsOption))
+         .thenApply(response -> createResponse(response, acceptType));
    }
 
    @Override
-   public <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      HttpResponse response = httpClient.doOptions(uri, HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption));
-      return createResponse(response, acceptType);
+   public <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+      return asyncHttpClient.doOptions(uri, HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption))
+         .thenApply(response -> createResponse(response, acceptType));
    }
 
    private class HttpBaseResponse<T> implements Response {
@@ -163,7 +164,7 @@ public class HttpClientResourceReference implements ResourceReference {
       }
 
       @Override
-      public ResourceReference followLocation() {
+      public AsyncResourceReference followLocation() {
          return follow(URI.create(response.getHeader(Headers.LOCATION)));
       }
 
@@ -284,7 +285,7 @@ public class HttpClientResourceReference implements ResourceReference {
                   throw new UncheckedIOException(e);
                }
             }
-         }, HttpClientResourceReference.this::follow);
+         }, AsyncHttpClientResourceReference.this::follow);
       }
    }
 }

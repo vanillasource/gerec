@@ -22,19 +22,19 @@ import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.AsyncResourceReference;
 import java.util.function.Function;
 import java.net.URI;
 
 @Test
 public class GetFormTests {
-   private ResourceReference resolvedReference;
-   private Function<URI, ResourceReference> referenceResolver;
+   private AsyncResourceReference resolvedReference;
+   private Function<URI, AsyncResourceReference> referenceResolver;
 
    public void testGetFormMakesAGetRequestToResolvedReference() {
       GetForm form = new GetForm(URI.create("/root"), referenceResolver);
 
-      form.submit(null);
+      form.submitAsync(null);
 
       verify(resolvedReference).get(null);
    }
@@ -44,7 +44,7 @@ public class GetFormTests {
       GetForm form = new GetForm(URI.create("/root"), referenceResolver);
       form.put("q", "search");
 
-      form.submit(null);
+      form.submitAsync(null);
 
       verify(referenceResolver).apply(URI.create("/root?q=search"));
    }
@@ -55,7 +55,7 @@ public class GetFormTests {
       form.put("q", "search");
       form.put("lang", "en");
 
-      form.submit(null);
+      form.submitAsync(null);
 
       verify(referenceResolver).apply(URI.create("/root?q=search&lang=en"));
    }
@@ -65,7 +65,7 @@ public class GetFormTests {
       GetForm form = new GetForm(URI.create("/root?ni=nu"), referenceResolver);
       form.put("q", "search");
 
-      form.submit(null);
+      form.submitAsync(null);
 
       verify(referenceResolver).apply(URI.create("/root?ni=nu&q=search"));
    }
@@ -73,7 +73,7 @@ public class GetFormTests {
    @BeforeMethod
    @SuppressWarnings("unchecked")
    protected void setUp() {
-      resolvedReference = mock(ResourceReference.class);
+      resolvedReference = mock(AsyncResourceReference.class);
       referenceResolver = mock(Function.class);
       when(referenceResolver.apply(any())).thenReturn(resolvedReference);
    }

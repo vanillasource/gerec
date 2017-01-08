@@ -21,10 +21,7 @@ package com.vanillasource.gerec.mediatype;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
-import java.util.function.Function;
-import java.net.URI;
 
 /**
  * An accept media-type that just delegates to another one. Can be used

@@ -18,14 +18,10 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.ContentMediaType;
 import java.util.List;
-import java.util.function.Function;
-import java.net.URI;
 
 /**
  * A collection of media-types that all produce the same java type. May be used in cases where

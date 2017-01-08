@@ -18,9 +18,6 @@
 
 package com.vanillasource.gerec;
 
-import java.util.function.Function;
-import java.net.URI;
-
 /**
  * The part of a media-type for receiving the given type. This includes adding the necessary
  * modifications to a request, as parsing it in the response.

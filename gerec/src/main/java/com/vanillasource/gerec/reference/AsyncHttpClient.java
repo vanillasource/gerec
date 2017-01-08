@@ -21,20 +21,21 @@ package com.vanillasource.gerec.reference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A generic HTTP Client for the <code>HttpClientResourceReference</code>.
  */
-public interface HttpClient {
-   HttpResponse doHead(URI uri, HttpRequest.HttpRequestChange change);
+public interface AsyncHttpClient {
+   CompletableFuture<HttpResponse> doHead(URI uri, HttpRequest.HttpRequestChange change);
 
-   HttpResponse doOptions(URI uri, HttpRequest.HttpRequestChange change);
+   CompletableFuture<HttpResponse> doOptions(URI uri, HttpRequest.HttpRequestChange change);
 
-   HttpResponse doGet(URI uri, HttpRequest.HttpRequestChange change);
+   CompletableFuture<HttpResponse> doGet(URI uri, HttpRequest.HttpRequestChange change);
 
-   HttpResponse doPost(URI uri, HttpRequest.HttpRequestChange change);
+   CompletableFuture<HttpResponse> doPost(URI uri, HttpRequest.HttpRequestChange change);
 
-   HttpResponse doPut(URI uri, HttpRequest.HttpRequestChange change);
+   CompletableFuture<HttpResponse> doPut(URI uri, HttpRequest.HttpRequestChange change);
 
-   HttpResponse doDelete(URI uri, HttpRequest.HttpRequestChange change);
+   CompletableFuture<HttpResponse> doDelete(URI uri, HttpRequest.HttpRequestChange change);
 }

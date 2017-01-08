@@ -18,8 +18,6 @@
 
 package com.vanillasource.gerec;
 
-import java.util.List;
-
 /**
  * A server response after interacting with a resource. The response contains methods to be able to make
  * conditional requests. All the <code>if..()</code> methods produce request changers that can be supplied,
@@ -96,6 +94,6 @@ public interface Response {
    /**
     * Follow the 'Location' header received from the server.
     */
-   ResourceReference followLocation();
+   AsyncResourceReference followLocation();
 }
 

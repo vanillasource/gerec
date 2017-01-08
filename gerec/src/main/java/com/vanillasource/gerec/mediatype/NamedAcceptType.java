@@ -18,18 +18,12 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.http.MultiValueHeaderAdd;
 import com.vanillasource.gerec.http.Headers;
-import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.http.ValueWithParameter;
-import java.util.function.Function;
-import java.util.Map;
-import java.util.HashMap;
-import java.net.URI;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 

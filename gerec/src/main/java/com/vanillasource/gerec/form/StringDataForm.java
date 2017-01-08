@@ -22,6 +22,7 @@ import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A form that puts data together into a string.
@@ -40,6 +41,13 @@ public abstract class StringDataForm implements Form {
    }
 
    protected abstract <T> ContentResponse<T> submit(String data, AcceptMediaType<T> acceptType);
+
+   @Override
+   public <T> CompletableFuture<ContentResponse<T>> submitAsync(AcceptMediaType<T> acceptType) {
+      return submitAsync(asString(), acceptType);
+   }
+
+   protected abstract <T> CompletableFuture<ContentResponse<T>> submitAsync(String data, AcceptMediaType<T> acceptType);
 
    private String asString() {
       StringBuilder builder = new StringBuilder();

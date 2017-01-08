@@ -20,6 +20,7 @@ package com.vanillasource.gerec.form;
 
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A generic form that can be filled out with string
@@ -29,6 +30,8 @@ public interface Form {
    void put(String key, String value);
 
    <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType);
+
+   <T> CompletableFuture<ContentResponse<T>> submitAsync(AcceptMediaType<T> acceptType);
 }
 
 

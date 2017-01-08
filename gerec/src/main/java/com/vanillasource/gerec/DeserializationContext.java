@@ -21,9 +21,6 @@ package com.vanillasource.gerec;
 import java.net.URI;
 
 public interface DeserializationContext {
-   /**
-    * Resolve the given uri into a resource reference.
-    */
-   ResourceReference resolve(URI uri);
+   AsyncResourceReference resolve(URI uri);
 }
 
