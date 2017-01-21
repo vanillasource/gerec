@@ -40,7 +40,7 @@ public class Headers {
    public static final Header<String> IF_UNMODIFIED_SINCE = singleStringHeader("If-Unmodified-Since");
    public static final Header<String> LAST_MODIFIED = singleStringHeader("Last-Modified");
    public static final Header<String> LOCATION = singleStringHeader("Location");
-   public static final Header<Integer> CONTENT_LENGTH = singleIntegerHeader("Content-Length");
+   public static final Header<Long> CONTENT_LENGTH = singleLongHeader("Content-Length");
 
    private Headers() {
    }
@@ -49,8 +49,8 @@ public class Headers {
       return singleValueHeader(name, new StringFormat());
    }
 
-   public static Header<Integer> singleIntegerHeader(String name) {
-      return singleValueHeader(name, new IntegerFormat());
+   public static Header<Long> singleLongHeader(String name) {
+      return singleValueHeader(name, new LongFormat());
    }
 
    public static <T> Header<T> singleValueHeader(String name, ValueFormat<T> format) {
@@ -122,14 +122,14 @@ public class Headers {
       }
    }
 
-   public static class IntegerFormat implements ValueFormat<Integer> { 
+   public static class LongFormat implements ValueFormat<Long> { 
       @Override
-      public Integer deserialize(String value) {
-         return Integer.valueOf(value);
+      public Long deserialize(String value) {
+         return Long.valueOf(value);
       }
 
       @Override
-      public String serialize(Integer object) {
+      public String serialize(Long object) {
          return object.toString();
       }
    }

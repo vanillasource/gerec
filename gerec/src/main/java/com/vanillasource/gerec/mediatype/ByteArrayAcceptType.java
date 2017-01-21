@@ -52,7 +52,7 @@ public class ByteArrayAcceptType implements AcceptMediaType<byte[]> {
    public CompletableFuture<byte[]> deserialize(HttpResponse response, DeserializationContext context) {
       ByteArrayOutputStream output;
       if (response.hasHeader(Headers.CONTENT_LENGTH)) {
-         output = new ByteArrayOutputStream(response.getHeader(Headers.CONTENT_LENGTH));
+         output = new ByteArrayOutputStream(response.getHeader(Headers.CONTENT_LENGTH).intValue());
       } else {
          output = new ByteArrayOutputStream();
       }
