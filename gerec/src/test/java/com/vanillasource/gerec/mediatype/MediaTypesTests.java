@@ -23,43 +23,43 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpRequest;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import static com.vanillasource.gerec.mediatype.MediaTypes.*;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.http.ValueWithParameter;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 @Test
 public class MediaTypesTests {
    private HttpResponse response;
    private HttpRequest request;
 
-   public void testAsciiStringIsDeserializedWithoutContentType() {
+   public void testAsciiStringIsDeserializedWithoutContentType() throws Exception {
       responseContent("abc", "UTF-8");
 
-      String result = TEXT_PLAIN.deserialize(response, null);
+      String result = TEXT_PLAIN.deserialize(response, null).get();
 
       assertEquals(result, "abc");
    }
 
-   public void testUtfStringIsDeserializedWithContentTypeWithoutCharset() {
+   public void testUtfStringIsDeserializedWithContentTypeWithoutCharset() throws Exception {
       responseContent("αβγ", "UTF-8");
       when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/plain", "charset", "UTF-8"));
 
-      String result = TEXT_PLAIN.deserialize(response, null);
+      String result = TEXT_PLAIN.deserialize(response, null).get();
 
       assertEquals(result, "αβγ");
    }
 
-   public void testLatin1StringIsDeserialized() {
+   public void testLatin1StringIsDeserialized() throws Exception {
       responseContent("éáü", "ISO-8859-1");
       when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/plain", "charset", "ISO-8859-1"));
 
-      String result = TEXT_PLAIN.deserialize(response, null);
+      String result = TEXT_PLAIN.deserialize(response, null).get();
 
       assertEquals(result, "éáü");
    }
@@ -73,10 +73,12 @@ public class MediaTypesTests {
    @SuppressWarnings("unchecked")
    private void responseContent(String content, String encoding) {
       doAnswer(invocation -> {
-         return ((Function<InputStream, String>)invocation.getArguments()[0]).apply(
-            new ByteArrayInputStream(content.getBytes(encoding))
-         );
-      }).when(response).processContent(any(Function.class));
+         HttpResponse.ByteConsumer consumer = ((Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0])
+            .apply(Channels.newChannel(new ByteArrayInputStream(content.getBytes(encoding))));
+         consumer.onReady();
+         consumer.onCompleted();
+         return null;
+      }).when(response).consumeContent(any(Function.class));
    }
 
    @BeforeMethod

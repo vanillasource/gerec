@@ -22,6 +22,7 @@ import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * An accept media-type that just delegates to another one. Can be used
@@ -45,7 +46,7 @@ public class DelegatingAcceptMediaType<T> implements AcceptMediaType<T> {
    }
 
    @Override
-   public T deserialize(HttpResponse response, DeserializationContext context) {
+   public CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context) {
       return delegate.deserialize(response, context);
    }
 }

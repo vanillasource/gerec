@@ -67,8 +67,9 @@ public interface AsyncResourceReference extends Serializable {
       return delete(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default CompletableFuture<? extends Response> delete() {
-      return delete(MediaType.NONE);
+   default CompletableFuture<Response> delete() {
+      return delete(MediaType.NONE)
+         .thenApply(response -> response);
    }
 
    <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
@@ -77,8 +78,9 @@ public interface AsyncResourceReference extends Serializable {
       return options(type, content, type);
    }
 
-   default CompletableFuture<? extends Response> options() {
-      return options(MediaType.NONE, null);
+   default CompletableFuture<Response> options() {
+      return options(MediaType.NONE, null)
+         .thenApply(response -> response);
    }
 
    default ResourceReference sync() {

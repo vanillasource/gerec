@@ -22,6 +22,7 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.HttpErrorException;
+import com.vanillasource.gerec.mediatype.ByteArrayAcceptType;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
@@ -32,13 +33,12 @@ import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
 import java.net.URI;
-import java.io.IOException;
-import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.UncheckedIOException;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
-import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Implement a resource reference using a HTTP Client.
@@ -55,25 +55,28 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    @Override
    public CompletableFuture<Response> head(HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doHead(uri, change)
-         .thenApply(response -> createResponse(response, null));
+         .thenCompose(response -> createResponse(response, null))
+         .thenApply(response -> response); // Don't want to change signature to CompletableFuture<? extends Response>
    }
 
    @Override
    public <T> CompletableFuture<ContentResponse<T>> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doGet(uri, change.and(acceptType::applyAsOption))
-         .thenApply(response -> createResponse(response, acceptType));
+         .thenCompose(response -> createResponse(response, acceptType));
    }
 
-   private <T> ContentResponse<T> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
+   private <T> CompletableFuture<ContentResponse<T>> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
       if (response.getStatusCode().isError()) {
-         throw new HttpErrorException("error in response, status code: "+response.getStatusCode(),
-               new HttpErrorResponse(response));
+         return new ByteArrayAcceptType().deserialize(response, this::follow)
+            .thenApply(content -> {
+               throw new HttpErrorException("error in response, status code: "+response.getStatusCode(), new HttpErrorResponse(response, content));
+            });
+      } else if (acceptType == null) {
+         return CompletableFuture.completedFuture(new HttpContentResponse<>(response, null));
+      } else {
+         return acceptType.deserialize(response, this::follow)
+            .thenApply(content -> new HttpContentResponse<>(response, content));
       }
-      T media = null;
-      if (acceptType != null) {
-         media = acceptType.deserialize(response, this::follow);
-      }
-      return new HttpContentResponse<>(response, media);
    }
 
    private AsyncResourceReference follow(URI linkUri) {
@@ -84,26 +87,26 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    public <R, T> CompletableFuture<ContentResponse<T>> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doPost(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)))
-         .thenApply(response -> createResponse(response, acceptType));
+         .thenCompose(response -> createResponse(response, acceptType));
    }
 
    @Override
    public <R, T> CompletableFuture<ContentResponse<T>> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doPut(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)))
-         .thenApply(response -> createResponse(response, acceptType));
+         .thenCompose(response -> createResponse(response, acceptType));
    }
 
    @Override
    public <T> CompletableFuture<ContentResponse<T>> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doDelete(uri, change.and(acceptType::applyAsOption))
-         .thenApply(response -> createResponse(response, acceptType));
+         .thenCompose(response -> createResponse(response, acceptType));
    }
 
    @Override
    public <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       return asyncHttpClient.doOptions(uri, HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption))
-         .thenApply(response -> createResponse(response, acceptType));
+         .thenCompose(response -> createResponse(response, acceptType));
    }
 
    private class HttpBaseResponse<T> implements Response {
@@ -223,28 +226,11 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
     * resources in case the user is not interested in the contents.
     */
    private class HttpErrorResponse extends HttpBaseResponse implements ErrorResponse {
-      private byte[] errorBody;
+      private final byte[] errorBody;
 
-      public HttpErrorResponse(HttpResponse response) {
+      public HttpErrorResponse(HttpResponse response, byte[] errorBody) {
          super(response);
-         consumeResponse();
-      }
-
-      private void consumeResponse() {
-            response.processContent(input -> {
-               try {
-                  ByteArrayOutputStream output = new ByteArrayOutputStream();
-                  byte[] buffer = new byte[2048];
-                  int len = 0;
-                  while ( (len = input.read(buffer)) >= 0) {
-                     output.write(buffer, 0, len);
-                  }
-                  output.close();
-                  errorBody = output.toByteArray();
-               } catch (IOException e) {
-                  throw new UncheckedIOException(e);
-               }
-            });
+         this.errorBody = errorBody;
       }
 
       @Override
@@ -259,33 +245,38 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
 
       @Override
       public <T> T getBody(AcceptMediaType<T> acceptType) {
-         return acceptType.deserialize(new HttpResponse() {
-            @Override
-            public HttpStatusCode getStatusCode() {
-               return response.getStatusCode();
-            }
-
-            @Override
-            public boolean hasHeader(Header<?> header) {
-               return response.hasHeader(header);
-            }
-
-            @Override
-            public <T> T getHeader(Header<T> header) {
-               return response.getHeader(header);
-            }
-
-            @Override
-            public <T> T processContent(Function<InputStream, T> contentProcessor) {
-               try {
-                  try (InputStream input = new ByteArrayInputStream(errorBody)) {
-                     return contentProcessor.apply(input);
-                  }
-               } catch (IOException e) {
-                  throw new UncheckedIOException(e);
+         try {
+            return acceptType.deserialize(new HttpResponse() {
+               @Override
+               public HttpStatusCode getStatusCode() {
+                  return response.getStatusCode();
                }
-            }
-         }, AsyncHttpClientResourceReference.this::follow);
+
+               @Override
+               public boolean hasHeader(Header<?> header) {
+                  return response.hasHeader(header);
+               }
+
+               @Override
+               public <T> T getHeader(Header<T> header) {
+                  return response.getHeader(header);
+               }
+
+               @Override
+               public void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory) {
+                  ByteConsumer consumer = consumerFactory.apply(Channels.newChannel(new ByteArrayInputStream(errorBody)));
+                  try {
+                     consumer.onReady();
+                  } catch (Exception e) {
+                     consumer.onException(e);
+                  }
+               }
+            }, AsyncHttpClientResourceReference.this::follow).get();
+         } catch (InterruptedException e) {
+            throw new IllegalStateException("interrupted reading error message", e);
+         } catch (ExecutionException e) {
+            throw new IllegalStateException("exception while reading error message", e.getCause());
+         }
       }
    }
 }

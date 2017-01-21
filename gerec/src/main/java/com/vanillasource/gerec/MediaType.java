@@ -18,8 +18,9 @@
 
 package com.vanillasource.gerec;
 
-import java.util.function.Function;
-import java.net.URI;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A full media-type which can be both serialized to make requests and deserialized back from
@@ -45,12 +46,47 @@ public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
       }
 
       @Override
-      public Void deserialize(HttpResponse response, DeserializationContext context) {
-         return response.processContent(inputStream -> null);
+      public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
+         CompletableFuture<Void> result = new CompletableFuture<>();
+         response.consumeContent(input -> new HttpResponse.ByteConsumer() {
+            @Override
+            public void onReady() {
+               try {
+                  input.close();
+               } catch (IOException e) {
+                  throw new UncheckedIOException(e);
+               }
+            }
+
+            @Override
+            public void onCompleted() {
+               result.complete(null);
+            }
+
+            @Override
+            public void onException(Exception e) {
+               result.completeExceptionally(e);
+            }
+         });
+         return result;
       }
 
       @Override
       public void serialize(Void object, HttpRequest request) {
+         request.setByteProducer(output -> new HttpRequest.ByteProducer() {
+            @Override
+            public void onReady() {
+               try {
+                  output.close();
+               } catch (IOException e) {
+                  throw new UncheckedIOException(e);
+               }
+            }
+
+            @Override
+            public void onCompleted() {
+            }
+         }, 0);
       }
    };
 }

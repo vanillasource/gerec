@@ -18,6 +18,8 @@
 
 package com.vanillasource.gerec;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * The part of a media-type for receiving the given type. This includes adding the necessary
  * modifications to a request, as parsing it in the response.
@@ -37,5 +39,5 @@ public interface AcceptMediaType<T> {
    /**
     * Deserialize the contents of the response to the given object type.
     */
-   T deserialize(HttpResponse response, DeserializationContext context);
+   CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context);
 }

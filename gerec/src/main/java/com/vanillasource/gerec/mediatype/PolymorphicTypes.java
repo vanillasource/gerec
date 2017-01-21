@@ -23,6 +23,7 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * An accept-type that can await several media types that are mapping to a 
@@ -47,12 +48,13 @@ public class PolymorphicTypes<T> implements AcceptMediaType<T> {
    }
 
    @Override
-   public T deserialize(HttpResponse response, DeserializationContext context) {
+   public CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context) {
       return acceptTypes.stream()
          .filter(acceptType -> acceptType.isHandling(response))
          .findFirst()
          .orElseThrow(() -> new IllegalStateException("no matching media types found for "+response+", possible media types were: "+acceptTypes))
-         .deserialize(response, context);
+         .deserialize(response, context)
+         .thenApply(t -> t); // Map from <? extends T> to <T>
    }
 }
 

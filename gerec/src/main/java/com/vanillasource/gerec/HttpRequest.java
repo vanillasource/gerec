@@ -18,9 +18,8 @@
 
 package com.vanillasource.gerec;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.io.InputStream;
+import java.util.function.Function;
+import java.nio.channels.WritableByteChannel;
 
 public interface HttpRequest {
    boolean hasHeader(Header<?> header);
@@ -29,9 +28,18 @@ public interface HttpRequest {
 
    <T> void setHeader(Header<T> header, T value);
 
-   void setContent(Supplier<InputStream> contentSupplier);
+   void setByteProducer(Function<WritableByteChannel, ByteProducer> producerFactory);
 
-   void setContent(Supplier<InputStream> contentSupplier, long length);
+   void setByteProducer(Function<WritableByteChannel, ByteProducer> producerFactory, long length);
+
+   public interface ByteProducer {
+      /**
+       * Producer is notified that channel is ready to accept more bytes.
+       */
+      void onReady();
+
+      void onCompleted();
+   }
 
    public interface HttpRequestChange {
       HttpRequestChange NO_CHANGE = new HttpRequestChange() {

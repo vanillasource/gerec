@@ -24,10 +24,10 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.ContentMediaType;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import com.vanillasource.gerec.nio.ByteBufferProducer;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A collections of some basic media types and their serializers/deserializers.
@@ -43,29 +43,19 @@ public final class MediaTypes {
     */
    public static final ContentMediaType<String> FORM_URLENCODED = new NamedMediaType<String>("application/x-www-form-urlencoded") {
       @Override
-      public String deserialize(HttpResponse response, DeserializationContext context) {
-         return response.processContent(inputStream -> {
-            try {
-               ByteArrayOutputStream result = new ByteArrayOutputStream();
-               byte[] buffer = new byte[1024];
-               int length;
-               while ((length = inputStream.read(buffer)) >= 0) {
-                      result.write(buffer, 0, length);
-               }
-               return result.toString("UTF-8");
-            } catch (IOException e) {
-               throw new UncheckedIOException(e);
-            }
-         });
+      public CompletableFuture<String> deserialize(HttpResponse response, DeserializationContext context) {
+         throw new UnsupportedOperationException("deserialization unsupported, this is a content media type");
       }
 
       @Override
       public void serialize(String object, HttpRequest request) {
          try {
             byte[] bytes = object.getBytes("UTF-8");
-            request.setContent(() -> new ByteArrayInputStream(bytes), bytes.length);
-         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            request.setByteProducer(
+                  output -> new ByteBufferProducer(ByteBuffer.wrap(bytes), output),
+                  bytes.length);
+         } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("utf-8 encoding not supported", e);
          }
       }
    };
@@ -77,33 +67,30 @@ public final class MediaTypes {
     */
    public static final MediaType<String> TEXT_PLAIN = new NamedMediaType<String>("text/plain", "charset", "UTF-8") {
       @Override
-      public String deserialize(HttpResponse response, DeserializationContext context) {
-         return response.processContent(inputStream -> {
-            try {
-               ByteArrayOutputStream result = new ByteArrayOutputStream();
-               byte[] buffer = new byte[1024];
-               int length;
-               while ((length = inputStream.read(buffer)) >= 0) {
-                      result.write(buffer, 0, length);
+      public CompletableFuture<String> deserialize(HttpResponse response, DeserializationContext context) {
+         return new ByteArrayAcceptType().deserialize(response, context)
+            .thenApply(content -> {
+               try {
+                  String encoding = DEFAULT_ENCODING;
+                  if (response.hasHeader(Headers.CONTENT_TYPE)) {
+                     encoding = response.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", DEFAULT_ENCODING);
+                  }
+                  return new String(content, encoding);
+               } catch (UnsupportedEncodingException e) {
+                  throw new IllegalStateException("utf-8 encoding not supported", e);
                }
-               String encoding = DEFAULT_ENCODING;
-               if (response.hasHeader(Headers.CONTENT_TYPE)) {
-                  encoding = response.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", DEFAULT_ENCODING);
-               }
-               return result.toString(encoding);
-            } catch (IOException e) {
-               throw new UncheckedIOException(e);
-            }
-         });
+            });
       }
 
       @Override
       public void serialize(String object, HttpRequest request) {
          try {
             byte[] bytes = object.getBytes("UTF-8");
-            request.setContent(() -> new ByteArrayInputStream(bytes), bytes.length);
-         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            request.setByteProducer(
+                  output -> new ByteBufferProducer(ByteBuffer.wrap(bytes), output),
+                  bytes.length);
+         } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("utf-8 encoding not supported", e);
          }
       }
    };

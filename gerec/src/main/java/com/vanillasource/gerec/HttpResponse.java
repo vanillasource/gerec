@@ -18,24 +18,23 @@
 
 package com.vanillasource.gerec;
 
-import java.io.InputStream;
 import java.util.function.Function;
-import java.util.function.Consumer;
-import java.io.Serializable;
+import java.nio.channels.ReadableByteChannel;
 
-public interface HttpResponse extends Serializable {
+public interface HttpResponse {
    HttpStatusCode getStatusCode();
 
    boolean hasHeader(Header<?> header);
 
    <T> T getHeader(Header<T> header);
 
-   <T> T processContent(Function<InputStream, T> contentProcessor);
+   void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory);
 
-   default void processContent(Consumer<InputStream> contentProcessor) {
-      processContent(inputStream -> {
-         contentProcessor.accept(inputStream);
-         return null;
-      });
+   interface ByteConsumer {
+      void onReady();
+
+      void onCompleted();
+
+      void onException(Exception e);
    }
 }

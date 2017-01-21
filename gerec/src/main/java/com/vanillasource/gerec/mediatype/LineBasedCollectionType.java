@@ -24,13 +24,15 @@ import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.DeserializationContext;
 import java.util.function.Function;
+import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.Channels;
+import java.util.concurrent.ExecutionException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.UncheckedIOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 /**
  * An accept type that with another (delegate) accept type will lazily deserialize
@@ -41,64 +43,101 @@ import java.io.InputStreamReader;
  * this type can be used for long-polling basically indefinitely.
  * Because only non-empty lines are deserialized, empty lines (line breaks) can be used by
  * the server to keep the connection alive.
- * <strong>Note:</strong> You <i>have to</i> use the resulting processor, otherwise the resources
- * associated with the response, as well as the response stream will stay open.
  */
-public class LineBasedCollectionType<T> extends NamedAcceptType<Processor<T>> {
-   private AcceptMediaType<T> acceptType;
+public class LineBasedCollectionType<T> extends NamedAcceptType<Void> {
+   private static final int READ_BUFFER_SIZE = 4096;
+   private final AcceptMediaType<T> acceptType;
+   private final Consumer<T> consumer;
 
-   public LineBasedCollectionType(String mediaTypeName, double qualityValue, AcceptMediaType<T> acceptType) {
+   public LineBasedCollectionType(String mediaTypeName, double qualityValue, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
       super(mediaTypeName, qualityValue);
       this.acceptType = acceptType;
+      this.consumer = consumer;
    }
 
-   public LineBasedCollectionType(String mediaTypeName, AcceptMediaType<T> acceptType) {
-      super(mediaTypeName);
-      this.acceptType = acceptType;
+   public LineBasedCollectionType(String mediaTypeName, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
+      this(mediaTypeName, 1.0d, acceptType, consumer);
    }
 
    @Override
-   public Processor<T> deserialize(HttpResponse response, DeserializationContext context) {
-      return consumer -> {
-         response.processContent(inputStream -> {
+   public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
+      CompletableFuture<Void> result = new CompletableFuture<>();
+      response.consumeContent(input -> new HttpResponse.ByteConsumer() {
+         private final ByteBuffer inputBuffer = ByteBuffer.allocate(READ_BUFFER_SIZE);
+         private final StringBuilder lineBuilder = new StringBuilder();
+
+         @Override
+         public void onReady() {
             try {
-               try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
-                  String line;
-                  while ((line = reader.readLine()) != null) {
-                     String thisLine = line;
-                     if (line.length() > 0) {
-                        consumer.accept(acceptType.deserialize(new HttpResponse() {
-                           @Override
-                           public HttpStatusCode getStatusCode() {
-                              return response.getStatusCode();
-                           }
-
-                           @Override
-                           public boolean hasHeader(Header<?> header) {
-                              return response.hasHeader(header);
-                           }
-
-                           @Override
-                           public <T> T getHeader(Header<T> header) {
-                              return response.getHeader(header);
-                           }
-
-                           @Override
-                           public <T> T processContent(Function<InputStream, T> contentProcessor) {
-                              try {
-                                 return contentProcessor.apply(new ByteArrayInputStream(thisLine.getBytes("UTF-8")));
-                              } catch (UnsupportedEncodingException e) {
-                                 throw new UncheckedIOException(e);
-                              }
-                           }
-                        }, context));
+               while (input.read(inputBuffer) > 0) {
+                  inputBuffer.flip();
+                  while (inputBuffer.hasRemaining()) {
+                     int c = inputBuffer.get();
+                     if (c == '\n') {
+                        String line = lineBuilder.toString();
+                        if (!line.isEmpty()) {
+                           processLine(line);
+                        }
+                        lineBuilder.setLength(0);
+                     } else {
+                        lineBuilder.append((char) c);
                      }
                   }
+                  inputBuffer.clear();
                }
             } catch (IOException e) {
                throw new UncheckedIOException(e);
             }
-         });
-      };
+         }
+
+         private void processLine(String line) {
+            try {
+               T item = acceptType.deserialize(new HttpResponse() {
+                  @Override
+                  public HttpStatusCode getStatusCode() {
+                     return response.getStatusCode();
+                  }
+
+                  @Override
+                  public boolean hasHeader(Header<?> header) {
+                     return response.hasHeader(header);
+                  }
+
+                  @Override
+                  public <T> T getHeader(Header<T> header) {
+                     return response.getHeader(header);
+                  }
+
+                  @Override
+                  public void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory) {
+                     ReadableByteChannel lineChannel = Channels.newChannel(new ByteArrayInputStream(line.getBytes()));
+                     ByteConsumer byteConsumer = consumerFactory.apply(lineChannel);
+                     try {
+                        byteConsumer.onReady();
+                        byteConsumer.onCompleted();
+                     } catch (Exception e) {
+                        byteConsumer.onException(e);
+                     }
+                  }
+               }, context).get();
+               consumer.accept(item);
+            } catch (InterruptedException e) {
+               throw new IllegalStateException("interrupted while processing item: "+line, e);
+            } catch (ExecutionException e) {
+               throw new IllegalStateException("exception while processing item: "+line, e);
+            }
+         }
+
+         @Override
+         public void onCompleted() {
+            result.complete(null);
+         }
+
+         @Override
+         public void onException(Exception e) {
+            result.completeExceptionally(e);
+         }
+      });
+      return result;
    }
 }

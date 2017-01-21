@@ -24,6 +24,7 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import static java.util.Collections.*;
+import java.util.concurrent.CompletableFuture;
 
 @Test
 public class SameTypeAlternativesTests {
@@ -65,12 +66,12 @@ public class SameTypeAlternativesTests {
    }
 
    @SuppressWarnings("unchecked")
-   public void testHandlingTypeDeserializesForTypes() {
+   public void testHandlingTypeDeserializesForTypes() throws Exception {
       SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
-      when(mediaType.deserialize(response, null)).thenReturn("abc");
+      when(mediaType.deserialize(response, null)).thenReturn(CompletableFuture.completedFuture("abc"));
 
-      assertEquals(types.deserialize(response, null), "abc");
+      assertEquals(types.deserialize(response, null).get(), "abc");
    }
 
    @BeforeMethod

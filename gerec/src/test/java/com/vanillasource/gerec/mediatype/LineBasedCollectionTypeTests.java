@@ -22,10 +22,11 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpResponse;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.io.InputStream;
+import java.util.function.Consumer;
 import java.io.ByteArrayInputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 @Test
 public class LineBasedCollectionTypeTests {
@@ -33,25 +34,19 @@ public class LineBasedCollectionTypeTests {
    private LineBasedCollectionType<String> type;
    private Consumer<String> consumer;
 
-   public void testDeserializationDoesNotConsumeStream() {
-      type.deserialize(response, null);
-
-      verifyNoMoreInteractions(response);
-   }
-
-   public void testProcessingDoesConsumeStreamItems() {
+   public void testProcessingDoesConsumeStreamItems() throws Exception {
       responseContent("a\nb\n");
 
-      type.deserialize(response, null).process(consumer);
+      type.deserialize(response, null).get();
 
       verify(consumer).accept("a");
       verify(consumer).accept("b");
    }
 
-   public void testEmptyLinesAreDiscarded() {
+   public void testEmptyLinesAreDiscarded() throws Exception {
       responseContent("a\n\n\n\n");
 
-      type.deserialize(response, null).process(consumer);
+      type.deserialize(response, null).get();
 
       verify(consumer).accept("a");
       verifyNoMoreInteractions(consumer);
@@ -60,11 +55,12 @@ public class LineBasedCollectionTypeTests {
    @SuppressWarnings("unchecked")
    private void responseContent(String content) {
       doAnswer(invocation -> {
-         ((Consumer<InputStream>)invocation.getArguments()[0]).accept(
-            new ByteArrayInputStream(content.getBytes("UTF-8"))
-         );
+         HttpResponse.ByteConsumer consumer = ((Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0])
+            .apply(Channels.newChannel(new ByteArrayInputStream(content.getBytes("UTF-8"))));
+         consumer.onReady();
+         consumer.onCompleted();
          return null;
-      }).when(response).processContent(any(Consumer.class));
+      }).when(response).consumeContent(any(Function.class));
    }
 
    @BeforeMethod
@@ -72,6 +68,6 @@ public class LineBasedCollectionTypeTests {
    protected void setUp() {
       response = mock(HttpResponse.class);
       consumer = mock(Consumer.class);
-      type = new LineBasedCollectionType<String>("application/vnd.vanillasource.lines", MediaTypes.TEXT_PLAIN);
+      type = new LineBasedCollectionType<String>("application/vnd.vanillasource.lines", MediaTypes.TEXT_PLAIN, consumer);
    }
 }
