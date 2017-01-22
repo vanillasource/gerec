@@ -19,8 +19,19 @@
      </dependency>
      <dependency>
         <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5</version>
+        <artifactId>httpasyncclient</artifactId>
+        <version>4.1.2</version>
+        <exclusions>
+           <exclusion>
+              <groupId>org.apache.httpcomponents</groupId>
+              <artifactId>httpcore</artifactId>
+           </exclusion>
+        </exclusions>
+     </dependency>
+     <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>4.4.5</version>
      </dependency>
      <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>

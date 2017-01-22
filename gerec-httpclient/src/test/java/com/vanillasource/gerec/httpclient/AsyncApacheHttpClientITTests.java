@@ -23,8 +23,8 @@ import com.vanillasource.gerec.http.*;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import java.net.URI;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -33,81 +33,81 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static java.util.Arrays.asList;
 
 @Test
-public class ApacheHttpClientTests {
-   private ApacheHttpClient client;
+public class AsyncApacheHttpClientITTests {
+   private AsyncApacheHttpClient client;
    private URI requestURI = URI.create("http://localhost:8091/nini");
-   private CloseableHttpClient httpClient;
+   private CloseableHttpAsyncClient httpClient;
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
    private HttpRequest.HttpRequestChange change;
 
-   public void testGetResourceOkReturnsResponseOk() {
+   public void testGetResourceOkReturnsResponseOk() throws Exception {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = client.doGet(requestURI, change);
+      HttpResponse response = client.doGet(requestURI, change).get();
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
 
-   public void testHeadResourceOkReturnsResponseOk() {
+   public void testHeadResourceOkReturnsResponseOk() throws Exception {
       stubFor(head(urlEqualTo("/nini")).willReturn(aResponse().withBody("")));
 
-      HttpResponse response = client.doHead(requestURI, change);
+      HttpResponse response = client.doHead(requestURI, change).get();
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
 
-   public void testPostResourceOkReturnsResponseOk() {
+   public void testPostResourceOkReturnsResponseOk() throws Exception {
       stubFor(post(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = client.doPost(requestURI, change);
+      HttpResponse response = client.doPost(requestURI, change).get();
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
 
-   public void testPutResourceOkReturnsResponseOk() {
+   public void testPutResourceOkReturnsResponseOk() throws Exception {
       stubFor(put(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = client.doPut(requestURI, change);
+      HttpResponse response = client.doPut(requestURI, change).get();
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
 
-   public void testDeleteResourceOkReturnsResponseOk() {
+   public void testDeleteResourceOkReturnsResponseOk() throws Exception {
       stubFor(delete(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = client.doDelete(requestURI, change);
+      HttpResponse response = client.doDelete(requestURI, change).get();
 
       assertTrue(response.getStatusCode() == HttpStatusCode.OK);
    }
 
-   public void testChangeIsAppliedToRequest() {
+   public void testChangeIsAppliedToRequest() throws Exception {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withBody("ABC")));
 
-      HttpResponse response = client.doGet(requestURI, change);
+      HttpResponse response = client.doGet(requestURI, change).get();
 
       verify(change).applyTo(any(HttpRequest.class));
    }
 
-   public void testLocationHeaderCanBeRead() {
+   public void testLocationHeaderCanBeRead() throws Exception {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Location", "nunu").withBody("ABC")));
 
-      HttpResponse response = client.doGet(requestURI, change);
+      HttpResponse response = client.doGet(requestURI, change).get();
 
       assertEquals(response.getHeader(Headers.LOCATION), "nunu");
    }
 
-   public void testLocationHeaderIsReadEvenIfNotCapitalized() {
+   public void testLocationHeaderIsReadEvenIfNotCapitalized() throws Exception {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withHeader("location", "nunu").withBody("ABC")));
 
-      HttpResponse response = client.doGet(requestURI, change);
+      HttpResponse response = client.doGet(requestURI, change).get();
 
       assertEquals(response.getHeader(Headers.LOCATION), "nunu");
    }
 
-   public void testAllowsHeaderCanBeReadIfPresent() {
+   public void testAllowsHeaderCanBeReadIfPresent() throws Exception {
       stubFor(options(urlEqualTo("/nini")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("ABC")));
 
-      HttpResponse response = client.doOptions(requestURI, change);
+      HttpResponse response = client.doOptions(requestURI, change).get();
 
       assertEquals(response.getHeader(Headers.ALLOW), asList("GET", "POST"));
    }
@@ -115,8 +115,9 @@ public class ApacheHttpClientTests {
    @BeforeMethod
    protected void setUp() {
       change = mock(HttpRequest.HttpRequestChange.class);
-      httpClient = HttpClientBuilder.create().build();
-      client = new ApacheHttpClient(httpClient);
+      httpClient = HttpAsyncClients.createDefault();
+      httpClient.start();
+      client = new AsyncApacheHttpClient(httpClient);
       WireMock.reset();
    }
 
