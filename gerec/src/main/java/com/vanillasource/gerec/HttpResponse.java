@@ -31,10 +31,21 @@ public interface HttpResponse {
    void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory);
 
    interface ByteConsumer {
+      /**
+       * Consumer is notified that the readable channel has bytes waiting to be read.
+       */
       void onReady();
 
+      /**
+       * Consumer is notified that there are no more bytes, <code>onReady()</code> will
+       * not be called anymore.
+       */
       void onCompleted();
 
+      /**
+       * There was an exception during processing. Exceptions from <code>onReady()</code>
+       * and <code>onCompleted()</code> are also delivered here.
+       */
       void onException(Exception e);
    }
 }

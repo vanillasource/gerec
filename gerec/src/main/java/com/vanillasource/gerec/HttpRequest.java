@@ -28,9 +28,9 @@ public interface HttpRequest {
 
    <T> void setHeader(Header<T> header, T value);
 
-   void setByteProducer(Function<WritableByteChannel, ByteProducer> producerFactory);
+   void setByteProducer(Function<ControllableWritableByteChannel, ByteProducer> producerFactory);
 
-   void setByteProducer(Function<WritableByteChannel, ByteProducer> producerFactory, long length);
+   void setByteProducer(Function<ControllableWritableByteChannel, ByteProducer> producerFactory, long length);
 
    public interface ByteProducer {
       /**
@@ -38,7 +38,24 @@ public interface HttpRequest {
        */
       void onReady();
 
+      /**
+       * Producer is notified that channel will not call <code>onReady()</code> anymore.
+       */
       void onCompleted();
+   }
+
+   public interface ControllableWritableByteChannel extends WritableByteChannel {
+      /**
+       * Pause delivering <code>onReady()</code> events. Producer notifies the channel
+       * that there is no data to be written, therefore it should not call <code>onReady()</code>.
+       */
+      void pause();
+
+      /**
+       * Resume delivering <code>onReady()</code> events. Producer notifies channel that
+       * it is ready to deliver bytes to the channel whenever the channel is ready.
+       */
+      void resume();
    }
 
    public interface HttpRequestChange {
