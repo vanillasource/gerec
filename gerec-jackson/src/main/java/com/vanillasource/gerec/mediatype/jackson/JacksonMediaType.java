@@ -21,15 +21,17 @@ package com.vanillasource.gerec.mediatype.jackson;
 import com.vanillasource.gerec.form.Form;
 import com.vanillasource.gerec.form.GetForm;
 import com.vanillasource.gerec.form.PostForm;
-import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.mediatype.NamedMediaType;
+import com.vanillasource.gerec.mediatype.ByteArrayAcceptType;
 import java.util.function.Consumer;
+import com.vanillasource.gerec.nio.ByteBufferProducer;
 import java.net.URI;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
+import java.nio.ByteBuffer;
 import java.io.UncheckedIOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -38,6 +40,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.JsonParseException;
+import java.util.concurrent.CompletableFuture;
 
 public class JacksonMediaType<T> extends NamedMediaType<T> {
    private Class<T> type;
@@ -57,23 +60,24 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
    }
 
    @Override
-   public T deserialize(HttpResponse response, DeserializationContext context) {
-      return response.processContent(inputStream -> {
-         try {
-            return createDeserializerObjectMapper(context).readValue(inputStream, type);
-         } catch (IOException e) {
-            throw new UncheckedIOException(e);
-         }
-      });
+   public CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context) {
+      return new ByteArrayAcceptType().deserialize(response, context)
+         .thenApply(content -> {
+            try {
+               return createDeserializerObjectMapper(context).readValue(content, type);
+            } catch (IOException e) {
+               throw new UncheckedIOException(e);
+            }
+         });
    }
 
    private ObjectMapper createDeserializerObjectMapper(DeserializationContext context) {
       ObjectMapper mapper = new ObjectMapper();
       mapperCustomizer.accept(mapper);
       SimpleModule module = new SimpleModule();
-      module.addDeserializer(ResourceReference.class, new JsonDeserializer<ResourceReference>() {
+      module.addDeserializer(AsyncResourceReference.class, new JsonDeserializer<AsyncResourceReference>() {
          @Override
-         public ResourceReference deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
+         public AsyncResourceReference deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
             // Parse { "href": "<uri>" }, current token is the start of the object
             if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
                throw new JsonParseException("tried to read a link, but it was not an object", jp.getCurrentLocation());
@@ -119,7 +123,7 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
    public void serialize(T object, HttpRequest request) {
       try {
          byte[] objectAsBytes = createSerializerObjectMapper().writeValueAsBytes(object);
-         request.setContent(() -> new ByteArrayInputStream(objectAsBytes), objectAsBytes.length);
+         request.setByteProducer(channel -> new ByteBufferProducer(ByteBuffer.wrap(objectAsBytes), channel), objectAsBytes.length);
       } catch (IOException e) {
          throw new UncheckedIOException(e);
       }

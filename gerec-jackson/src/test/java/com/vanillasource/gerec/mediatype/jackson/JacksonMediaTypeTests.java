@@ -24,11 +24,13 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
-import java.util.function.Supplier;
 import java.net.URI;
 import java.util.function.Function;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.Channels;
+import java.nio.ByteBuffer;
 import java.io.*;
 
 @Test
@@ -45,24 +47,24 @@ public class JacksonMediaTypeTests {
       assertEquals(content, "{\"name\":\"John\",\"age\":34}");
    }
 
-   public void testTestObjectCanBeDeserialized() {
+   public void testTestObjectCanBeDeserialized() throws Exception {
       JacksonMediaType<TestObject> mediaType = new JacksonMediaType<>(TestObject.class, "application/vnd.vanillasource.testobject+json");
       content = "{\"name\":\"John\",\"age\":34}";
       
-      TestObject object = mediaType.deserialize(response, context);
+      TestObject object = mediaType.deserialize(response, context).get();
 
       assertEquals(object.getName(), "John");
       assertEquals(object.getAge(), 34);
    }
 
    @SuppressWarnings("unchecked")
-   public void testReferencesGetDeserializedUsedReferenceResolver() {
+   public void testReferencesGetDeserializedUsedReferenceResolver() throws Exception {
       JacksonMediaType<ReferenceObject> mediaType = new JacksonMediaType<>(ReferenceObject.class, "application/vnd.vanillasource.referenceobject+json");
       content = "{\"reference\":{\"href\":\"/relative/uri\"}}";
-      ResourceReference reference = mock(ResourceReference.class);
+      AsyncResourceReference reference = mock(AsyncResourceReference.class);
       when(context.resolve(URI.create("/relative/uri"))).thenReturn(reference);
 
-      ReferenceObject object = mediaType.deserialize(response, context);
+      ReferenceObject object = mediaType.deserialize(response, context).get();
 
       assertSame(object.getReference(), reference);
    }
@@ -74,18 +76,53 @@ public class JacksonMediaTypeTests {
       request = mock(HttpRequest.class);
       content = null;
       doAnswer(invocation -> {
-         Supplier<InputStream> inputStreamSupplier = (Supplier<InputStream>)invocation.getArguments()[0];
-         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStreamSupplier.get()));
-         content = reader.readLine();
+         Function<HttpRequest.ControllableWritableByteChannel, HttpRequest.ByteProducer> producerFactory =
+            (Function<HttpRequest.ControllableWritableByteChannel, HttpRequest.ByteProducer>)invocation.getArguments()[0];
+         HttpRequest.ByteProducer producer = producerFactory.apply(new StringWritableByteChannel());
+         producer.onReady();
+         producer.onCompleted();
          return null;
-      }).when(request).setContent(any(), anyLong());
+      }).when(request).setByteProducer(any(), anyLong());
       response = mock(HttpResponse.class);
-      when(response.processContent(any(Function.class))).thenAnswer(invocation -> {
-         Function<InputStream, Object> processor = (Function<InputStream, Object>)invocation.getArguments()[0];
-         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes())) {
-            return processor.apply(inputStream);
+      doAnswer(invocation -> {
+         Function<ReadableByteChannel, HttpResponse.ByteConsumer> consumerFactory = (Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0];
+         HttpResponse.ByteConsumer consumer = consumerFactory.apply(Channels.newChannel(new ByteArrayInputStream(content.getBytes())));
+         consumer.onReady();
+         consumer.onCompleted();
+         return null;
+      }).when(response).consumeContent(any(Function.class));
+   }
+
+   public class StringWritableByteChannel implements HttpRequest.ControllableWritableByteChannel {
+      private StringBuilder builder = new StringBuilder();
+
+      @Override
+      public void resume() {
+      }
+
+      @Override
+      public void pause() {
+      }
+
+      @Override
+      public int write(ByteBuffer buffer) {
+         int count = 0;
+         while (buffer.hasRemaining()) {
+            builder.append((char) buffer.get());
+            count++;
          }
-      });
+         return count;
+      }
+
+      @Override
+      public void close() {
+         content = builder.toString();
+      }
+
+      @Override
+      public boolean isOpen() {
+         return true;
+      }
    }
 
    public static final class TestObject {
@@ -110,16 +147,16 @@ public class JacksonMediaTypeTests {
    }
 
    public static final class ReferenceObject {
-      private ResourceReference reference;
+      private AsyncResourceReference reference;
 
       protected ReferenceObject() {
       }
 
-      public ReferenceObject(ResourceReference reference) {
+      public ReferenceObject(AsyncResourceReference reference) {
          this.reference = reference;
       }
 
-      public ResourceReference getReference() {
+      public AsyncResourceReference getReference() {
          return reference;
       }
    }

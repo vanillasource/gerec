@@ -41,7 +41,8 @@ public class ByteBufferProducer implements HttpRequest.ByteProducer {
       try {
          if (buffer.hasRemaining()) {
             output.write(buffer);
-         } else {
+         }
+         if (!buffer.hasRemaining()) {
             output.close();
          }
       } catch (IOException e) {
