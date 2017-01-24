@@ -26,43 +26,43 @@ import com.vanillasource.gerec.mediatype.MediaTypes;
 
 @Test
 public class FormTests extends HttpTestsBase {
-   public void testFormCanDeserializeCorrectly() {
+   public void testFormCanDeserializeCorrectly() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
                   "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
 
-      SearchPage page = reference().get(SearchPage.TYPE).getContent();
+      SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
 
       assertEquals(page.getGreetingMessage(), "Hello!");
    }
 
-   public void testGetFormSubmitsWithoutParameters() {
+   public void testGetFormSubmitsWithoutParameters() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
                   "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
 
-      SearchPage page = reference().get(SearchPage.TYPE).getContent();
+      SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().submit(MediaTypes.TEXT_PLAIN);
 
       verify(getRequestedFor(urlEqualTo("/")));
    }
 
-   public void testGetFormSubmitsWithiParameterValues() {
+   public void testGetFormSubmitsWithiParameterValues() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
                   "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
       stubFor(get(urlEqualTo("/?q=nini")).willReturn(aResponse()));
 
-      SearchPage page = reference().get(SearchPage.TYPE).getContent();
+      SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().put("q", "nini");
       page.getSearchForm().submit(MediaTypes.TEXT_PLAIN);
 
       verify(getRequestedFor(urlEqualTo("/?q=nini")));
    }
 
-   public void testPostFormPostsParameterValues() {
+   public void testPostFormPostsParameterValues() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
                   "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"POST\"}}")));
       stubFor(post(urlEqualTo("/")).willReturn(aResponse()));
 
-      SearchPage page = reference().get(SearchPage.TYPE).getContent();
+      SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().put("q", "nini");
       page.getSearchForm().submit(MediaTypes.TEXT_PLAIN);
 

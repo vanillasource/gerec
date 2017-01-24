@@ -22,39 +22,32 @@ import com.vanillasource.gerec.*;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import java.net.URI;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import com.vanillasource.gerec.reference.HttpClientResourceReference;
-import com.vanillasource.gerec.httpclient.ApacheHttpClient;
+import com.vanillasource.gerec.reference.AsyncHttpClientResourceReference;
+import com.vanillasource.gerec.httpclient.AsyncApacheHttpClient;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
+import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 
 public class HttpTestsBase {
-   private HttpClientResourceReference reference;
-   private PoolingHttpClientConnectionManager connectionManager;
-   private CloseableHttpClient httpClient;
+   private AsyncHttpClientResourceReference reference;
+   private CloseableHttpAsyncClient httpClient;
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
 
-   protected ResourceReference reference() {
+   protected AsyncResourceReference reference() {
       return reference;
    }
 
-   protected PoolingHttpClientConnectionManager connectionManager() {
-      return connectionManager;
-   }
-
    @BeforeMethod
-   protected void setUp() {
-      connectionManager = new PoolingHttpClientConnectionManager();
-      httpClient = HttpClientBuilder
-         .create()
-         .setConnectionManager(connectionManager)
-         .build();
-      reference = new HttpClientResourceReference(new ApacheHttpClient(httpClient), URI.create("http://localhost:8091/"));
+   protected void setUp() throws Exception {
+      httpClient = HttpAsyncClients.createDefault();
+      httpClient.start();
+      reference = new AsyncHttpClientResourceReference(new AsyncApacheHttpClient(httpClient), URI.create("http://localhost:8091/"));
       WireMock.reset();
    }
 

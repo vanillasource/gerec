@@ -23,6 +23,8 @@ import com.vanillasource.gerec.reference.AsyncHttpClient;
 import com.vanillasource.gerec.*;
 import com.vanillasource.gerec.http.Headers;
 import org.apache.http.client.methods.*;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
 import org.apache.http.nio.protocol.HttpAsyncResponseConsumer;
 import org.apache.http.nio.ContentEncoder;
@@ -42,8 +44,10 @@ import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.http.nio.ContentDecoderChannel;
 import java.util.function.Function;
+import org.apache.log4j.Logger;
 
 public final class AsyncApacheHttpClient implements AsyncHttpClient {
+   private static final Logger logger = Logger.getLogger(AsyncApacheHttpClient.class);
    private final Supplier<HttpAsyncClient> httpClientSupplier;
 
    /**
@@ -91,22 +95,15 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
       return execute(new HttpOptions(uri), change);
    }
 
-   private CompletableFuture<HttpResponse> execute(HttpEntityEnclosingRequestBase request, HttpRequest.HttpRequestChange change) {
-      request.setEntity(null); // TODO
-      return execute(new AsyncHttpRequest(request), change);
-   }
-
-   private CompletableFuture<HttpResponse> execute(HttpRequestBase request, HttpRequest.HttpRequestChange change) {
-      return execute(new AsyncHttpRequest(request), change);
-   }
-
-   private CompletableFuture<HttpResponse> execute(AsyncHttpRequest request, HttpRequest.HttpRequestChange change) {
+   private CompletableFuture<HttpResponse> execute(HttpRequestBase httpRequest, HttpRequest.HttpRequestChange change) {
+      AsyncHttpRequest request = new AsyncHttpRequest(httpRequest);
       change.applyTo(request);
       return execute(request);
    }
 
    private CompletableFuture<HttpResponse> execute(AsyncHttpRequest request) {
       CompletableFuture<HttpResponse> result = new CompletableFuture<>();
+      logger.debug("making the async http request");
       httpClientSupplier.get().execute(
             request.getProducer(result),
             AsyncHttpResponse.getConsumer(result),
@@ -199,21 +196,28 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                   producer = producerFactory.apply(new ControllableWritableByteChannel() {
                      @Override
                      public void pause() {
+                        logger.debug("suspending output during request submission");
                         control.suspendOutput();
                      }
 
                      @Override
                      public void resume() {
+                        logger.debug("resuming output during request submission");
                         control.requestOutput();
                      }
 
                      @Override
                      public int write(ByteBuffer buffer) throws IOException {
-                        return contentEncoder.write(buffer);
+                        int length = contentEncoder.write(buffer);
+                        if (logger.isDebugEnabled()) {
+                           logger.debug("written "+length+" bytes of request");
+                        }
+                        return length;
                      }
 
                      @Override
                      public void close() throws IOException {
+                        logger.debug("completing request");
                         contentEncoder.complete();
                      }
 
@@ -228,6 +232,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
             @Override
             public void requestCompleted(HttpContext context) {
+               logger.debug("request completed");
                if (producer != null) {
                   producer.onCompleted();
                }
@@ -235,7 +240,6 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
             @Override
             public void resetRequest() {
-               throw new UnsupportedOperationException("reset of request producing not supported");
             }
          };
       }
@@ -243,12 +247,19 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
       @Override
       public void setByteProducer(Function<ControllableWritableByteChannel, ByteProducer> producerFactory) {
          this.producerFactory = producerFactory;
+         if (request instanceof HttpEntityEnclosingRequest) {
+            ((HttpEntityEnclosingRequest)request).setEntity(new BasicHttpEntity());
+         }
       }
 
       @Override
       public void setByteProducer(Function<ControllableWritableByteChannel, ByteProducer> producerFactory, long length) {
          this.producerFactory = producerFactory;
-         setHeader(Headers.CONTENT_LENGTH, length);
+         if (request instanceof HttpEntityEnclosingRequest) {
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setContentLength(length);
+            ((HttpEntityEnclosingRequest)request).setEntity(entity);
+         }
       }
    }
 
@@ -317,7 +328,9 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                         throw new IllegalStateException("can only consume response once");
                      }
                      responseConsumerFactory = consumerFactory;
+                     logger.debug("client will consume content");
                      if (ioControl != null) {
+                        logger.debug("enabled response input");
                         ioControl.requestInput();
                      }
                   }
@@ -326,6 +339,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
             @Override
             public void responseCompleted(HttpContext context) {
+               logger.debug("response completed");
                this.done = true;
                if (consumer != null) {
                   consumer.onCompleted();
@@ -335,9 +349,11 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
             @Override
             public void consumeContent(ContentDecoder contentDecoder, IOControl control) {
                if (responseConsumerFactory == null) {
+                  logger.debug("consuming content, but client did not ask for content yet, suspending input from response");
                   control.suspendInput();
                   ioControl = control;
                } else {
+                  logger.debug("consuming content");
                   if (consumer == null) {
                      consumer = responseConsumerFactory.apply(new ContentDecoderChannel(contentDecoder));
                   }

@@ -43,7 +43,7 @@ public class ByteBufferProducer implements HttpRequest.ByteProducer {
             output.write(buffer);
          }
          if (!buffer.hasRemaining()) {
-            output.close();
+            onCompleted();
          }
       } catch (IOException e) {
          throw new UncheckedIOException(e);
@@ -52,6 +52,11 @@ public class ByteBufferProducer implements HttpRequest.ByteProducer {
 
    @Override
    public void onCompleted() {
+      try {
+         output.close();
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
+      }
    }
 }
 

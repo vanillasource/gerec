@@ -29,148 +29,137 @@ import static com.vanillasource.gerec.http.CacheControl.*;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import com.vanillasource.gerec.mediatype.SameTypeAlternatives;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
+import java.util.concurrent.ExecutionException;
 import static java.util.Arrays.asList;
 
 @Test
 public class ConceptTests extends HttpTestsBase {
-   public void testSimpleGetRequest() {
+   public void testSimpleGetRequest() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      Person person = reference().get(Person.TYPE).getContent();
+      Person person = reference().get(Person.TYPE).get().getContent();
 
       assertEquals(person, new Person("John", 35));
    }
 
-   public void testSimpleGetSubmitsTheAcceptMediaType() {
+   public void testSimpleGetSubmitsTheAcceptMediaType() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      Person person = reference().get(Person.TYPE).getContent();
+      Person person = reference().get(Person.TYPE).get().getContent();
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("Accept", equalTo("application/vnd.test.person; q=1")));
    }
 
-   public void testUsingMatchUsesETag() {
+   public void testUsingMatchUsesETag() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}").withHeader("ETag","ABCD")));
 
-      ContentResponse<Person> personResponse = reference().get(Person.TYPE);
+      ContentResponse<Person> personResponse = reference().get(Person.TYPE).get();
       reference().get(Person.TYPE, personResponse.ifMatch());
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("If-Match", equalTo("ABCD")));
    }
 
-   public void testUsingMultipleRequestChanges() {
+   public void testUsingMultipleRequestChanges() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}").withHeader("ETag","ABCD")));
 
-      reference().get(Person.TYPE, maxAge(10).and(maxStale(10)));
+      reference().get(Person.TYPE, maxAge(10).and(maxStale(10))).get();
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("Cache-Control", equalTo("max-age=10, max-stale=10")));
    }
 
-   public void testPostSubmitsCorrectJsonData() {
+   public void testPostSubmitsCorrectJsonData() throws Exception {
       stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      reference().post(Person.TYPE, new Person("Jack", 50));
+      reference().post(Person.TYPE, new Person("Jack", 50)).get();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
    }
 
-   public void testPutSubmitsCorrectJsonData() {
+   public void testPutSubmitsCorrectJsonData() throws Exception {
       stubFor(put(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      reference().put(Person.TYPE, new Person("Jack", 50));
+      reference().put(Person.TYPE, new Person("Jack", 50)).get();
 
       verify(putRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
    }
 
-   public void testEmptyDeleteReturnsOk() {
+   public void testEmptyDeleteReturnsOk() throws Exception {
       stubFor(delete(urlEqualTo("/")).willReturn(aResponse()));
 
-      reference().delete();
+      reference().delete().get();
 
       verify(deleteRequestedFor(urlEqualTo("/")));
    }
 
-   public void testPostCanHaveDifferentMediaTypesForContentAndAccept() {
+   public void testPostCanHaveDifferentMediaTypesForContentAndAccept() throws Exception {
       stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("OK")));
 
-      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.TEXT_PLAIN).getContent();
+      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.TEXT_PLAIN).get().getContent();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
       assertEquals(result, "OK");
    }
 
-   public void testIndicatesAllowedIsPresentIfHeaderSupplied() {
+   public void testIndicatesAllowedIsPresentIfHeaderSupplied() throws Exception {
       stubFor(options(urlEqualTo("/")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("OK")));
 
-      Response response = reference().options();
+      Response response = reference().options().get();
 
       assertTrue(response.hasAllow());
    }
 
-   public void testIndicatesGetMethodAllowedWhenSupplied() {
+   public void testIndicatesGetMethodAllowedWhenSupplied() throws Exception {
       stubFor(options(urlEqualTo("/")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("OK")));
 
-      Response response = reference().options();
+      Response response = reference().options().get();
 
       assertTrue(response.isGetAllowed());
    }
 
-   @Test(expectedExceptions = IllegalStateException.class)
-   public void testExceptionIfAlternativeIsNotFound() {
+   public void testExceptionIfAlternativeIsNotFound() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withHeader("Content-type", "text/html; charset=UTF-8").withBody("OK")));
 
-      reference().get(
-            new SameTypeAlternatives<>(asList(
-               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
-               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2"))));
+      try {
+         reference().get(
+               new SameTypeAlternatives<>(asList(
+                  new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
+                  new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2"))))
+            .get();
+         fail("should have thrown exception");
+      } catch (ExecutionException e) {
+         assertEquals(e.getCause().getClass(), IllegalStateException.class);
+      }
    }
 
-   public void testAlternativeContentTypeIsSelected() {
+   public void testAlternativeContentTypeIsSelected() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withHeader("Content-type", "application/vnd.test.person-v1; charset=UTF-8").withBody("{\"name\":\"John\", \"age\": 35}")));
 
       Person person = reference().get(
             new SameTypeAlternatives<>(asList(
                new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
-               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2")))).getContent();
+               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2")))).get().getContent();
    }
 
-   @Test(expectedExceptions = HttpErrorException.class)
-   public void testNotFoundIsThrownAsException() {
+   public void testNotFoundIsThrownAsException() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404)));
 
-      reference().get(Person.TYPE);
+      try {
+         reference().get(Person.TYPE).get();
+      } catch (ExecutionException e) {
+         assertEquals(e.getCause().getClass(), HttpErrorException.class);
+      }
    }
 
-   public void testErrorBodyCanBeParsed() {
+   public void testErrorBodyCanBeParsed() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404).withBody("Nelson: Haha!")));
 
       try {
-         reference().get(Person.TYPE);
+         reference().get(Person.TYPE).get();
          fail("should have thrown exception");
-      } catch (HttpErrorException e) {
+      } catch (ExecutionException rawE) {
+         HttpErrorException e = (HttpErrorException) rawE.getCause();
          assertEquals(e.getResponse().getBody(MediaTypes.TEXT_PLAIN), "Nelson: Haha!");
       }
-   }
-
-   public void testConnectionIsConsumedAfterCall() {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
-
-      reference().get(Person.TYPE).getContent();
-
-      assertEquals(0, connectionManager().getTotalStats().getLeased());
-   }
-
-   public void testConnectionIsConsumedAfterErrorEvenIfExceptionContentIsNotRequested() {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404).withBody("ERROR")));
-
-      try {
-         reference().get(Person.TYPE).getContent();
-         fail("should have thrown error");
-      } catch (HttpErrorException e) {
-         // Ok
-      }
-
-      assertEquals(0, connectionManager().getTotalStats().getLeased());
    }
 }
 

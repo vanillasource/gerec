@@ -18,18 +18,18 @@
 
 package com.vanillasource.gerec.it;
 
-import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
 
 public class Link {
    public static final MediaType<Link> TYPE = new JacksonMediaType<>(Link.class, "application/vnd.test.link");
-   private ResourceReference link;
+   private AsyncResourceReference link;
 
    protected Link() {
    }
 
-   public ResourceReference getLink() {
+   public AsyncResourceReference getLink() {
       return link;
    }
 }

@@ -18,6 +18,7 @@
 
 package com.vanillasource.gerec;
 
+import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.concurrent.CompletableFuture;
@@ -49,10 +50,14 @@ public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
       public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
          CompletableFuture<Void> result = new CompletableFuture<>();
          response.consumeContent(input -> new HttpResponse.ByteConsumer() {
+            private ByteBuffer nothing = ByteBuffer.allocateDirect(4096);
+
             @Override
             public void onReady() {
                try {
-                  input.close();
+                  while (input.read(nothing) > 0) {
+                     nothing.clear();
+                  }
                } catch (IOException e) {
                   throw new UncheckedIOException(e);
                }
@@ -76,15 +81,16 @@ public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
          request.setByteProducer(output -> new HttpRequest.ByteProducer() {
             @Override
             public void onReady() {
+               onCompleted();
+            }
+
+            @Override
+            public void onCompleted() {
                try {
                   output.close();
                } catch (IOException e) {
                   throw new UncheckedIOException(e);
                }
-            }
-
-            @Override
-            public void onCompleted() {
             }
          }, 0);
       }

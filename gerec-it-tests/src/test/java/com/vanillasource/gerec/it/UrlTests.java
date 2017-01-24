@@ -26,21 +26,21 @@ import com.vanillasource.gerec.mediatype.MediaTypes;
 
 @Test
 public class UrlTests extends HttpTestsBase {
-   public void testCanFollowAsciiLink() {
+   public void testCanFollowAsciiLink() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"link\": { \"href\": \"/nini\" }}")));
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse()));
 
-      Link link = reference().get(Link.TYPE).getContent();
+      Link link = reference().get(Link.TYPE).get().getContent();
       link.getLink().get(MediaTypes.TEXT_PLAIN);
 
       verify(getRequestedFor(urlEqualTo("/nini")));
    }
 
-   public void testCanFollowLinkWithSpaceEncoded() {
+   public void testCanFollowLinkWithSpaceEncoded() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"link\": { \"href\": \"/ni%20ni\" }}")));
       stubFor(get(urlEqualTo("/ni%20ni")).willReturn(aResponse()));
 
-      Link link = reference().get(Link.TYPE).getContent();
+      Link link = reference().get(Link.TYPE).get().getContent();
       link.getLink().get(MediaTypes.TEXT_PLAIN);
 
       verify(getRequestedFor(urlEqualTo("/ni%20ni")));

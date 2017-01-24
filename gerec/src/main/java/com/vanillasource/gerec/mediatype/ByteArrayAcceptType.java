@@ -66,9 +66,11 @@ public class ByteArrayAcceptType implements AcceptMediaType<byte[]> {
             try {
                buffer.clear();
                int readLength = channel.read(buffer);
-               buffer.flip();
-               buffer.get(byteBuffer, 0, readLength);
-               output.write(byteBuffer, 0, readLength);
+               if (readLength > 0) {
+                  buffer.flip();
+                  buffer.get(byteBuffer, 0, readLength);
+                  output.write(byteBuffer, 0, readLength);
+               }
             } catch (IOException e) {
                throw new UncheckedIOException(e);
             }

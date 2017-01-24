@@ -39,11 +39,13 @@ import java.util.concurrent.CompletableFuture;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.ExecutionException;
+import org.apache.log4j.Logger;
 
 /**
  * Implement a resource reference using a HTTP Client.
  */
 public class AsyncHttpClientResourceReference implements AsyncResourceReference {
+   private static final Logger logger = Logger.getLogger(AsyncHttpClientResourceReference.class);
    private final AsyncHttpClient asyncHttpClient;
    private final URI uri;
 
@@ -67,8 +69,12 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
 
    private <T> CompletableFuture<ContentResponse<T>> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
       if (response.getStatusCode().isError()) {
+         if (logger.isDebugEnabled()) {
+            logger.debug("received status code "+response.getStatusCode()+", throwing error");
+         }
          return new ByteArrayAcceptType().deserialize(response, this::follow)
             .thenApply(content -> {
+               logger.debug("cached full error contents, returning with exception");
                throw new HttpErrorException("error in response, status code: "+response.getStatusCode(), new HttpErrorResponse(response, content));
             });
       } else if (acceptType == null) {
@@ -267,6 +273,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
                   ByteConsumer consumer = consumerFactory.apply(Channels.newChannel(new ByteArrayInputStream(errorBody)));
                   try {
                      consumer.onReady();
+                     consumer.onCompleted();
                   } catch (Exception e) {
                      consumer.onException(e);
                   }
