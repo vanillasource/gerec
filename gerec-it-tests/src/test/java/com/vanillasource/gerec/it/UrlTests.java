@@ -31,7 +31,7 @@ public class UrlTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse()));
 
       Link link = reference().get(Link.TYPE).get().getContent();
-      link.getLink().get(MediaTypes.TEXT_PLAIN);
+      link.getLink().get(MediaTypes.TEXT_PLAIN).get();
 
       verify(getRequestedFor(urlEqualTo("/nini")));
    }
@@ -41,7 +41,7 @@ public class UrlTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/ni%20ni")).willReturn(aResponse()));
 
       Link link = reference().get(Link.TYPE).get().getContent();
-      link.getLink().get(MediaTypes.TEXT_PLAIN);
+      link.getLink().get(MediaTypes.TEXT_PLAIN).get();
 
       verify(getRequestedFor(urlEqualTo("/ni%20ni")));
    }
