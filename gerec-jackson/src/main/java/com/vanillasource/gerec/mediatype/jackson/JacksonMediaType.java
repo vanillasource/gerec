@@ -19,9 +19,11 @@
 package com.vanillasource.gerec.mediatype.jackson;
 
 import com.vanillasource.gerec.form.AsyncForm;
+import com.vanillasource.gerec.form.Form;
 import com.vanillasource.gerec.form.GetAsyncForm;
 import com.vanillasource.gerec.form.PostAsyncForm;
 import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
@@ -75,46 +77,10 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
       ObjectMapper mapper = new ObjectMapper();
       mapperCustomizer.accept(mapper);
       SimpleModule module = new SimpleModule();
-      module.addDeserializer(AsyncResourceReference.class, new JsonDeserializer<AsyncResourceReference>() {
-         @Override
-         public AsyncResourceReference deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
-            // Parse { "href": "<uri>" }, current token is the start of the object
-            if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
-               throw new JsonParseException("tried to read a link, but it was not an object", jp.getCurrentLocation());
-            }
-            jp.nextFieldName(new SerializedString("href"));
-            String uri = jp.nextTextValue();
-            JsonToken token = jp.nextToken();
-            if (token != JsonToken.END_OBJECT) {
-               throw new JsonParseException("tried to read a link, but it was not finished after reading href", jp.getCurrentLocation());
-            }
-            return context.resolve(URI.create(uri));
-         }
-      });
-      module.addDeserializer(AsyncForm.class, new JsonDeserializer<AsyncForm>() {
-         @Override
-         public AsyncForm deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
-            // Parse { "target": "<uri>", "method": "GET" }, current token is the start of the object
-            if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
-               throw new JsonParseException("tried to read a form, but it was not an object", jp.getCurrentLocation());
-            }
-            jp.nextFieldName(new SerializedString("target"));
-            String target = jp.nextTextValue();
-            jp.nextFieldName(new SerializedString("method"));
-            String method = jp.nextTextValue();
-            JsonToken token = jp.nextToken();
-            if (token != JsonToken.END_OBJECT) {
-               throw new JsonParseException("tried to read a form, but it was not finished after reading target and method", jp.getCurrentLocation());
-            }
-            if (method.equals("GET")) {
-               return new GetAsyncForm(URI.create(target), context::resolve);
-            } else if (method.equals("POST")) {
-               return new PostAsyncForm(context.resolve(URI.create(target)));
-            } else {
-               throw new JsonParseException("unknown method for form '"+method+"'", jp.getCurrentLocation());
-            }
-         }
-      });
+      module.addDeserializer(AsyncResourceReference.class, new AsyncResourceReferenceDeserializer(context));
+      module.addDeserializer(ResourceReference.class, new ResourceReferenceDeserializer(context));
+      module.addDeserializer(AsyncForm.class, new AsyncFormDeserializer(context));
+      module.addDeserializer(Form.class, new FormDeserializer(context));
       mapper.registerModule(module);
       return mapper;
    }
@@ -133,6 +99,86 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
       ObjectMapper mapper = new ObjectMapper();
       mapperCustomizer.accept(mapper);
       return mapper;
+   }
+
+   private static class ResourceReferenceDeserializer extends JsonDeserializer<ResourceReference> {
+      private final AsyncResourceReferenceDeserializer delegate;
+
+      public ResourceReferenceDeserializer(DeserializationContext context) {
+         this.delegate = new AsyncResourceReferenceDeserializer(context);
+      }
+
+      @Override
+      public ResourceReference deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
+         return delegate.deserialize(jp, jacksonContext).sync();
+      }
+   }
+
+   private static class AsyncResourceReferenceDeserializer extends JsonDeserializer<AsyncResourceReference> {
+      private final DeserializationContext context;
+
+      public AsyncResourceReferenceDeserializer(DeserializationContext context) {
+         this.context = context;
+      }
+
+      @Override
+      public AsyncResourceReference deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
+         // Parse { "href": "<uri>" }, current token is the start of the object
+         if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("tried to read a link, but it was not an object", jp.getCurrentLocation());
+         }
+         jp.nextFieldName(new SerializedString("href"));
+         String uri = jp.nextTextValue();
+         JsonToken token = jp.nextToken();
+         if (token != JsonToken.END_OBJECT) {
+            throw new JsonParseException("tried to read a link, but it was not finished after reading href", jp.getCurrentLocation());
+         }
+         return context.resolve(URI.create(uri));
+      }
+   }
+
+   private static class FormDeserializer extends JsonDeserializer<Form> {
+      private final AsyncFormDeserializer delegate;
+
+      public FormDeserializer(DeserializationContext context) {
+         this.delegate = new AsyncFormDeserializer(context);
+      }
+
+      @Override
+      public Form deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
+         return delegate.deserialize(jp, jacksonContext).sync();
+      }
+   }
+
+   private static class AsyncFormDeserializer extends JsonDeserializer<AsyncForm> {
+      private final DeserializationContext context;
+
+      public AsyncFormDeserializer(DeserializationContext context) {
+         this.context = context;
+      }
+
+      @Override
+      public AsyncForm deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
+         // Parse { "target": "<uri>", "method": "GET" }, current token is the start of the object
+         if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("tried to read a form, but it was not an object", jp.getCurrentLocation());
+         }
+         jp.nextFieldName(new SerializedString("target"));
+         String target = jp.nextTextValue();
+         jp.nextFieldName(new SerializedString("method"));
+         String method = jp.nextTextValue();
+         JsonToken token = jp.nextToken();
+         if (token != JsonToken.END_OBJECT) {
+            throw new JsonParseException("tried to read a form, but it was not finished after reading target and method", jp.getCurrentLocation());
+         }
+         if (method.equals("GET")) {
+            return new GetAsyncForm(URI.create(target), context::resolve);
+         } else if (method.equals("POST")) {
+            return new PostAsyncForm(context.resolve(URI.create(target)));
+         } else {
+            throw new JsonParseException("unknown method for form '"+method+"'", jp.getCurrentLocation());
+         }
+      }
    }
 }
 
