@@ -20,9 +20,6 @@ package com.vanillasource.gerec;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CompletionException;
 
 /**
  * An asynchronous version of <code>ResourceReference</code>, with exactly the
@@ -87,40 +84,32 @@ public interface AsyncResourceReference extends Serializable {
       return new ResourceReference() {
          @Override
          public Response head(HttpRequest.HttpRequestChange change) {
-            return wrapAsync(() -> AsyncResourceReference.this.head(change));
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.head(change)).get();
          }
 
          @Override
          public <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return wrapAsync(() -> AsyncResourceReference.this.get(acceptType, change));
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.get(acceptType, change)).get();
          }
 
          @Override
          public <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return wrapAsync(() -> AsyncResourceReference.this.post(contentType, content, acceptType, change));
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.post(contentType, content, acceptType, change)).get();
          }
 
          @Override
          public <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return wrapAsync(() -> AsyncResourceReference.this.put(contentType, content, acceptType, change));
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.put(contentType, content, acceptType, change)).get();
          }
 
          @Override
          public <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return wrapAsync(() -> AsyncResourceReference.this.delete(acceptType, change));
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.delete(acceptType, change)).get();
          }
 
          @Override
          public <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-            return wrapAsync(() -> AsyncResourceReference.this.options(contentType, content, acceptType));
-         }
-
-         private <T> T wrapAsync(Supplier<CompletableFuture<T>> asyncSupplier) {
-            try {
-               return asyncSupplier.get().get();
-            } catch (InterruptedException|ExecutionException e) {
-               throw new CompletionException(e);
-            }
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.options(contentType, content, acceptType)).get();
          }
 
          @Override

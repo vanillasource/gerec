@@ -20,7 +20,7 @@ package com.vanillasource.gerec.form;
 
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
-import com.vanillasource.gerec.async.ExceptionTransparentCall;
+import com.vanillasource.gerec.ExceptionTransparentCall;
 import java.util.concurrent.CompletableFuture;
 
 /**
