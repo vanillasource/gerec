@@ -29,8 +29,8 @@ import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.mediatype.NamedMediaType;
 import com.vanillasource.gerec.mediatype.ByteArrayAcceptType;
+import com.vanillasource.gerec.mediatype.ByteArrayContentType;
 import java.util.function.Consumer;
-import com.vanillasource.gerec.nio.ByteBufferProducer;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -89,7 +89,7 @@ public class JacksonMediaType<T> extends NamedMediaType<T> {
    public void serialize(T object, HttpRequest request) {
       try {
          byte[] objectAsBytes = createSerializerObjectMapper().writeValueAsBytes(object);
-         request.setByteProducer(channel -> new ByteBufferProducer(ByteBuffer.wrap(objectAsBytes), channel), objectAsBytes.length);
+         new ByteArrayContentType().serialize(objectAsBytes, request);
       } catch (IOException e) {
          throw new UncheckedIOException(e);
       }

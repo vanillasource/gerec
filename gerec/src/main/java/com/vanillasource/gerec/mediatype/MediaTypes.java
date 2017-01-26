@@ -24,7 +24,6 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.ContentMediaType;
-import com.vanillasource.gerec.nio.ByteBufferProducer;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
@@ -51,9 +50,7 @@ public final class MediaTypes {
       public void serialize(String object, HttpRequest request) {
          try {
             byte[] bytes = object.getBytes("UTF-8");
-            request.setByteProducer(
-                  output -> new ByteBufferProducer(ByteBuffer.wrap(bytes), output),
-                  bytes.length);
+            new ByteArrayContentType().serialize(bytes, request);
          } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("utf-8 encoding not supported", e);
          }
@@ -86,9 +83,7 @@ public final class MediaTypes {
       public void serialize(String object, HttpRequest request) {
          try {
             byte[] bytes = object.getBytes("UTF-8");
-            request.setByteProducer(
-                  output -> new ByteBufferProducer(ByteBuffer.wrap(bytes), output),
-                  bytes.length);
+            new ByteArrayContentType().serialize(bytes, request);
          } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("utf-8 encoding not supported", e);
          }
