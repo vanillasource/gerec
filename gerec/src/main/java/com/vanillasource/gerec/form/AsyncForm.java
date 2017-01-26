@@ -20,15 +20,36 @@ package com.vanillasource.gerec.form;
 
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.async.ExceptionTransparentCall;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A generic form that can be filled out with string
  * keys and values and submitted.
  */
-public interface Form {
+public interface AsyncForm {
    void put(String key, String value);
 
-   <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType);
+   <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType);
 
-   AsyncForm async();
+   default Form sync() {
+      return new Form() {
+         @Override
+         public void put(String key, String value) {
+            AsyncForm.this.put(key, value);
+         }
+
+         @Override
+         public <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType) {
+            return new ExceptionTransparentCall<>(AsyncForm.this.submit(acceptType)).get();
+         }
+
+         @Override
+         public AsyncForm async() {
+            return AsyncForm.this;
+         }
+      };
+   }
 }
+
+

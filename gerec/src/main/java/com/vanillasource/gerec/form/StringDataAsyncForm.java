@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A form that puts data together into a string.
  */
-public abstract class StringDataForm implements Form {
+public abstract class StringDataAsyncForm implements AsyncForm {
    private Map<String, String> values = new HashMap<>();
 
    @Override
@@ -36,18 +36,11 @@ public abstract class StringDataForm implements Form {
    }
 
    @Override
-   public <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType) {
+   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
       return submit(asString(), acceptType);
    }
 
-   protected abstract <T> ContentResponse<T> submit(String data, AcceptMediaType<T> acceptType);
-
-   @Override
-   public <T> CompletableFuture<ContentResponse<T>> submitAsync(AcceptMediaType<T> acceptType) {
-      return submitAsync(asString(), acceptType);
-   }
-
-   protected abstract <T> CompletableFuture<ContentResponse<T>> submitAsync(String data, AcceptMediaType<T> acceptType);
+   protected abstract <T> CompletableFuture<ContentResponse<T>> submit(String data, AcceptMediaType<T> acceptType);
 
    private String asString() {
       StringBuilder builder = new StringBuilder();

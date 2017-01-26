@@ -27,45 +27,45 @@ import java.util.function.Function;
 import java.net.URI;
 
 @Test
-public class GetFormTests {
+public class GetAsyncFormTests {
    private AsyncResourceReference resolvedReference;
    private Function<URI, AsyncResourceReference> referenceResolver;
 
-   public void testGetFormMakesAGetRequestToResolvedReference() {
-      GetForm form = new GetForm(URI.create("/root"), referenceResolver);
+   public void testGetAsyncFormMakesAGetRequestToResolvedReference() {
+      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
 
-      form.submitAsync(null);
+      form.submit(null);
 
       verify(resolvedReference).get(null);
    }
 
    @SuppressWarnings("unchecked")
-   public void testGetFormPutsFormValuesIntoQueryParameters() {
-      GetForm form = new GetForm(URI.create("/root"), referenceResolver);
+   public void testGetAsyncFormPutsFormValuesIntoQueryParameters() {
+      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
       form.put("q", "search");
 
-      form.submitAsync(null);
+      form.submit(null);
 
       verify(referenceResolver).apply(URI.create("/root?q=search"));
    }
 
    @SuppressWarnings("unchecked")
-   public void testGetFormPutsFormValuesIntoQueryParametersSeparatedWithAmp() {
-      GetForm form = new GetForm(URI.create("/root"), referenceResolver);
+   public void testGetAsyncFormPutsFormValuesIntoQueryParametersSeparatedWithAmp() {
+      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
       form.put("q", "search");
       form.put("lang", "en");
 
-      form.submitAsync(null);
+      form.submit(null);
 
       verify(referenceResolver).apply(URI.create("/root?q=search&lang=en"));
    }
 
    @SuppressWarnings("unchecked")
-   public void testGetFormPutsFormValuesIntoQueryParametersWithAmpIfQueryPresent() {
-      GetForm form = new GetForm(URI.create("/root?ni=nu"), referenceResolver);
+   public void testGetAsyncFormPutsFormValuesIntoQueryParametersWithAmpIfQueryPresent() {
+      GetAsyncForm form = new GetAsyncForm(URI.create("/root?ni=nu"), referenceResolver);
       form.put("q", "search");
 
-      form.submitAsync(null);
+      form.submit(null);
 
       verify(referenceResolver).apply(URI.create("/root?ni=nu&q=search"));
    }

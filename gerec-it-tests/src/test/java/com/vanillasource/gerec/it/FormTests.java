@@ -40,7 +40,7 @@ public class FormTests extends HttpTestsBase {
                   "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
-      page.getSearchForm().submit(MediaTypes.TEXT_PLAIN);
+      page.getSearchForm().submit(MediaTypes.TEXT_PLAIN).get();
 
       verify(getRequestedFor(urlEqualTo("/")));
    }
@@ -52,7 +52,7 @@ public class FormTests extends HttpTestsBase {
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().put("q", "nini");
-      page.getSearchForm().submit(MediaTypes.TEXT_PLAIN);
+      page.getSearchForm().submit(MediaTypes.TEXT_PLAIN).get();
 
       verify(getRequestedFor(urlEqualTo("/?q=nini")));
    }
@@ -64,7 +64,7 @@ public class FormTests extends HttpTestsBase {
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().put("q", "nini");
-      page.getSearchForm().submit(MediaTypes.TEXT_PLAIN);
+      page.getSearchForm().submit(MediaTypes.TEXT_PLAIN).get();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("q=nini")));
    }

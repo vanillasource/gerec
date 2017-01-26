@@ -28,25 +28,17 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A form that adds all parameters to the URI, just like a HTML Form with GET method.
  */
-public class GetForm extends StringDataForm {
+public class GetAsyncForm extends StringDataAsyncForm {
    private final URI target;
    private final Function<URI, AsyncResourceReference> referenceResolver;
 
-   public GetForm(URI target, Function<URI, AsyncResourceReference> referenceResolver) {
+   public GetAsyncForm(URI target, Function<URI, AsyncResourceReference> referenceResolver) {
       this.target = target;
       this.referenceResolver = referenceResolver;
    }
 
    @Override
-   public <T> ContentResponse<T> submit(String data, AcceptMediaType<T> acceptType) {
-      return referenceResolver
-         .apply(resolveTarget(data))
-         .sync()
-         .get(acceptType);
-   }
-
-   @Override
-   public <T> CompletableFuture<ContentResponse<T>> submitAsync(String data, AcceptMediaType<T> acceptType) {
+   public <T> CompletableFuture<ContentResponse<T>> submit(String data, AcceptMediaType<T> acceptType) {
       return referenceResolver
          .apply(resolveTarget(data))
          .get(acceptType);

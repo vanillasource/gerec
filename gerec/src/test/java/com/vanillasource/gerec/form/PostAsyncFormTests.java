@@ -26,23 +26,23 @@ import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 
 @Test
-public class PostFormTests {
+public class PostAsyncFormTests {
    private AsyncResourceReference target;
 
-   public void testPostFormMakesPostToTarget() {
-      PostForm form = new PostForm(target);
+   public void testPostAsyncFormMakesPostToTarget() {
+      PostAsyncForm form = new PostAsyncForm(target);
 
-      form.submitAsync(null);
+      form.submit(null);
 
       verify(target).post(MediaTypes.FORM_URLENCODED, "", null);
    }
 
    public void testPostPostsParametersAsContent() {
-      PostForm form = new PostForm(target);
+      PostAsyncForm form = new PostAsyncForm(target);
       form.put("q", "search");
       form.put("lang", "en");
 
-      form.submitAsync(null);
+      form.submit(null);
 
       verify(target).post(MediaTypes.FORM_URLENCODED, "q=search&lang=en", null);
    }
