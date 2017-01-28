@@ -47,7 +47,7 @@ public class ConceptTests extends HttpTestsBase {
 
       Person person = reference().get(Person.TYPE).get().getContent();
 
-      verify(getRequestedFor(urlEqualTo("/")).withHeader("Accept", equalTo("application/vnd.test.person; q=1")));
+      verify(getRequestedFor(urlEqualTo("/")).withHeader("Accept", equalTo("application/vnd.test.person")));
    }
 
    public void testUsingMatchUsesETag() throws Exception {
@@ -94,7 +94,7 @@ public class ConceptTests extends HttpTestsBase {
    public void testPostCanHaveDifferentMediaTypesForContentAndAccept() throws Exception {
       stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("OK")));
 
-      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.TEXT_PLAIN).get().getContent();
+      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.textPlain()).get().getContent();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
       assertEquals(result, "OK");
@@ -158,7 +158,7 @@ public class ConceptTests extends HttpTestsBase {
          fail("should have thrown exception");
       } catch (ExecutionException rawE) {
          HttpErrorException e = (HttpErrorException) rawE.getCause();
-         assertEquals(e.getResponse().getBody(MediaTypes.TEXT_PLAIN), "Nelson: Haha!");
+         assertEquals(e.getResponse().getBody(MediaTypes.textPlain()), "Nelson: Haha!");
       }
    }
 }

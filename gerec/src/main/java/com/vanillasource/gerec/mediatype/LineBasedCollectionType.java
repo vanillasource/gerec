@@ -19,6 +19,7 @@
 package com.vanillasource.gerec.mediatype;
 
 import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.Header;
@@ -44,19 +45,26 @@ import java.io.UncheckedIOException;
  * Because only non-empty lines are deserialized, empty lines (line breaks) can be used by
  * the server to keep the connection alive.
  */
-public class LineBasedCollectionType<T> extends NamedAcceptType<Void> {
+public class LineBasedCollectionType<T> implements AcceptMediaType<Void> {
    private static final int READ_BUFFER_SIZE = 4096;
+   private final MediaTypeSpecification mediaType;
    private final AcceptMediaType<T> acceptType;
    private final Consumer<T> consumer;
 
-   public LineBasedCollectionType(String mediaTypeName, double qualityValue, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
-      super(mediaTypeName, qualityValue);
+   public LineBasedCollectionType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
+      this.mediaType = mediaType;
       this.acceptType = acceptType;
       this.consumer = consumer;
    }
 
-   public LineBasedCollectionType(String mediaTypeName, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
-      this(mediaTypeName, 1.0d, acceptType, consumer);
+   @Override
+   public void applyAsOption(HttpRequest request) {
+      mediaType.addAsAcceptedTo(request);
+   }
+
+   @Override
+   public boolean isHandling(HttpResponse response) {
+      return mediaType.isIn(response);
    }
 
    @Override

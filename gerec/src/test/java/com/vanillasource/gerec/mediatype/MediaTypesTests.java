@@ -39,7 +39,7 @@ public class MediaTypesTests {
    public void testAsciiStringIsDeserializedWithoutContentType() throws Exception {
       responseContent("abc", "UTF-8");
 
-      String result = TEXT_PLAIN.deserialize(response, null).get();
+      String result = textPlain().deserialize(response, null).get();
 
       assertEquals(result, "abc");
    }
@@ -49,7 +49,7 @@ public class MediaTypesTests {
       when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/plain", "charset", "UTF-8"));
 
-      String result = TEXT_PLAIN.deserialize(response, null).get();
+      String result = textPlain().deserialize(response, null).get();
 
       assertEquals(result, "αβγ");
    }
@@ -59,13 +59,13 @@ public class MediaTypesTests {
       when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/plain", "charset", "ISO-8859-1"));
 
-      String result = TEXT_PLAIN.deserialize(response, null).get();
+      String result = textPlain().deserialize(response, null).get();
 
       assertEquals(result, "éáü");
    }
 
    public void testUtfCharsetIsSetInRequest() {
-      TEXT_PLAIN.applyAsContent(request);
+      textPlain().applyAsContent(request);
 
       verify(request).setHeader(Headers.CONTENT_TYPE, new ValueWithParameter("text/plain", "charset", "UTF-8"));
    }

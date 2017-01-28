@@ -22,6 +22,7 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpResponse;
+import static com.vanillasource.gerec.mediatype.MediaTypeSpecification.*;
 import java.util.function.Function;
 import java.util.function.Consumer;
 import java.io.ByteArrayInputStream;
@@ -68,6 +69,6 @@ public class LineBasedCollectionTypeTests {
    protected void setUp() {
       response = mock(HttpResponse.class);
       consumer = mock(Consumer.class);
-      type = new LineBasedCollectionType<String>("application/vnd.vanillasource.lines", MediaTypes.TEXT_PLAIN, consumer);
+      type = new LineBasedCollectionType<String>(mediaType("application/vnd.vanillasource.lines"), MediaTypes.textPlain(), consumer);
    }
 }

@@ -26,30 +26,30 @@ import java.util.HashMap;
 import static com.vanillasource.gerec.http.ValueWithParameter.FORMAT;
 
 @Test
-public class ValueWithParameterFormatTests {
+public class ValueWithParameterTests {
 
    public void testMatchesValueWithoutParameters() {
       ValueWithParameter value = FORMAT.deserialize("text/plain");
 
-      assertTrue(value.matchesValue("text/plain"));
+      assertTrue(value.matchesValue(new ValueWithParameter("text/plain")));
    }
 
    public void testMatchesValueWithoutSpaces() {
       ValueWithParameter value = FORMAT.deserialize(" text/plain ");
 
-      assertTrue(value.matchesValue("text/plain"));
+      assertTrue(value.matchesValue(new ValueWithParameter("text/plain")));
    }
 
    public void testMatchesValueCaseInsensitively() {
       ValueWithParameter value = FORMAT.deserialize("text/PLAIN");
 
-      assertTrue(value.matchesValue("text/plain"));
+      assertTrue(value.matchesValue(new ValueWithParameter("text/plain")));
    }
 
    public void testMatchesValueWithoutQuotes() {
       ValueWithParameter value = FORMAT.deserialize("\"text/PLAIN\"");
 
-      assertTrue(value.matchesValue("text/plain"));
+      assertTrue(value.matchesValue(new ValueWithParameter("text/plain")));
    }
 
    public void testHasParameterKeyWithoutValue() {
@@ -96,7 +96,7 @@ public class ValueWithParameterFormatTests {
 
       String headerValue = FORMAT.serialize(value);
 
-      assertEquals(headerValue, "Value; q=1.0; test=TEST");
+      assertEquals(headerValue, "Value; test=TEST; q=1.0");
    }
 
    public void testParametersWithoutValuesWillOnlyHaveKeys() {
@@ -107,6 +107,14 @@ public class ValueWithParameterFormatTests {
       String headerValue = FORMAT.serialize(value);
 
       assertEquals(headerValue, "Value; test");
+   }
+
+   public void testAddingParametersPreservesOriginal() {
+      ValueWithParameter value = new ValueWithParameter("Value", "key", "value");
+      ValueWithParameter value2 = value.addParameter("key2", "value2");
+
+      assertFalse(value.hasParameter("key2"));
+      assertTrue(value2.hasParameter("key2"));
    }
 }
 

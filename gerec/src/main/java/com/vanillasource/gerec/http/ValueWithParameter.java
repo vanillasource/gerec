@@ -27,8 +27,8 @@ import java.util.HashMap;
  * are composed of key-value pairs, some without explicit value.
  */
 public final class ValueWithParameter {
-   private String value;
-   private Map<String, String> parameters;
+   private final String value;
+   private final Map<String, String> parameters;
 
    public ValueWithParameter(String value) {
       this(value, new HashMap<>());
@@ -46,11 +46,11 @@ public final class ValueWithParameter {
 
    public ValueWithParameter(String value, Map<String, String> parameters) {
       this.value = value;
-      this.parameters = parameters;
+      this.parameters = new HashMap<>(parameters);
    }
 
-   public boolean matchesValue(String value) {
-      return this.value.equalsIgnoreCase(value);
+   public boolean matchesValue(ValueWithParameter other) {
+      return this.value.equalsIgnoreCase(other.value);
    }
 
    public boolean hasParameter(String parameterName) {
@@ -63,6 +63,12 @@ public final class ValueWithParameter {
          return defaultValue;
       }
       return parameterValue;
+   }
+
+   public ValueWithParameter addParameter(String parameterName, String parameterValue) {
+      Map<String, String> newParameters = new HashMap<>(parameters);
+      newParameters.put(parameterName, parameterValue);
+      return new ValueWithParameter(value, newParameters);
    }
 
    @Override

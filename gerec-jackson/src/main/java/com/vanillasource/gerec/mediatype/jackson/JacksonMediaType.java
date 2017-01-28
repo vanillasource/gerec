@@ -24,16 +24,16 @@ import com.vanillasource.gerec.form.GetAsyncForm;
 import com.vanillasource.gerec.form.PostAsyncForm;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
-import com.vanillasource.gerec.mediatype.NamedMediaType;
 import com.vanillasource.gerec.mediatype.ByteArrayAcceptType;
 import com.vanillasource.gerec.mediatype.ByteArrayContentType;
+import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import java.util.function.Consumer;
 import java.net.URI;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.io.UncheckedIOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -44,21 +44,37 @@ import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.JsonParseException;
 import java.util.concurrent.CompletableFuture;
 
-public class JacksonMediaType<T> extends NamedMediaType<T> {
-   private Class<T> type;
-   private Consumer<ObjectMapper> mapperCustomizer;
+public class JacksonMediaType<T> implements MediaType<T> {
+   private final Class<T> type;
+   private final Consumer<ObjectMapper> mapperCustomizer;
+   private final MediaTypeSpecification mediaType;
 
    public JacksonMediaType(Class<T> type, String mediaTypeName) {
-      this(type, mediaTypeName, mapper -> {});
+      this(type, MediaTypeSpecification.mediaType(mediaTypeName), mapper -> {});
    }
 
    /**
     * @param mapperCustomizer A consumer that can customize object mappers created by this media type.
     */
-   public JacksonMediaType(Class<T> type, String mediaTypeName, Consumer<ObjectMapper> mapperCustomizer) {
-      super(mediaTypeName);
+   public JacksonMediaType(Class<T> type, MediaTypeSpecification mediaType, Consumer<ObjectMapper> mapperCustomizer) {
       this.type = type;
+      this.mediaType = mediaType;
       this.mapperCustomizer = mapperCustomizer;
+   }
+
+   @Override
+   public void applyAsOption(HttpRequest request) {
+      mediaType.addAsAcceptedTo(request);
+   }
+
+   @Override
+   public boolean isHandling(HttpResponse response) {
+      return mediaType.isIn(response);
+   }
+
+   @Override
+   public void applyAsContent(HttpRequest request) {
+      mediaType.addAsContentTo(request);
    }
 
    @Override

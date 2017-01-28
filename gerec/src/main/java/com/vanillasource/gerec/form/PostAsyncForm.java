@@ -42,7 +42,7 @@ public final class PostAsyncForm implements AsyncForm {
 
    @Override
    public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
-      return target.post(MediaTypes.FORM_URLENCODED, parameters.aggregate(), acceptType);
+      return target.post(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType);
    }
 }
 

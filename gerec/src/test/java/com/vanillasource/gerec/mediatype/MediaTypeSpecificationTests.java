@@ -21,33 +21,32 @@ package com.vanillasource.gerec.mediatype;
 import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.http.ValueWithParameter;
+import static com.vanillasource.gerec.mediatype.MediaTypeSpecification.*;
 import static java.util.Arrays.asList;
-import java.util.concurrent.CompletableFuture;
 
 @Test
-public class NamedMediaTypeTests {
+public class MediaTypeSpecificationTests {
    private HttpRequest request;
    private HttpResponse response;
 
    public void testAcceptsTypeIfNonePresentYet() {
-      TestType type = new TestType("text/html");
+      MediaTypeSpecification type = mediaType("text/html", 1);
 
-      type.applyAsOption(request);
+      type.addAsAcceptedTo(request);
 
       verify(request).setHeader(Headers.ACCEPT, asList(new ValueWithParameter("text/html", "q", "1")));
    }
 
    public void testAppendsAcceptTypeIfAlreadyPresent() {
-      TestType type = new TestType("text/html");
+      MediaTypeSpecification type = mediaType("text/html", 1);
       when(request.hasHeader(Headers.ACCEPT)).thenReturn(true);
       when(request.getHeader(Headers.ACCEPT)).thenReturn(asList(new ValueWithParameter("image/png")));
 
-      type.applyAsOption(request);
+      type.addAsAcceptedTo(request);
 
       verify(request).setHeader(Headers.ACCEPT, asList(
                new ValueWithParameter("image/png"), new ValueWithParameter("text/html", "q", "1")));
@@ -55,48 +54,48 @@ public class NamedMediaTypeTests {
 
    @Test(expectedExceptions = IllegalArgumentException.class)
    public void testDoesNotAllowZeroQuality() {
-      new TestType("text/html", 0d);
+      mediaType("text/html", 0d);
    }
 
    @Test(expectedExceptions = IllegalArgumentException.class)
    public void testDoesNotAllowMoreThanOneQuality() {
-      new TestType("text/html", 1.0001d);
+      mediaType("text/html", 1.0001d);
    }
 
    public void testQualityWillBeScaledToMaximumThreeDigits() {
-      TestType type = new TestType("text/html", 0.5012d);
+      MediaTypeSpecification type = mediaType("text/html", 0.5012d);
 
-      type.applyAsOption(request);
+      type.addAsAcceptedTo(request);
 
       verify(request).setHeader(Headers.ACCEPT, asList(new ValueWithParameter("text/html", "q", "0.502")));
    }
 
    public void testDoesNotHandleResponsesWithNoContentType() {
-      TestType type = new TestType("text/html");
+      MediaTypeSpecification type = mediaType("text/html");
 
-      assertFalse(type.isHandling(response));
+      assertFalse(type.isIn(response));
    }
 
    public void testDoesNotHandleResponsesWithOtherContentType() {
-      TestType type = new TestType("text/html");
+      MediaTypeSpecification type = mediaType("text/html");
       when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("image/png"));
 
-      assertFalse(type.isHandling(response));
+      assertFalse(type.isIn(response));
    }
 
    public void testDoesHandleResponsesWithSameContentType() {
-      TestType type = new TestType("text/html");
+      MediaTypeSpecification type = mediaType("text/html");
       when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
       when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/html"));
 
-      assertTrue(type.isHandling(response));
+      assertTrue(type.isIn(response));
    }
 
    public void testWillSetContentType() {
-      TestType type = new TestType("text/html");
+      MediaTypeSpecification type = mediaType("text/html");
 
-      type.applyAsContent(request);
+      type.addAsContentTo(request);
 
       verify(request).setHeader(Headers.CONTENT_TYPE, new ValueWithParameter("text/html"));
    }
@@ -105,25 +104,6 @@ public class NamedMediaTypeTests {
    protected void setUp() {
       request = mock(HttpRequest.class);
       response = mock(HttpResponse.class);
-   }
-
-   public class TestType extends NamedMediaType<String> {
-      public TestType(String name) {
-         super(name);
-      }
-
-      public TestType(String name, double quality) {
-         super(name, quality);
-      }
-
-      @Override
-      public CompletableFuture<String> deserialize(HttpResponse response, DeserializationContext context) {
-         return CompletableFuture.completedFuture(null);
-      }
-
-      @Override
-      public void serialize(String object, HttpRequest request) {
-      }
    }
 }
 

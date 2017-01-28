@@ -23,20 +23,23 @@ import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.AsyncResourceReference;
-import com.vanillasource.gerec.mediatype.MediaTypes;
+import com.vanillasource.gerec.ContentMediaType;
+import com.vanillasource.gerec.AcceptMediaType;
 
 @Test
 public class PostAsyncFormTests {
    private AsyncResourceReference target;
 
+   @SuppressWarnings("unchecked")
    public void testPostAsyncFormMakesPostToTarget() {
       PostAsyncForm form = new PostAsyncForm(target);
 
       form.submit(null);
 
-      verify(target).post(MediaTypes.FORM_URLENCODED, "", null);
+      verify(target).post(any(ContentMediaType.class), eq(""), any(AcceptMediaType.class));
    }
 
+   @SuppressWarnings("unchecked")
    public void testPostPostsParametersAsContent() {
       PostAsyncForm form = new PostAsyncForm(target);
       form.put("q", "search");
@@ -44,7 +47,7 @@ public class PostAsyncFormTests {
 
       form.submit(null);
 
-      verify(target).post(MediaTypes.FORM_URLENCODED, "q=search&lang=en", null);
+      verify(target).post(any(ContentMediaType.class), eq("q=search&lang=en"), any(AcceptMediaType.class));
    }
 
    @BeforeMethod
