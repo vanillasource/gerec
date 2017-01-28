@@ -27,16 +27,22 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A form that posts all parameters as form encoded, just like a HTML Form with POST method.
  */
-public class PostAsyncForm extends StringDataAsyncForm {
+public final class PostAsyncForm implements AsyncForm {
    private final AsyncResourceReference target;
+   private final FormParameters parameters = new FormParameters();
 
    public PostAsyncForm(AsyncResourceReference target) {
       this.target = target;
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> submit(String data, AcceptMediaType<T> acceptType) {
-      return target.post(MediaTypes.FORM_URLENCODED, data, acceptType);
+   public void put(String key, String value) {
+      parameters.put(key, value);
+   }
+
+   @Override
+   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
+      return target.post(MediaTypes.FORM_URLENCODED, parameters.aggregate(), acceptType);
    }
 }
 

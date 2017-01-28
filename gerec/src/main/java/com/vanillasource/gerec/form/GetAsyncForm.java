@@ -28,9 +28,10 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A form that adds all parameters to the URI, just like a HTML Form with GET method.
  */
-public class GetAsyncForm extends StringDataAsyncForm {
+public final class GetAsyncForm implements AsyncForm {
    private final URI target;
    private final Function<URI, AsyncResourceReference> referenceResolver;
+   private final FormParameters parameters = new FormParameters();
 
    public GetAsyncForm(URI target, Function<URI, AsyncResourceReference> referenceResolver) {
       this.target = target;
@@ -38,9 +39,14 @@ public class GetAsyncForm extends StringDataAsyncForm {
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> submit(String data, AcceptMediaType<T> acceptType) {
+   public void put(String key, String value) {
+      parameters.put(key, value);
+   }
+
+   @Override
+   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
       return referenceResolver
-         .apply(resolveTarget(data))
+         .apply(resolveTarget(parameters.aggregate()))
          .get(acceptType);
    }
 

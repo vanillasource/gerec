@@ -18,31 +18,17 @@
 
 package com.vanillasource.gerec.form;
 
-import com.vanillasource.gerec.ContentResponse;
-import com.vanillasource.gerec.AcceptMediaType;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
 
-/**
- * A form that puts data together into a string.
- */
-public abstract class StringDataAsyncForm implements AsyncForm {
-   private Map<String, String> values = new HashMap<>();
+public final class FormParameters {
+   private final Map<String, String> values = new HashMap<>();
 
-   @Override
    public void put(String key, String value) {
       values.put(key, value);
    }
 
-   @Override
-   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
-      return submit(asString(), acceptType);
-   }
-
-   protected abstract <T> CompletableFuture<ContentResponse<T>> submit(String data, AcceptMediaType<T> acceptType);
-
-   private String asString() {
+   public String aggregate() {
       StringBuilder builder = new StringBuilder();
       for (Map.Entry<String, String> parameter : values.entrySet()) {
          if (builder.length() > 0) {
@@ -55,6 +41,3 @@ public abstract class StringDataAsyncForm implements AsyncForm {
       return builder.toString();
    }
 }
-
-
-
