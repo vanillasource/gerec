@@ -28,7 +28,7 @@ public interface HttpResponse {
 
    <T> T getHeader(Header<T> header);
 
-   void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory);
+   void consumeContent(Function<ControllableReadableByteChannel, ByteConsumer> consumerFactory);
 
    interface ByteConsumer {
       /**
@@ -48,4 +48,19 @@ public interface HttpResponse {
        */
       void onException(Exception e);
    }
+
+   interface ControllableReadableByteChannel extends ReadableByteChannel {
+      /**
+       * Pause delivering <code>onReady()</code> events. Consumer notifies the channel
+       * that it has no capacity to consume data, therefore it should not call <code>onReady()</code>.
+       */
+      void pause();
+
+      /**
+       * Resume delivering <code>onReady()</code> events. Consumer notifies channel that
+       * it is ready to accept bytes from the channel whenever the channel is ready.
+       */
+      void resume();
+   }
+
 }

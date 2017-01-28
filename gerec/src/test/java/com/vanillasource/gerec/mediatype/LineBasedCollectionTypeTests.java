@@ -22,6 +22,7 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.nio.UncontrollableReadableByteChannel;
 import static com.vanillasource.gerec.mediatype.MediaTypeSpecification.*;
 import java.util.function.Function;
 import java.util.function.Consumer;
@@ -57,7 +58,7 @@ public class LineBasedCollectionTypeTests {
    private void responseContent(String content) {
       doAnswer(invocation -> {
          HttpResponse.ByteConsumer consumer = ((Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0])
-            .apply(Channels.newChannel(new ByteArrayInputStream(content.getBytes("UTF-8"))));
+            .apply(new UncontrollableReadableByteChannel(Channels.newChannel(new ByteArrayInputStream(content.getBytes("UTF-8")))));
          consumer.onReady();
          consumer.onCompleted();
          return null;

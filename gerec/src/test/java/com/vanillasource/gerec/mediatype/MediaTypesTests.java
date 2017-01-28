@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.io.ByteArrayInputStream;
 import static com.vanillasource.gerec.mediatype.MediaTypes.*;
 import com.vanillasource.gerec.http.Headers;
+import com.vanillasource.gerec.nio.UncontrollableReadableByteChannel;
 import com.vanillasource.gerec.http.ValueWithParameter;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -74,7 +75,7 @@ public class MediaTypesTests {
    private void responseContent(String content, String encoding) {
       doAnswer(invocation -> {
          HttpResponse.ByteConsumer consumer = ((Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0])
-            .apply(Channels.newChannel(new ByteArrayInputStream(content.getBytes(encoding))));
+            .apply(new UncontrollableReadableByteChannel(Channels.newChannel(new ByteArrayInputStream(content.getBytes(encoding)))));
          consumer.onReady();
          consumer.onCompleted();
          return null;

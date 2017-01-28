@@ -117,9 +117,34 @@ public class LineBasedCollectionType<T> implements AcceptMediaType<Void> {
                   }
 
                   @Override
-                  public void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory) {
+                  public void consumeContent(Function<ControllableReadableByteChannel, ByteConsumer> consumerFactory) {
                      ReadableByteChannel lineChannel = Channels.newChannel(new ByteArrayInputStream(line.getBytes()));
-                     ByteConsumer byteConsumer = consumerFactory.apply(lineChannel);
+                     ByteConsumer byteConsumer = consumerFactory.apply(new ControllableReadableByteChannel() {
+                        @Override
+                        public boolean isOpen() {
+                           return lineChannel.isOpen();
+                        }
+
+                        @Override
+                        public void close() throws IOException {
+                           lineChannel.close();
+                        }
+
+                        @Override
+                        public int read(ByteBuffer buffer) throws IOException {
+                           return lineChannel.read(buffer);
+                        }
+
+                        @Override
+                        public void pause() {
+                           input.pause();
+                        }
+
+                        @Override
+                        public void resume() {
+                           input.resume();
+                        }
+                     });
                      try {
                         byteConsumer.onReady();
                         byteConsumer.onCompleted();

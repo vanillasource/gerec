@@ -32,7 +32,7 @@ public interface HttpRequest {
 
    void setByteProducer(Function<ControllableWritableByteChannel, ByteProducer> producerFactory, long length);
 
-   public interface ByteProducer {
+   interface ByteProducer {
       /**
        * Producer is notified that channel is ready to accept more bytes.
        */
@@ -44,7 +44,7 @@ public interface HttpRequest {
       void onCompleted();
    }
 
-   public interface ControllableWritableByteChannel extends WritableByteChannel {
+   interface ControllableWritableByteChannel extends WritableByteChannel {
       /**
        * Pause delivering <code>onReady()</code> events. Producer notifies the channel
        * that there is no data to be written, therefore it should not call <code>onReady()</code>.
@@ -58,7 +58,7 @@ public interface HttpRequest {
       void resume();
    }
 
-   public interface HttpRequestChange {
+   interface HttpRequestChange {
       HttpRequestChange NO_CHANGE = new HttpRequestChange() {
          @Override
          public void applyTo(HttpRequest request) {

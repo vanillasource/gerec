@@ -32,12 +32,12 @@ import com.vanillasource.gerec.ErrorResponse;
 import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
+import com.vanillasource.gerec.nio.UncontrollableReadableByteChannel;
 import java.net.URI;
 import java.io.ByteArrayInputStream;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.ExecutionException;
 import org.apache.log4j.Logger;
 
@@ -269,8 +269,9 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
                }
 
                @Override
-               public void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory) {
-                  ByteConsumer consumer = consumerFactory.apply(Channels.newChannel(new ByteArrayInputStream(errorBody)));
+               public void consumeContent(Function<ControllableReadableByteChannel, ByteConsumer> consumerFactory) {
+                  ByteConsumer consumer = consumerFactory.apply(
+                        new UncontrollableReadableByteChannel(Channels.newChannel(new ByteArrayInputStream(errorBody))));
                   try {
                      consumer.onReady();
                      consumer.onCompleted();

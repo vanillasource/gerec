@@ -280,7 +280,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
          return new HttpAsyncResponseConsumer<Void>() {
             private volatile boolean done = false;
             private volatile Exception e;
-            private volatile Function<ReadableByteChannel, ByteConsumer> responseConsumerFactory;
+            private volatile Function<ControllableReadableByteChannel, ByteConsumer> responseConsumerFactory;
             private volatile ByteConsumer consumer;
             private volatile IOControl ioControl;
 
@@ -323,7 +323,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
             public void responseReceived(org.apache.http.HttpResponse response) {
                responseFuture.complete(new AsyncHttpResponse(response) {
                   @Override
-                  public void consumeContent(Function<ReadableByteChannel, ByteConsumer> consumerFactory) {
+                  public void consumeContent(Function<ControllableReadableByteChannel, ByteConsumer> consumerFactory) {
                      if (responseConsumerFactory != null) {
                         throw new IllegalStateException("can only consume response once");
                      }
@@ -355,7 +355,33 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                } else {
                   logger.debug("consuming content");
                   if (consumer == null) {
-                     consumer = responseConsumerFactory.apply(new ContentDecoderChannel(contentDecoder));
+                     ReadableByteChannel delegate = new ContentDecoderChannel(contentDecoder);
+                     consumer = responseConsumerFactory.apply(new ControllableReadableByteChannel() {
+                        @Override
+                        public void pause() {
+                           control.suspendInput();
+                        }
+
+                        @Override
+                        public void resume() {
+                           control.requestInput();
+                        }
+
+                        @Override
+                        public int read(ByteBuffer buffer) throws IOException {
+                           return delegate.read(buffer);
+                        }
+
+                        @Override
+                        public void close() throws IOException {
+                           delegate.close();
+                        }
+
+                        @Override
+                        public boolean isOpen() {
+                           return delegate.isOpen();
+                        }
+                     });
                   }
                   consumer.onReady();
                }

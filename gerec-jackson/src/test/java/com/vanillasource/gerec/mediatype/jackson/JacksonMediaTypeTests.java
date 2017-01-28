@@ -26,6 +26,7 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
+import com.vanillasource.gerec.nio.UncontrollableReadableByteChannel;
 import java.net.URI;
 import java.util.function.Function;
 import java.nio.channels.ReadableByteChannel;
@@ -86,7 +87,7 @@ public class JacksonMediaTypeTests {
       response = mock(HttpResponse.class);
       doAnswer(invocation -> {
          Function<ReadableByteChannel, HttpResponse.ByteConsumer> consumerFactory = (Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0];
-         HttpResponse.ByteConsumer consumer = consumerFactory.apply(Channels.newChannel(new ByteArrayInputStream(content.getBytes())));
+         HttpResponse.ByteConsumer consumer = consumerFactory.apply(new UncontrollableReadableByteChannel(Channels.newChannel(new ByteArrayInputStream(content.getBytes()))));
          consumer.onReady();
          consumer.onCompleted();
          return null;
