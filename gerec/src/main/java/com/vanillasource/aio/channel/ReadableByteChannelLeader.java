@@ -20,8 +20,32 @@ package com.vanillasource.aio.channel;
 
 import com.vanillasource.aio.AioLeader;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.ByteBuffer;
 
 public interface ReadableByteChannelLeader extends ReadableByteChannel, AioLeader {
+   ReadableByteChannelLeader NULL = new ReadableByteChannelLeader() {
+      @Override
+      public void pause() {
+      }
+
+      @Override
+      public void resume() {
+      }
+
+      @Override
+      public int read(ByteBuffer buffer) {
+         return -1;
+      }
+
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public boolean isOpen() {
+         return false;
+      }
+   };
 }
 
 

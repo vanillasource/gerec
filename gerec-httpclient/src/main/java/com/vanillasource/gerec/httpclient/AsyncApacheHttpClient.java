@@ -322,6 +322,8 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                this.done = true;
                if (!responseFuture.isDone()) {
                   responseFuture.completeExceptionally(e);
+               } else {
+                  result.completeExceptionally(e);
                }
             }
 
@@ -331,74 +333,68 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                   @Override
                   @SuppressWarnings("unchecked")
                   public <R> CompletableFuture<R> consumeContent(Function<ReadableByteChannelLeader, AioFollower<R>> consumerFactory) {
+                     // Note: this method will be called synchronously with this completion, therefore thread-safe
                      if (followerFactory != null) {
                         throw new IllegalStateException("can only consume response once");
                      }
                      followerFactory = (Function<ReadableByteChannelLeader, AioFollower<Object>>)(Object) consumerFactory;
                      result = new CompletableFuture<>();
                      logger.debug("client will consume content");
-                     if (ioControl != null) {
-                        logger.debug("enabled response input");
-                        ioControl.requestInput();
-                     }
                      return (CompletableFuture<R>) result;
                   }
                });
+               if (followerFactory == null) {
+                  logger.warn("no content consumer was set on HttpResponse completion, something's wrong!");
+               }
             }
 
             @Override
             public void responseCompleted(HttpContext context) {
                logger.debug("response completed");
                this.done = true;
-               if (follower != null) {
-                  logger.debug("notifying follower that response completed");
-                  result.complete(follower.onCompleted());
+               if (follower == null) {
+                  follower = followerFactory.apply(ReadableByteChannelLeader.NULL);
                }
+               result.complete(follower.onCompleted());
             }
 
             @Override
             public void consumeContent(ContentDecoder contentDecoder, IOControl control) {
-               if (followerFactory == null) {
-                  logger.debug("consuming content, but client did not ask for content yet, suspending input from response");
-                  control.suspendInput();
-                  ioControl = control;
-               } else {
-                  logger.debug("consuming content");
-                  if (follower == null) {
-                     ReadableByteChannel delegate = new ContentDecoderChannel(contentDecoder);
-                     follower = followerFactory.apply(new ReadableByteChannelLeader() {
-                        @Override
-                        public void pause() {
-                           control.suspendInput();
-                        }
+               logger.debug("consuming content");
+               if (follower == null) {
+                  ReadableByteChannel delegate = new ContentDecoderChannel(contentDecoder);
+                  follower = followerFactory.apply(new ReadableByteChannelLeader() {
+                     @Override
+                     public void pause() {
+                        control.suspendInput();
+                     }
 
-                        @Override
-                        public void resume() {
-                           control.requestInput();
-                        }
+                     @Override
+                     public void resume() {
+                        control.requestInput();
+                     }
 
-                        @Override
-                        public int read(ByteBuffer buffer) throws IOException {
-                           return delegate.read(buffer);
-                        }
+                     @Override
+                     public int read(ByteBuffer buffer) throws IOException {
+                        return delegate.read(buffer);
+                     }
 
-                        @Override
-                        public void close() {
-                           try {
-                              delegate.close();
-                           } catch (IOException e) {
-                              throw new UncheckedIOException(e);
-                           }
+                     @Override
+                     public void close() {
+                        try {
+                           delegate.close();
+                        } catch (IOException e) {
+                           throw new UncheckedIOException(e);
                         }
+                     }
 
-                        @Override
-                        public boolean isOpen() {
-                           return delegate.isOpen();
-                        }
-                     });
-                  }
-                  follower.onReady();
+                     @Override
+                     public boolean isOpen() {
+                        return delegate.isOpen();
+                     }
+                  });
                }
+               follower.onReady();
             }
          };
       }
