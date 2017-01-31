@@ -31,6 +31,7 @@ import java.math.RoundingMode;
  * A specification of a MediaType for accept or content purposes.
  */
 public final class MediaTypeSpecification {
+   public static final MediaTypeSpecification WILDCARD = mediaType("*/*");
    private final ValueWithParameter specification;
 
    private MediaTypeSpecification(ValueWithParameter specification) {

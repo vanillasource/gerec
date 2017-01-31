@@ -52,7 +52,7 @@ public final class MediaTypes {
          public void serialize(String object, HttpRequest request) {
             try {
                byte[] bytes = object.getBytes("UTF-8");
-               new ByteArrayContentType().serialize(bytes, request);
+               new ByteArrayContentType(MediaTypeSpecification.WILDCARD).serialize(bytes, request);
             } catch (UnsupportedEncodingException e) {
                throw new IllegalStateException("utf-8 encoding not supported", e);
             }
@@ -109,7 +109,7 @@ public final class MediaTypes {
 
          @Override
          public CompletableFuture<String> deserialize(HttpResponse response, DeserializationContext context) {
-            return new ByteArrayAcceptType().deserialize(response, context)
+            return new ByteArrayAcceptType(MediaTypeSpecification.WILDCARD).deserialize(response, context)
                .thenApply(content -> {
                   String encoding = DEFAULT_ENCODING;
                   if (response.hasHeader(Headers.CONTENT_TYPE)) {
@@ -128,7 +128,7 @@ public final class MediaTypes {
             String charset = request.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", "UTF-8");
             try {
                byte[] bytes = object.getBytes(charset);
-               new ByteArrayContentType().serialize(bytes, request);
+               new ByteArrayContentType(MediaTypeSpecification.WILDCARD).serialize(bytes, request);
             } catch (UnsupportedEncodingException e) {
                throw new IllegalStateException(charset+" encoding not supported", e);
             }

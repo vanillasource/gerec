@@ -18,8 +18,9 @@
 
 package com.vanillasource.gerec;
 
+import com.vanillasource.aio.AioFollower;
+import com.vanillasource.aio.channel.WritableByteChannelLeader;
 import java.util.function.Function;
-import java.nio.channels.WritableByteChannel;
 
 public interface HttpRequest {
    boolean hasHeader(Header<?> header);
@@ -28,35 +29,9 @@ public interface HttpRequest {
 
    <T> void setHeader(Header<T> header, T value);
 
-   void setByteProducer(Function<ControllableWritableByteChannel, ByteProducer> producerFactory);
+   void setByteProducer(Function<WritableByteChannelLeader, AioFollower<Void>> producerFactory);
 
-   void setByteProducer(Function<ControllableWritableByteChannel, ByteProducer> producerFactory, long length);
-
-   interface ByteProducer {
-      /**
-       * Producer is notified that channel is ready to accept more bytes.
-       */
-      void onReady();
-
-      /**
-       * Producer is notified that channel will not call <code>onReady()</code> anymore.
-       */
-      void onCompleted();
-   }
-
-   interface ControllableWritableByteChannel extends WritableByteChannel {
-      /**
-       * Pause delivering <code>onReady()</code> events. Producer notifies the channel
-       * that there is no data to be written, therefore it should not call <code>onReady()</code>.
-       */
-      void pause();
-
-      /**
-       * Resume delivering <code>onReady()</code> events. Producer notifies channel that
-       * it is ready to deliver bytes to the channel whenever the channel is ready.
-       */
-      void resume();
-   }
+   void setByteProducer(Function<WritableByteChannelLeader, AioFollower<Void>> producerFactory, long length);
 
    interface HttpRequestChange {
       HttpRequestChange NO_CHANGE = new HttpRequestChange() {

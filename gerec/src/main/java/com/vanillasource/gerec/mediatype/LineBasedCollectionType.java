@@ -24,15 +24,14 @@ import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.DeserializationContext;
+import com.vanillasource.aio.AioFollower;
+import com.vanillasource.aio.channel.ReadableByteChannelLeader;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
 import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
 import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.Channels;
-import java.util.concurrent.ExecutionException;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
 import java.io.UncheckedIOException;
 
 /**
@@ -69,8 +68,7 @@ public class LineBasedCollectionType<T> implements AcceptMediaType<Void> {
 
    @Override
    public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
-      CompletableFuture<Void> result = new CompletableFuture<>();
-      response.consumeContent(input -> new HttpResponse.ByteConsumer() {
+      return response.consumeContent(input -> new AioFollower<Void>() {
          private final ByteBuffer inputBuffer = ByteBuffer.allocate(READ_BUFFER_SIZE);
          private final StringBuilder lineBuilder = new StringBuilder();
 
@@ -99,78 +97,36 @@ public class LineBasedCollectionType<T> implements AcceptMediaType<Void> {
          }
 
          private void processLine(String line) {
-            try {
-               T item = acceptType.deserialize(new HttpResponse() {
-                  @Override
-                  public HttpStatusCode getStatusCode() {
-                     return response.getStatusCode();
-                  }
+            acceptType.deserialize(new HttpResponse() {
+               @Override
+               public HttpStatusCode getStatusCode() {
+                  return response.getStatusCode();
+               }
 
-                  @Override
-                  public boolean hasHeader(Header<?> header) {
-                     return response.hasHeader(header);
-                  }
+               @Override
+               public boolean hasHeader(Header<?> header) {
+                  return response.hasHeader(header);
+               }
 
-                  @Override
-                  public <T> T getHeader(Header<T> header) {
-                     return response.getHeader(header);
-                  }
+               @Override
+               public <T> T getHeader(Header<T> header) {
+                  return response.getHeader(header);
+               }
 
-                  @Override
-                  public void consumeContent(Function<ControllableReadableByteChannel, ByteConsumer> consumerFactory) {
-                     ReadableByteChannel lineChannel = Channels.newChannel(new ByteArrayInputStream(line.getBytes()));
-                     ByteConsumer byteConsumer = consumerFactory.apply(new ControllableReadableByteChannel() {
-                        @Override
-                        public boolean isOpen() {
-                           return lineChannel.isOpen();
-                        }
-
-                        @Override
-                        public void close() throws IOException {
-                           lineChannel.close();
-                        }
-
-                        @Override
-                        public int read(ByteBuffer buffer) throws IOException {
-                           return lineChannel.read(buffer);
-                        }
-
-                        @Override
-                        public void pause() {
-                           input.pause();
-                        }
-
-                        @Override
-                        public void resume() {
-                           input.resume();
-                        }
-                     });
-                     try {
-                        byteConsumer.onReady();
-                        byteConsumer.onCompleted();
-                     } catch (Exception e) {
-                        byteConsumer.onException(e);
-                     }
-                  }
-               }, context).get();
-               consumer.accept(item);
-            } catch (InterruptedException e) {
-               throw new IllegalStateException("interrupted while processing item: "+line, e);
-            } catch (ExecutionException e) {
-               throw new IllegalStateException("exception while processing item: "+line, e);
-            }
+               @Override
+               public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelLeader, AioFollower<T>> consumerFactory) {
+                  AioFollower<T> follower = consumerFactory.apply(new UncontrollableByteArrayReadableByteChannelLeader(line.getBytes()));
+                  follower.onReady();
+                  return CompletableFuture.completedFuture(follower.onCompleted());
+               }
+            }, context)
+            .thenAccept(consumer);
          }
 
          @Override
-         public void onCompleted() {
-            result.complete(null);
-         }
-
-         @Override
-         public void onException(Exception e) {
-            result.completeExceptionally(e);
+         public Void onCompleted() {
+            return null;
          }
       });
-      return result;
    }
 }

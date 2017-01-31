@@ -18,9 +18,8 @@
 
 package com.vanillasource.gerec;
 
-import java.nio.ByteBuffer;
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import com.vanillasource.aio.channel.NullReadableByteChannelFollower;
+import com.vanillasource.aio.channel.NullWritableByteChannelFollower;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -48,51 +47,12 @@ public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
 
       @Override
       public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
-         CompletableFuture<Void> result = new CompletableFuture<>();
-         response.consumeContent(input -> new HttpResponse.ByteConsumer() {
-            private ByteBuffer nothing = ByteBuffer.allocateDirect(4096);
-
-            @Override
-            public void onReady() {
-               try {
-                  while (input.read(nothing) > 0) {
-                     nothing.clear();
-                  }
-               } catch (IOException e) {
-                  throw new UncheckedIOException(e);
-               }
-            }
-
-            @Override
-            public void onCompleted() {
-               result.complete(null);
-            }
-
-            @Override
-            public void onException(Exception e) {
-               result.completeExceptionally(e);
-            }
-         });
-         return result;
+         return response.consumeContent(NullReadableByteChannelFollower::new);
       }
 
       @Override
       public void serialize(Void object, HttpRequest request) {
-         request.setByteProducer(output -> new HttpRequest.ByteProducer() {
-            @Override
-            public void onReady() {
-               onCompleted();
-            }
-
-            @Override
-            public void onCompleted() {
-               try {
-                  output.close();
-               } catch (IOException e) {
-                  throw new UncheckedIOException(e);
-               }
-            }
-         }, 0);
+         request.setByteProducer(NullWritableByteChannelFollower::new, 0);
       }
    };
 }

@@ -79,7 +79,7 @@ public class JacksonMediaType<T> implements MediaType<T> {
 
    @Override
    public CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context) {
-      return new ByteArrayAcceptType().deserialize(response, context)
+      return new ByteArrayAcceptType(MediaTypeSpecification.WILDCARD).deserialize(response, context)
          .thenApply(content -> {
             try {
                return createDeserializerObjectMapper(context).readValue(content, type);
@@ -105,7 +105,7 @@ public class JacksonMediaType<T> implements MediaType<T> {
    public void serialize(T object, HttpRequest request) {
       try {
          byte[] objectAsBytes = createSerializerObjectMapper().writeValueAsBytes(object);
-         new ByteArrayContentType().serialize(objectAsBytes, request);
+         new ByteArrayContentType(MediaTypeSpecification.WILDCARD).serialize(objectAsBytes, request);
       } catch (IOException e) {
          throw new UncheckedIOException(e);
       }

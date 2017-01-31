@@ -16,20 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.nio;
+package com.vanillasource.aio.channel;
 
-import com.vanillasource.gerec.HttpResponse;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.ByteBuffer;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 /**
- * A controllable channel that throws an exception if trying to control.
+ * A channel leader that can not be controlled. Use only in cases where the follower can process
+ * the <code>onReady()</code> call completely on first call.
  */
-public final class UncontrollableReadableByteChannel implements HttpResponse.ControllableReadableByteChannel {
+public final class UncontrollableReadableByteChannelLeader implements ReadableByteChannelLeader {
    private final ReadableByteChannel delegate;
 
-   public UncontrollableReadableByteChannel(ReadableByteChannel delegate) {
+   public UncontrollableReadableByteChannelLeader(ReadableByteChannel delegate) {
       this.delegate = delegate;
    }
 
@@ -39,8 +40,12 @@ public final class UncontrollableReadableByteChannel implements HttpResponse.Con
    }
 
    @Override
-   public void close() throws IOException {
-      delegate.close();
+   public void close() {
+      try {
+         delegate.close();
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
+      }
    }
 
    @Override
@@ -58,5 +63,4 @@ public final class UncontrollableReadableByteChannel implements HttpResponse.Con
       throw new UnsupportedOperationException("can not resume uncontrollable channel");
    }
 }
-
 

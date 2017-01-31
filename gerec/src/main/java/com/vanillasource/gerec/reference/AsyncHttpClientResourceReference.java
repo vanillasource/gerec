@@ -23,6 +23,7 @@ import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.HttpErrorException;
 import com.vanillasource.gerec.mediatype.ByteArrayAcceptType;
+import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
@@ -32,12 +33,12 @@ import com.vanillasource.gerec.ErrorResponse;
 import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
-import com.vanillasource.gerec.nio.UncontrollableReadableByteChannel;
+import com.vanillasource.aio.AioFollower;
+import com.vanillasource.aio.channel.ReadableByteChannelLeader;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
 import java.net.URI;
-import java.io.ByteArrayInputStream;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
-import java.nio.channels.Channels;
 import java.util.concurrent.ExecutionException;
 import org.apache.log4j.Logger;
 
@@ -72,7 +73,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
          if (logger.isDebugEnabled()) {
             logger.debug("received status code "+response.getStatusCode()+", throwing error");
          }
-         return new ByteArrayAcceptType().deserialize(response, this::follow)
+         return new ByteArrayAcceptType(MediaTypeSpecification.WILDCARD).deserialize(response, this::follow)
             .thenApply(content -> {
                logger.debug("cached full error contents, returning with exception");
                throw new HttpErrorException("error in response, status code: "+response.getStatusCode(), new HttpErrorResponse(response, content));
@@ -269,15 +270,10 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
                }
 
                @Override
-               public void consumeContent(Function<ControllableReadableByteChannel, ByteConsumer> consumerFactory) {
-                  ByteConsumer consumer = consumerFactory.apply(
-                        new UncontrollableReadableByteChannel(Channels.newChannel(new ByteArrayInputStream(errorBody))));
-                  try {
-                     consumer.onReady();
-                     consumer.onCompleted();
-                  } catch (Exception e) {
-                     consumer.onException(e);
-                  }
+               public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelLeader, AioFollower<T>> followerFactory) {
+                  AioFollower<T> follower = followerFactory.apply(new UncontrollableByteArrayReadableByteChannelLeader(errorBody));
+                  follower.onReady();
+                  return CompletableFuture.completedFuture(follower.onCompleted());
                }
             }, AsyncHttpClientResourceReference.this::follow).get();
          } catch (InterruptedException e) {

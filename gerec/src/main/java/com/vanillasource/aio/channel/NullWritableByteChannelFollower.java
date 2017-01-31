@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 VanillaSource
+ * Copyright (C) 2017 VanillaSource
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,29 +16,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec.mediatype;
+package com.vanillasource.aio.channel;
 
-import com.vanillasource.gerec.ContentMediaType;
-import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.aio.channel.ByteArrayWritableByteChannelFollower;
+import com.vanillasource.aio.AioFollower;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.channels.WritableByteChannel;
 
 /**
- * Serializes a byte array into the request.
+ * A follower of <code>WritableByteChannel</code> that doesn't write anything, and
+ * closes the channel as soon as it's allocated.
  */
-public class ByteArrayContentType implements ContentMediaType<byte[]> {
-   private final MediaTypeSpecification mediaType;
+public final class NullWritableByteChannelFollower implements AioFollower<Void> {
+   private final WritableByteChannel channel;
 
-   public ByteArrayContentType(MediaTypeSpecification mediaType) {
-      this.mediaType = mediaType;
+   public NullWritableByteChannelFollower(WritableByteChannel channel) {
+      this.channel = channel;
    }
 
    @Override
-   public void applyAsContent(HttpRequest request) {
-      mediaType.addAsContentTo(request);
+   public void onReady() {
+      try {
+         channel.close();
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
+      }
    }
 
    @Override
-   public void serialize(byte[] content, HttpRequest request) {
-      request.setByteProducer(output -> new ByteArrayWritableByteChannelFollower(output, content), content.length);
+   public Void onCompleted() {
+      return null;
    }
 }
+
+
+
+

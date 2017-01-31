@@ -24,13 +24,13 @@ import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpRequest;
 import java.util.function.Function;
-import java.io.ByteArrayInputStream;
 import static com.vanillasource.gerec.mediatype.MediaTypes.*;
 import com.vanillasource.gerec.http.Headers;
-import com.vanillasource.gerec.nio.UncontrollableReadableByteChannel;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
+import com.vanillasource.aio.AioFollower;
+import com.vanillasource.aio.channel.ReadableByteChannelLeader;
 import com.vanillasource.gerec.http.ValueWithParameter;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.util.concurrent.CompletableFuture;
 
 @Test
 public class MediaTypesTests {
@@ -74,11 +74,10 @@ public class MediaTypesTests {
    @SuppressWarnings("unchecked")
    private void responseContent(String content, String encoding) {
       doAnswer(invocation -> {
-         HttpResponse.ByteConsumer consumer = ((Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0])
-            .apply(new UncontrollableReadableByteChannel(Channels.newChannel(new ByteArrayInputStream(content.getBytes(encoding)))));
-         consumer.onReady();
-         consumer.onCompleted();
-         return null;
+         AioFollower<String> follower = ((Function<ReadableByteChannelLeader, AioFollower<String>>) invocation.getArguments()[0])
+            .apply(new UncontrollableByteArrayReadableByteChannelLeader(content.getBytes(encoding)));
+         follower.onReady();
+         return CompletableFuture.completedFuture(follower.onCompleted());
       }).when(response).consumeContent(any(Function.class));
    }
 

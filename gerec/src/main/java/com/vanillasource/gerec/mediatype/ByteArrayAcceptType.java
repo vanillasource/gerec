@@ -18,75 +18,45 @@
 
 package com.vanillasource.gerec.mediatype;
 
+import com.vanillasource.aio.channel.ByteArrayReadableByteChannelFollower;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.DeserializationContext;
 import java.util.concurrent.CompletableFuture;
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 
 /**
- * Accept media type that copies all input into a byte array. This can
- * not be directly applied to any request, but can be applied to
- * any response. Note: this implementation copies all bytes at least
- * 4 times, it should be only used in bounded length messages.
+ * Accept media type that copies all input into a byte array.
  */
 public class ByteArrayAcceptType implements AcceptMediaType<byte[]> {
-   private static final int BUFFER_SIZE = 4096;
+   private static final int DEFAULT_INITIAL_SIZE = 4096;
+   private final MediaTypeSpecification mediaType;
+
+   public ByteArrayAcceptType(MediaTypeSpecification mediaType) {
+      this.mediaType = mediaType;
+   }
 
    @Override
    public void applyAsOption(HttpRequest request) {
-      throw new UnsupportedOperationException("byte array can not be directly applied to requests");
+      mediaType.addAsAcceptedTo(request);
    }
 
    @Override
    public boolean isHandling(HttpResponse response) {
-      return true;
+      return mediaType.isIn(response);
    }
 
    @Override
    public CompletableFuture<byte[]> deserialize(HttpResponse response, DeserializationContext context) {
-      ByteArrayOutputStream output;
+      int initialSize;
       if (response.hasHeader(Headers.CONTENT_LENGTH)) {
-         output = new ByteArrayOutputStream(response.getHeader(Headers.CONTENT_LENGTH).intValue());
+         initialSize = response.getHeader(Headers.CONTENT_LENGTH).intValue();
       } else {
-         output = new ByteArrayOutputStream();
+         initialSize = DEFAULT_INITIAL_SIZE;
       }
-      CompletableFuture<byte[]> result = new CompletableFuture<>();
-      response.consumeContent(channel -> new HttpResponse.ByteConsumer() {
-         private final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-         private final byte[] byteBuffer = new byte[BUFFER_SIZE];
-
-         @Override
-         public void onReady() {
-            try {
-               buffer.clear();
-               int readLength = channel.read(buffer);
-               if (readLength > 0) {
-                  buffer.flip();
-                  buffer.get(byteBuffer, 0, readLength);
-                  output.write(byteBuffer, 0, readLength);
-               }
-            } catch (IOException e) {
-               throw new UncheckedIOException(e);
-            }
-         }
-
-         @Override
-         public void onCompleted() {
-            result.complete(output.toByteArray());
-         }
-
-         @Override
-         public void onException(Exception e) {
-            result.completeExceptionally(e);
-         }
-      });
-      return result;
+      return response.consumeContent(channel ->
+            new ByteArrayReadableByteChannelFollower(channel, initialSize));
    }
 }
 

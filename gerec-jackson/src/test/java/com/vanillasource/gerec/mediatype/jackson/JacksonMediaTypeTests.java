@@ -26,7 +26,11 @@ import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
-import com.vanillasource.gerec.nio.UncontrollableReadableByteChannel;
+import com.vanillasource.aio.channel.WritableByteChannelLeader;
+import com.vanillasource.aio.AioFollower;
+import com.vanillasource.aio.channel.ReadableByteChannelLeader;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
+import java.util.concurrent.CompletableFuture;
 import java.net.URI;
 import java.util.function.Function;
 import java.nio.channels.ReadableByteChannel;
@@ -77,24 +81,23 @@ public class JacksonMediaTypeTests {
       request = mock(HttpRequest.class);
       content = null;
       doAnswer(invocation -> {
-         Function<HttpRequest.ControllableWritableByteChannel, HttpRequest.ByteProducer> producerFactory =
-            (Function<HttpRequest.ControllableWritableByteChannel, HttpRequest.ByteProducer>)invocation.getArguments()[0];
-         HttpRequest.ByteProducer producer = producerFactory.apply(new StringWritableByteChannel());
+         Function<WritableByteChannelLeader, AioFollower<Void>> producerFactory =
+            (Function<WritableByteChannelLeader, AioFollower<Void>>)invocation.getArguments()[0];
+         AioFollower<Void> producer = producerFactory.apply(new StringWritableByteChannel());
          producer.onReady();
-         producer.onCompleted();
-         return null;
+         return CompletableFuture.completedFuture(producer.onCompleted());
       }).when(request).setByteProducer(any(), anyLong());
       response = mock(HttpResponse.class);
       doAnswer(invocation -> {
-         Function<ReadableByteChannel, HttpResponse.ByteConsumer> consumerFactory = (Function<ReadableByteChannel, HttpResponse.ByteConsumer>) invocation.getArguments()[0];
-         HttpResponse.ByteConsumer consumer = consumerFactory.apply(new UncontrollableReadableByteChannel(Channels.newChannel(new ByteArrayInputStream(content.getBytes()))));
+         Function<ReadableByteChannelLeader, AioFollower<Void>> consumerFactory =
+            (Function<ReadableByteChannelLeader, AioFollower<Void>>) invocation.getArguments()[0];
+         AioFollower<Void> consumer = consumerFactory.apply(new UncontrollableByteArrayReadableByteChannelLeader(content.getBytes()));
          consumer.onReady();
-         consumer.onCompleted();
-         return null;
+         return CompletableFuture.completedFuture(consumer.onCompleted());
       }).when(response).consumeContent(any(Function.class));
    }
 
-   public class StringWritableByteChannel implements HttpRequest.ControllableWritableByteChannel {
+   public class StringWritableByteChannel implements WritableByteChannelLeader {
       private StringBuilder builder = new StringBuilder();
 
       @Override
