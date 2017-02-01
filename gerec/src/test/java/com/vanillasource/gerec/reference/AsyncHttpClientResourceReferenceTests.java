@@ -36,6 +36,74 @@ public class AsyncHttpClientResourceReferenceTests {
    private AsyncHttpClient client;
    private AsyncHttpClientResourceReference reference;
 
+   public void testSyncHeadInvokesHead() throws Exception {
+      when(client.doHead(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+
+      reference.sync().head();
+
+      verify(client).doHead(any(), any());
+   }
+
+   public void testSyncOptionsInvokesOptions() throws Exception {
+      when(client.doOptions(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.sync().options();
+
+      verify(client).doOptions(any(), any());
+   }
+
+   public void testSyncGetInvokesGet() throws Exception {
+      when(client.doGet(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.sync().get(MediaType.NONE);
+
+      verify(client).doGet(any(), any());
+   }
+
+   public void testSyncPostInvokesPost() throws Exception {
+      when(client.doPost(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.sync().post(MediaType.NONE, null);
+
+      verify(client).doPost(any(), any());
+   }
+
+   public void testSyncPutInvokesPut() throws Exception {
+      when(client.doPut(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.sync().put(MediaType.NONE, null);
+
+      verify(client).doPut(any(), any());
+   }
+
+   public void testSyncDeleteInvokesDelete() throws Exception {
+      when(client.doDelete(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.sync().delete();
+
+      verify(client).doDelete(any(), any());
+   }
+
+   @Test(expectedExceptions = HttpErrorException.class)
+   public void testSyncOperationsAreTransparentForHttpErrorException() throws Exception {
+      when(client.doGet(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.NOT_FOUND);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.sync().get(MediaType.NONE);
+   }
+
    public void testHeadInvokesHead() throws Exception {
       when(client.doHead(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
