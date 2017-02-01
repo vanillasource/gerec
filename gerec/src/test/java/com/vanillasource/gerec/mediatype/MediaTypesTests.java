@@ -27,6 +27,8 @@ import java.util.function.Function;
 import static com.vanillasource.gerec.mediatype.MediaTypes.*;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
+import com.vanillasource.aio.channel.UncontrollableByteArrayWritableByteChannelLeader;
+import com.vanillasource.aio.channel.WritableByteChannelLeader;
 import com.vanillasource.aio.AioFollower;
 import com.vanillasource.aio.channel.ReadableByteChannelLeader;
 import com.vanillasource.gerec.http.ValueWithParameter;
@@ -36,6 +38,7 @@ import java.util.concurrent.CompletableFuture;
 public class MediaTypesTests {
    private HttpResponse response;
    private HttpRequest request;
+   private String requestContent;
 
    public void testAsciiStringIsDeserializedWithoutContentType() throws Exception {
       responseContent("abc", "UTF-8");
@@ -43,6 +46,14 @@ public class MediaTypesTests {
       String result = textPlain().deserialize(response, null).get();
 
       assertEquals(result, "abc");
+   }
+
+   public void testSerializingStringWritesUTFBytes() throws Exception {
+      when(request.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/plain"));
+
+      textPlain().serialize("abc", request);
+
+      assertEquals(requestContent, "abc");
    }
 
    public void testUtfStringIsDeserializedWithContentTypeWithoutCharset() throws Exception {
@@ -78,7 +89,7 @@ public class MediaTypesTests {
             .apply(new UncontrollableByteArrayReadableByteChannelLeader(content.getBytes(encoding)));
          follower.onReady();
          return CompletableFuture.completedFuture(follower.onCompleted());
-      }).when(response).consumeContent(any(Function.class));
+      }).when(response).consumeContent(any());
    }
 
    @BeforeMethod
@@ -86,5 +97,14 @@ public class MediaTypesTests {
    protected void setUp() {
       response = mock(HttpResponse.class);
       request = mock(HttpRequest.class);
+      doAnswer(invocation -> {
+         UncontrollableByteArrayWritableByteChannelLeader byteArrayLeader = new UncontrollableByteArrayWritableByteChannelLeader();
+         AioFollower<Void> follower = ((Function<WritableByteChannelLeader, AioFollower<Void>>) invocation.getArguments()[0])
+            .apply(byteArrayLeader);
+         follower.onReady();
+         follower.onCompleted();
+         requestContent = new String(byteArrayLeader.toByteArray());
+         return null;
+      }).when(request).setByteProducer(any(), anyInt());
    }
 }

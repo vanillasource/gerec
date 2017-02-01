@@ -42,22 +42,7 @@ public final class MediaTypes {
     * Used for submitting information in HTML FORM POST format, using UTF-8 encoding.
     */
    public static ContentMediaType<String> formUrlEncoded() {
-      return new ContentMediaType<String>() {
-         @Override
-         public void applyAsContent(HttpRequest request) {
-            FORM_URLENCODED_SPECIFICATION.addAsAcceptedTo(request);
-         }
-
-         @Override
-         public void serialize(String object, HttpRequest request) {
-            try {
-               byte[] bytes = object.getBytes("UTF-8");
-               new ByteArrayContentType(MediaTypeSpecification.WILDCARD).serialize(bytes, request);
-            } catch (UnsupportedEncodingException e) {
-               throw new IllegalStateException("utf-8 encoding not supported", e);
-            }
-         }
-      };
+      return textPlain(FORM_URLENCODED_SPECIFICATION);
    }
 
    /**
