@@ -45,6 +45,16 @@ public class AsyncHttpClientResourceReferenceTests {
       verify(client).doHead(any(), any());
    }
 
+   public void testOptionsInvokesOptions() throws Exception {
+      when(client.doOptions(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.options().get();
+
+      verify(client).doOptions(any(), any());
+   }
+
    public void testGetInvokesGet() throws Exception {
       when(client.doGet(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
