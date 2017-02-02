@@ -25,7 +25,7 @@ import java.io.Serializable;
 /**
  * A list of HTTP status codes in a quasi-enumeration. HTTP Codes are <i>almost</i> an enumeration,
  * except they can (and are) extended with new specifications. So this class defines
- * constant objects which can be used with the '==' sign, and can be used in switch statements normally,
+ * constant objects which can be used with the '==' sign,
  * but also are able to contain values which were not previously defined.
  */
 public final class HttpStatusCode implements Serializable {
