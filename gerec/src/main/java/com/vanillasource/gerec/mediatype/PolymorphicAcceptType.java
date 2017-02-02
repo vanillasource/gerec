@@ -30,10 +30,10 @@ import java.util.concurrent.CompletableFuture;
  * class hierarchy, returning the base class. This means this type can actually
  * map representations into an inheritance hierarchy. 
  */
-public class PolymorphicTypes<T> implements AcceptMediaType<T> {
+public class PolymorphicAcceptType<T> implements AcceptMediaType<T> {
    private List<? extends AcceptMediaType<? extends T>> acceptTypes;
 
-   public PolymorphicTypes(List<? extends AcceptMediaType<? extends T>> acceptTypes) {
+   public PolymorphicAcceptType(List<? extends AcceptMediaType<? extends T>> acceptTypes) {
       this.acceptTypes = acceptTypes;
    }
 

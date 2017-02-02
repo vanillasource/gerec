@@ -29,7 +29,7 @@ import java.util.List;
  * time, or different versions of the same representation mapping to the same java class.
  * The content type is the first media type given.
  */
-public class SameTypeAlternatives<T> extends PolymorphicTypes<T> implements MediaType<T> {
+public class SameTypeAlternatives<T> extends PolymorphicAcceptType<T> implements MediaType<T> {
    private ContentMediaType<T> contentType;
 
    public SameTypeAlternatives(List<MediaType<T>> mediaTypes) {
