@@ -32,9 +32,6 @@ import java.util.concurrent.CompletableFuture;
  * A factory of some basic media types and their serializers/deserializers.
  */
 public final class MediaTypes {
-   private static final MediaTypeSpecification FORM_URLENCODED_SPECIFICATION = mediaType("application/x-www-form-urlencoded");
-   private static final String DEFAULT_ENCODING = "US-ASCII";
-
    private MediaTypes() {
    }
 
@@ -42,32 +39,21 @@ public final class MediaTypes {
     * Used for submitting information in HTML FORM POST format, using UTF-8 encoding.
     */
    public static ContentMediaType<String> formUrlEncoded() {
-      return textPlain(FORM_URLENCODED_SPECIFICATION);
+      return textPlain(mediaType("application/x-www-form-urlencoded"));
    }
 
    /**
     * A text/plain with UTF-8 and no quality indicator.
     */
    public static MediaType<String> textPlain() {
-      return textPlain(mediaType("text/plain").withParameter("charset", "UTF-8"));
+      return textPlain(mediaType("text/plain"));
    }
 
    /**
     * An UTF-8 text/plain with accept quality indicator.
     */
    public static MediaType<String> textPlain(double quality) {
-      return textPlain(mediaType("text/plain", quality).withParameter("charset", "UTF-8"));
-   }
-
-   /**
-    * An text/plain with a given encoding.
-    */
-   public static MediaType<String> textPlain(String charset) {
-      return textPlain(mediaType("text/plain").withParameter("charset", charset));
-   }
-
-   public static MediaType<String> textPlain(Double quality, String charset) {
-      return textPlain(mediaType("text/plain", quality).withParameter("charset", charset));
+      return textPlain(mediaType("text/plain", quality));
    }
 
    /**
@@ -77,46 +63,32 @@ public final class MediaTypes {
     */
    public static MediaType<String> textPlain(MediaTypeSpecification mediaType) {
       return new MediaType<String>() {
+         private final StringAcceptType acceptType = new StringAcceptType(mediaType, "US-ASCII");
+         private final StringContentType contentType = new StringContentType(mediaType, "UTF-8");
+
          @Override
          public void applyAsOption(HttpRequest request) {
-            mediaType.addAsAcceptedTo(request);
+            acceptType.applyAsOption(request);
          }
 
          @Override
          public boolean isHandling(HttpResponse response) {
-            return mediaType.isIn(response);
+            return acceptType.isHandling(response);
          }
 
          @Override
          public void applyAsContent(HttpRequest request) {
-            mediaType.addAsContentTo(request);
+            contentType.applyAsContent(request);
          }
 
          @Override
          public CompletableFuture<String> deserialize(HttpResponse response, DeserializationContext context) {
-            return new ByteArrayAcceptType(MediaTypeSpecification.WILDCARD).deserialize(response, context)
-               .thenApply(content -> {
-                  String encoding = DEFAULT_ENCODING;
-                  if (response.hasHeader(Headers.CONTENT_TYPE)) {
-                     encoding = response.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", DEFAULT_ENCODING);
-                  }
-                  try {
-                     return new String(content, encoding);
-                  } catch (UnsupportedEncodingException e) {
-                     throw new IllegalStateException(encoding+" encoding not supported", e);
-                  }
-               });
+            return acceptType.deserialize(response, context);
          }
 
          @Override
-         public void serialize(String object, HttpRequest request) {
-            String charset = request.getHeader(Headers.CONTENT_TYPE).getParameterValue("charset", "UTF-8");
-            try {
-               byte[] bytes = object.getBytes(charset);
-               new ByteArrayContentType(MediaTypeSpecification.WILDCARD).serialize(bytes, request);
-            } catch (UnsupportedEncodingException e) {
-               throw new IllegalStateException(charset+" encoding not supported", e);
-            }
+         public void serialize(String content, HttpRequest request) {
+            contentType.serialize(content, request);
          }
       };
    }
