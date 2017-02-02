@@ -19,8 +19,11 @@
 package com.vanillasource.gerec.mediatype;
 
 import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.ContentMediaType;
+import com.vanillasource.gerec.DeserializationContext;
+import java.util.concurrent.CompletableFuture;
 import java.util.List;
 
 /**
@@ -29,15 +32,16 @@ import java.util.List;
  * time, or different versions of the same representation mapping to the same java class.
  * The content type is the first media type given.
  */
-public class SameTypeAlternatives<T> extends PolymorphicAcceptType<T> implements MediaType<T> {
+public class SameTypesMediaType<T> implements MediaType<T> {
+   private PolymorphicAcceptType<T> acceptType;
    private ContentMediaType<T> contentType;
 
-   public SameTypeAlternatives(List<MediaType<T>> mediaTypes) {
-      super(mediaTypes);
+   public SameTypesMediaType(List<MediaType<T>> mediaTypes) {
       if (mediaTypes.isEmpty()) {
          throw new IllegalArgumentException("can not construct with no actual media types");
       }
-      contentType = mediaTypes.get(0);
+      this.acceptType = new PolymorphicAcceptType<>(mediaTypes);
+      this.contentType = mediaTypes.get(0);
    }
 
    @Override
@@ -48,6 +52,21 @@ public class SameTypeAlternatives<T> extends PolymorphicAcceptType<T> implements
    @Override
    public void serialize(T object, HttpRequest request) {
       contentType.serialize(object, request);
+   }
+
+   @Override
+   public void applyAsOption(HttpRequest request) {
+      acceptType.applyAsOption(request);
+   }
+
+   @Override
+   public boolean isHandling(HttpResponse response) {
+      return acceptType.isHandling(response);
+   }
+
+   @Override
+   public CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context) {
+      return acceptType.deserialize(response, context);
    }
 }
 

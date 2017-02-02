@@ -27,7 +27,7 @@ import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.HttpErrorException;
 import static com.vanillasource.gerec.http.CacheControl.*;
 import com.vanillasource.gerec.mediatype.MediaTypes;
-import com.vanillasource.gerec.mediatype.SameTypeAlternatives;
+import com.vanillasource.gerec.mediatype.SameTypesMediaType;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
 import java.util.concurrent.ExecutionException;
 import static java.util.Arrays.asList;
@@ -121,7 +121,7 @@ public class ConceptTests extends HttpTestsBase {
 
       try {
          reference().get(
-               new SameTypeAlternatives<>(asList(
+               new SameTypesMediaType<>(asList(
                   new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
                   new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2"))))
             .get();
@@ -135,7 +135,7 @@ public class ConceptTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withHeader("Content-type", "application/vnd.test.person-v1; charset=UTF-8").withBody("{\"name\":\"John\", \"age\": 35}")));
 
       Person person = reference().get(
-            new SameTypeAlternatives<>(asList(
+            new SameTypesMediaType<>(asList(
                new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
                new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2")))).get().getContent();
    }

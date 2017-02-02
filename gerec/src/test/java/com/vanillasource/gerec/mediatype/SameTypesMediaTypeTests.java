@@ -27,18 +27,18 @@ import static java.util.Collections.*;
 import java.util.concurrent.CompletableFuture;
 
 @Test
-public class SameTypeAlternativesTests {
+public class SameTypesMediaTypeTests {
    private MediaType<String> mediaType;
    private HttpResponse response = mock(HttpResponse.class);
    private HttpRequest request = mock(HttpRequest.class);
 
    @Test(expectedExceptions = IllegalArgumentException.class)
    public void testNoTypesThrowException() {
-      new SameTypeAlternatives<>(emptyList());
+      new SameTypesMediaType<>(emptyList());
    }
 
    public void testAllTypesAreApplied() {
-      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
+      SameTypesMediaType<String> types = new SameTypesMediaType<>(singletonList(mediaType));
 
       types.applyAsOption(request);
 
@@ -46,13 +46,13 @@ public class SameTypeAlternativesTests {
    }
 
    public void testTypesDoesNotHandleResponseIfTypeIsNotHandling() {
-      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
+      SameTypesMediaType<String> types = new SameTypesMediaType<>(singletonList(mediaType));
 
       assertFalse(types.isHandling(response));
    }
 
    public void testTypesDoHandleResponseIfTypeDoes() {
-      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
+      SameTypesMediaType<String> types = new SameTypesMediaType<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
 
       assertTrue(types.isHandling(response));
@@ -60,14 +60,14 @@ public class SameTypeAlternativesTests {
 
    @Test(expectedExceptions = IllegalStateException.class)
    public void testIfTypeNotHandlingResponseDeserializationThrowsException() {
-      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
+      SameTypesMediaType<String> types = new SameTypesMediaType<>(singletonList(mediaType));
 
       types.deserialize(response, null);
    }
 
    @SuppressWarnings("unchecked")
    public void testHandlingTypeDeserializesForTypes() throws Exception {
-      SameTypeAlternatives<String> types = new SameTypeAlternatives<>(singletonList(mediaType));
+      SameTypesMediaType<String> types = new SameTypesMediaType<>(singletonList(mediaType));
       when(mediaType.isHandling(response)).thenReturn(true);
       when(mediaType.deserialize(response, null)).thenReturn(CompletableFuture.completedFuture("abc"));
 
