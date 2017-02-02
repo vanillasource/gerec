@@ -20,43 +20,51 @@ package com.vanillasource.aio.channel;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * A channel leader that can not be controlled. Use only in cases where the follower can process
- * the <code>onReady()</code> call completely on first call.
+ * A channel leader that can not be controlled. Use only in cases where the follower can write
+ * all data on a single call to <code>onReady()</code>.
  */
-public final class UncontrollableByteArrayReadableByteChannelLeader implements ReadableByteChannelLeader {
-   private final ReadableByteChannelLeader delegate;
+public final class UncontrollableByteArrayWritableByteChannelMaster implements WritableByteChannelMaster {
+   private final ByteArrayOutputStream output;
 
-   public UncontrollableByteArrayReadableByteChannelLeader(byte[] content) {
-      this.delegate = new UncontrollableReadableByteChannelLeader(Channels.newChannel(new ByteArrayInputStream(content)));
+   public UncontrollableByteArrayWritableByteChannelMaster() {
+      this.output = new ByteArrayOutputStream();
    }
 
-   @Override
-   public boolean isOpen() {
-      return delegate.isOpen();
+   public byte[] toByteArray() {
+      return output.toByteArray();
    }
 
    @Override
    public void close() {
-      delegate.close();
    }
 
    @Override
-   public int read(ByteBuffer buffer) throws IOException {
-      return delegate.read(buffer);
+   public boolean isOpen() {
+      return true;
+   }
+
+   @Override
+   public int write(ByteBuffer buffer) throws IOException {
+      int count = 0;
+      while (buffer.hasRemaining()) {
+         output.write(buffer.get());
+         count++;
+      }
+      return count;
    }
 
    @Override
    public void pause() {
-      delegate.pause();
+      throw new UnsupportedOperationException("pause not supported in uncontrollable leader");
    }
 
    @Override
    public void resume() {
-      delegate.resume();
+      throw new UnsupportedOperationException("resume not supported in uncontrollable leader");
    }
 }
 

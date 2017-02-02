@@ -33,9 +33,9 @@ import com.vanillasource.gerec.ErrorResponse;
 import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
-import com.vanillasource.aio.AioFollower;
-import com.vanillasource.aio.channel.ReadableByteChannelLeader;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
+import com.vanillasource.aio.AioSlave;
+import com.vanillasource.aio.channel.ReadableByteChannelMaster;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
 import java.net.URI;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
@@ -270,8 +270,8 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
                }
 
                @Override
-               public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelLeader, AioFollower<T>> followerFactory) {
-                  AioFollower<T> follower = followerFactory.apply(new UncontrollableByteArrayReadableByteChannelLeader(errorBody));
+               public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelMaster, AioSlave<T>> followerFactory) {
+                  AioSlave<T> follower = followerFactory.apply(new UncontrollableByteArrayReadableByteChannelMaster(errorBody));
                   follower.onReady();
                   return CompletableFuture.completedFuture(follower.onCompleted());
                }

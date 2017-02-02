@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 VanillaSource
+ * Copyright (C) 2017 VanillaSource
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,49 +18,40 @@
 
 package com.vanillasource.aio.channel;
 
-import java.nio.channels.ReadableByteChannel;
+import com.vanillasource.aio.AioSlave;
+import java.nio.channels.WritableByteChannel;
 import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
 /**
- * A channel leader that can not be controlled. Use only in cases where the follower can process
- * the <code>onReady()</code> call completely on first call.
+ * Writes all bytes given to the writable channel, without pausing.
  */
-public final class UncontrollableReadableByteChannelLeader implements ReadableByteChannelLeader {
-   private final ReadableByteChannel delegate;
+public class ByteArrayWritableByteChannelSlave implements AioSlave<Void> {
+   private final WritableByteChannel channel;
+   private final ByteBuffer content;
 
-   public UncontrollableReadableByteChannelLeader(ReadableByteChannel delegate) {
-      this.delegate = delegate;
+   public ByteArrayWritableByteChannelSlave(WritableByteChannel channel, byte[] bytes) {
+      this.channel = channel;
+      this.content = ByteBuffer.wrap(bytes);
    }
 
    @Override
-   public boolean isOpen() {
-      return delegate.isOpen();
-   }
-
-   @Override
-   public void close() {
+   public void onReady() {
       try {
-         delegate.close();
+         if (content.hasRemaining()) {
+            channel.write(content);
+         }
+         if (!content.hasRemaining()) {
+            channel.close();
+         }
       } catch (IOException e) {
          throw new UncheckedIOException(e);
       }
    }
 
    @Override
-   public int read(ByteBuffer buffer) throws IOException {
-      return delegate.read(buffer);
-   }
-
-   @Override
-   public void pause() {
-      throw new UnsupportedOperationException("can not pause uncontrollable channel");
-   }
-
-   @Override
-   public void resume() {
-      throw new UnsupportedOperationException("can not resume uncontrollable channel");
+   public Void onCompleted() {
+      return null;
    }
 }
-

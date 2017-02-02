@@ -18,8 +18,8 @@
 
 package com.vanillasource.gerec;
 
-import com.vanillasource.aio.channel.NullReadableByteChannelFollower;
-import com.vanillasource.aio.channel.NullWritableByteChannelFollower;
+import com.vanillasource.aio.channel.NullReadableByteChannelSlave;
+import com.vanillasource.aio.channel.NullWritableByteChannelSlave;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -47,12 +47,12 @@ public interface MediaType<T> extends ContentMediaType<T>, AcceptMediaType<T> {
 
       @Override
       public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
-         return response.consumeContent(NullReadableByteChannelFollower::new);
+         return response.consumeContent(NullReadableByteChannelSlave::new);
       }
 
       @Override
       public void serialize(Void object, HttpRequest request) {
-         request.setByteProducer(NullWritableByteChannelFollower::new, 0);
+         request.setByteProducer(NullWritableByteChannelSlave::new, 0);
       }
    };
 }

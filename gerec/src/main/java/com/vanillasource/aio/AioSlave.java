@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 VanillaSource
+ * Copyright (C) 2017 VanillaSource
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,19 +16,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.gerec;
+package com.vanillasource.aio;
 
-import com.vanillasource.aio.AioSlave;
-import com.vanillasource.aio.channel.ReadableByteChannelMaster;
-import java.util.function.Function;
-import java.util.concurrent.CompletableFuture;
+/**
+ * An AIO (Asynchronous IO) Slave is a peer in an AIO communication
+ * which is driven by the Master to produce or consume data to- or from-
+ * the Master.
+ */
+public interface AioSlave<T> {
+   /**
+    * Slave is notified by the leader to read or write data. I/O is
+    * only allowed during this method call.
+    */
+   void onReady();
 
-public interface HttpResponse {
-   HttpStatusCode getStatusCode();
-
-   boolean hasHeader(Header<?> header);
-
-   <T> T getHeader(Header<T> header);
-
-   <R> CompletableFuture<R> consumeContent(Function<ReadableByteChannelMaster, AioSlave<R>> consumerFactory);
+   /**
+    * Called by the leader to indicate that the I/O conversation completed.
+    * There will be no more calls to <code>onReady()</code>.
+    * @return An object that is either the result of reading the data, or
+    * an object indicating completion of writing all data.
+    */
+   T onCompleted();
 }

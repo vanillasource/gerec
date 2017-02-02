@@ -19,13 +19,13 @@
 package com.vanillasource.aio;
 
 /**
- * An AIO (Asynchronous-IO) Leader represents a peer in an AIO communication
+ * An AIO (Asynchronous-IO) Master represents a peer in an AIO communication
  * which drives the conversation. A leader may be either producing or consuming
  * data. Its key attribute is that it drives the conversation, essentially owns
- * the Thread the communication is executed in. The follower may ask the Leader
+ * the Thread the communication is executed in. The follower may ask the Master
  * to pause or resume the conversation.
  */
-public interface AioLeader extends AutoCloseable {
+public interface AioMaster extends AutoCloseable {
    /**
     * Instructs the leader to temporarily pause the production or consumption
     * of data. No events will be delivered after this call.

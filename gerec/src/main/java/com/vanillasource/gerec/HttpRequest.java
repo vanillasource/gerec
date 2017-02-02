@@ -18,8 +18,8 @@
 
 package com.vanillasource.gerec;
 
-import com.vanillasource.aio.AioFollower;
-import com.vanillasource.aio.channel.WritableByteChannelLeader;
+import com.vanillasource.aio.AioSlave;
+import com.vanillasource.aio.channel.WritableByteChannelMaster;
 import java.util.function.Function;
 
 public interface HttpRequest {
@@ -29,9 +29,9 @@ public interface HttpRequest {
 
    <T> void setHeader(Header<T> header, T value);
 
-   void setByteProducer(Function<WritableByteChannelLeader, AioFollower<Void>> producerFactory);
+   void setByteProducer(Function<WritableByteChannelMaster, AioSlave<Void>> producerFactory);
 
-   void setByteProducer(Function<WritableByteChannelLeader, AioFollower<Void>> producerFactory, long length);
+   void setByteProducer(Function<WritableByteChannelMaster, AioSlave<Void>> producerFactory, long length);
 
    interface HttpRequestChange {
       HttpRequestChange NO_CHANGE = new HttpRequestChange() {

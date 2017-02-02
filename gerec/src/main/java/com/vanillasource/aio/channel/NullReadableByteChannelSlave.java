@@ -18,7 +18,7 @@
 
 package com.vanillasource.aio.channel;
 
-import com.vanillasource.aio.AioFollower;
+import com.vanillasource.aio.AioSlave;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
@@ -28,11 +28,11 @@ import java.nio.channels.ReadableByteChannel;
  * A follower of <code>ReadableByteChannel</code> that reads the channel
  * completely, but discards all data immediately.
  */
-public final class NullReadableByteChannelFollower implements AioFollower<Void> {
+public final class NullReadableByteChannelSlave implements AioSlave<Void> {
    private final ByteBuffer nothing = ByteBuffer.allocateDirect(4096);
    private final ReadableByteChannel channel;
 
-   public NullReadableByteChannelFollower(ReadableByteChannel channel) {
+   public NullReadableByteChannelSlave(ReadableByteChannel channel) {
       this.channel = channel;
    }
 

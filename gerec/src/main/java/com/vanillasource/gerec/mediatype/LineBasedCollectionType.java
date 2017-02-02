@@ -24,9 +24,9 @@ import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.DeserializationContext;
-import com.vanillasource.aio.AioFollower;
-import com.vanillasource.aio.channel.ReadableByteChannelLeader;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
+import com.vanillasource.aio.AioSlave;
+import com.vanillasource.aio.channel.ReadableByteChannelMaster;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
 import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
@@ -68,7 +68,7 @@ public class LineBasedCollectionType<T> implements AcceptMediaType<Void> {
 
    @Override
    public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
-      return response.consumeContent(input -> new AioFollower<Void>() {
+      return response.consumeContent(input -> new AioSlave<Void>() {
          private final ByteBuffer inputBuffer = ByteBuffer.allocate(READ_BUFFER_SIZE);
          private final StringBuilder lineBuilder = new StringBuilder();
 
@@ -114,8 +114,8 @@ public class LineBasedCollectionType<T> implements AcceptMediaType<Void> {
                }
 
                @Override
-               public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelLeader, AioFollower<T>> consumerFactory) {
-                  AioFollower<T> follower = consumerFactory.apply(new UncontrollableByteArrayReadableByteChannelLeader(line.getBytes()));
+               public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelMaster, AioSlave<T>> consumerFactory) {
+                  AioSlave<T> follower = consumerFactory.apply(new UncontrollableByteArrayReadableByteChannelMaster(line.getBytes()));
                   follower.onReady();
                   return CompletableFuture.completedFuture(follower.onCompleted());
                }

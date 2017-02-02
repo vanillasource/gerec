@@ -18,7 +18,7 @@
 
 package com.vanillasource.aio.channel;
 
-import com.vanillasource.aio.AioFollower;
+import com.vanillasource.aio.AioSlave;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -30,19 +30,19 @@ import java.io.UncheckedIOException;
  * multiple times, and consumes as much memory as all the bytes. Use only
  * when the size of the input is limited/known.
  */
-public class ByteArrayReadableByteChannelFollower implements AioFollower<byte[]> {
+public class ByteArrayReadableByteChannelSlave implements AioSlave<byte[]> {
    private static final int BUFFER_SIZE = 4096;
    private final ReadableByteChannel channel;
    private final byte[] bytes = new byte[BUFFER_SIZE];
    private final ByteBuffer buffer = ByteBuffer.wrap(bytes);
    private final ByteArrayOutputStream output;
 
-   public ByteArrayReadableByteChannelFollower(ReadableByteChannel channel, int initialSize) {
+   public ByteArrayReadableByteChannelSlave(ReadableByteChannel channel, int initialSize) {
       this.channel = channel;
       this.output = new ByteArrayOutputStream(initialSize);
    }
 
-   public ByteArrayReadableByteChannelFollower(ReadableByteChannel channel) {
+   public ByteArrayReadableByteChannelSlave(ReadableByteChannel channel) {
       this(channel, BUFFER_SIZE);
    }
 

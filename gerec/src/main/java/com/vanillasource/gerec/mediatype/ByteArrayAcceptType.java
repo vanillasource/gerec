@@ -18,7 +18,7 @@
 
 package com.vanillasource.gerec.mediatype;
 
-import com.vanillasource.aio.channel.ByteArrayReadableByteChannelFollower;
+import com.vanillasource.aio.channel.ByteArrayReadableByteChannelSlave;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
@@ -56,7 +56,7 @@ public class ByteArrayAcceptType implements AcceptMediaType<byte[]> {
          initialSize = DEFAULT_INITIAL_SIZE;
       }
       return response.consumeContent(channel ->
-            new ByteArrayReadableByteChannelFollower(channel, initialSize));
+            new ByteArrayReadableByteChannelSlave(channel, initialSize));
    }
 }
 

@@ -18,9 +18,9 @@
 
 package com.vanillasource.gerec.httpclient;
 
-import com.vanillasource.aio.channel.WritableByteChannelLeader;
-import com.vanillasource.aio.AioFollower;
-import com.vanillasource.aio.channel.ReadableByteChannelLeader;
+import com.vanillasource.aio.channel.WritableByteChannelMaster;
+import com.vanillasource.aio.AioSlave;
+import com.vanillasource.aio.channel.ReadableByteChannelMaster;
 import com.vanillasource.gerec.reference.AsyncHttpClient;
 import com.vanillasource.gerec.*;
 import org.apache.http.client.methods.*;
@@ -157,7 +157,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
    }
 
    private static class AsyncHttpRequest extends HeaderAwareMessage implements HttpRequest {
-      private Function<WritableByteChannelLeader, AioFollower<Void>> followerFactory;
+      private Function<WritableByteChannelMaster, AioSlave<Void>> followerFactory;
       private HttpRequestBase request;
 
       private AsyncHttpRequest(HttpRequestBase request) {
@@ -167,7 +167,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
       public HttpAsyncRequestProducer getProducer(CompletableFuture<HttpResponse> responseFuture) {
          return new HttpAsyncRequestProducer() {
-            private AioFollower<Void> follower;
+            private AioSlave<Void> follower;
 
             @Override
             public void close() {
@@ -196,7 +196,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
             @Override
             public void produceContent(ContentEncoder contentEncoder, IOControl control) {
                if (follower == null) {
-                  follower = followerFactory.apply(new WritableByteChannelLeader() {
+                  follower = followerFactory.apply(new WritableByteChannelMaster() {
                      @Override
                      public void pause() {
                         logger.debug("suspending output during request submission");
@@ -252,7 +252,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
       }
 
       @Override
-      public void setByteProducer(Function<WritableByteChannelLeader, AioFollower<Void>> followerFactory) {
+      public void setByteProducer(Function<WritableByteChannelMaster, AioSlave<Void>> followerFactory) {
          this.followerFactory = followerFactory;
          if (request instanceof HttpEntityEnclosingRequest) {
             ((HttpEntityEnclosingRequest)request).setEntity(new BasicHttpEntity());
@@ -260,7 +260,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
       }
 
       @Override
-      public void setByteProducer(Function<WritableByteChannelLeader, AioFollower<Void>> followerFactory, long length) {
+      public void setByteProducer(Function<WritableByteChannelMaster, AioSlave<Void>> followerFactory, long length) {
          this.followerFactory = followerFactory;
          if (request instanceof HttpEntityEnclosingRequest) {
             BasicHttpEntity entity = new BasicHttpEntity();
@@ -287,9 +287,9 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
          return new HttpAsyncResponseConsumer<Void>() {
             private boolean done = false;
             private Exception e;
-            private Function<ReadableByteChannelLeader, AioFollower<Object>> followerFactory;
+            private Function<ReadableByteChannelMaster, AioSlave<Object>> followerFactory;
             private IOControl ioControl;
-            private AioFollower<Object> follower;
+            private AioSlave<Object> follower;
             private CompletableFuture<Object> result;
 
             @Override
@@ -332,12 +332,12 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                responseFuture.complete(new AsyncHttpResponse(response) {
                   @Override
                   @SuppressWarnings("unchecked")
-                  public <R> CompletableFuture<R> consumeContent(Function<ReadableByteChannelLeader, AioFollower<R>> consumerFactory) {
+                  public <R> CompletableFuture<R> consumeContent(Function<ReadableByteChannelMaster, AioSlave<R>> consumerFactory) {
                      // Note: this method will be called synchronously with this completion, therefore thread-safe
                      if (followerFactory != null) {
                         throw new IllegalStateException("can only consume response once");
                      }
-                     followerFactory = (Function<ReadableByteChannelLeader, AioFollower<Object>>)(Object) consumerFactory;
+                     followerFactory = (Function<ReadableByteChannelMaster, AioSlave<Object>>)(Object) consumerFactory;
                      result = new CompletableFuture<>();
                      logger.debug("client will consume content");
                      return (CompletableFuture<R>) result;
@@ -353,7 +353,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                logger.debug("response completed");
                this.done = true;
                if (follower == null) {
-                  follower = followerFactory.apply(ReadableByteChannelLeader.NULL);
+                  follower = followerFactory.apply(ReadableByteChannelMaster.NULL);
                }
                result.complete(follower.onCompleted());
             }
@@ -363,7 +363,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                logger.debug("consuming content");
                if (follower == null) {
                   ReadableByteChannel delegate = new ContentDecoderChannel(contentDecoder);
-                  follower = followerFactory.apply(new ReadableByteChannelLeader() {
+                  follower = followerFactory.apply(new ReadableByteChannelMaster() {
                      @Override
                      public void pause() {
                         control.suspendInput();

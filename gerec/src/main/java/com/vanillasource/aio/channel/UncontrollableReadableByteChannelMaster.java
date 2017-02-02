@@ -18,53 +18,49 @@
 
 package com.vanillasource.aio.channel;
 
+import java.nio.channels.ReadableByteChannel;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 /**
- * A channel leader that can not be controlled. Use only in cases where the follower can write
- * all data on a single call to <code>onReady()</code>.
+ * A channel leader that can not be controlled. Use only in cases where the follower can process
+ * the <code>onReady()</code> call completely on first call.
  */
-public final class UncontrollableByteArrayWritableByteChannelLeader implements WritableByteChannelLeader {
-   private final ByteArrayOutputStream output;
+public final class UncontrollableReadableByteChannelMaster implements ReadableByteChannelMaster {
+   private final ReadableByteChannel delegate;
 
-   public UncontrollableByteArrayWritableByteChannelLeader() {
-      this.output = new ByteArrayOutputStream();
-   }
-
-   public byte[] toByteArray() {
-      return output.toByteArray();
-   }
-
-   @Override
-   public void close() {
+   public UncontrollableReadableByteChannelMaster(ReadableByteChannel delegate) {
+      this.delegate = delegate;
    }
 
    @Override
    public boolean isOpen() {
-      return true;
+      return delegate.isOpen();
    }
 
    @Override
-   public int write(ByteBuffer buffer) throws IOException {
-      int count = 0;
-      while (buffer.hasRemaining()) {
-         output.write(buffer.get());
-         count++;
+   public void close() {
+      try {
+         delegate.close();
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
-      return count;
+   }
+
+   @Override
+   public int read(ByteBuffer buffer) throws IOException {
+      return delegate.read(buffer);
    }
 
    @Override
    public void pause() {
-      throw new UnsupportedOperationException("pause not supported in uncontrollable leader");
+      throw new UnsupportedOperationException("can not pause uncontrollable channel");
    }
 
    @Override
    public void resume() {
-      throw new UnsupportedOperationException("resume not supported in uncontrollable leader");
+      throw new UnsupportedOperationException("can not resume uncontrollable channel");
    }
 }
 

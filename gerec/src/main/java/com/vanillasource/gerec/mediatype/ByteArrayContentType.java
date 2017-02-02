@@ -20,7 +20,7 @@ package com.vanillasource.gerec.mediatype;
 
 import com.vanillasource.gerec.ContentMediaType;
 import com.vanillasource.gerec.HttpRequest;
-import com.vanillasource.aio.channel.ByteArrayWritableByteChannelFollower;
+import com.vanillasource.aio.channel.ByteArrayWritableByteChannelSlave;
 
 /**
  * Serializes a byte array into the request.
@@ -39,6 +39,6 @@ public class ByteArrayContentType implements ContentMediaType<byte[]> {
 
    @Override
    public void serialize(byte[] content, HttpRequest request) {
-      request.setByteProducer(output -> new ByteArrayWritableByteChannelFollower(output, content), content.length);
+      request.setByteProducer(output -> new ByteArrayWritableByteChannelSlave(output, content), content.length);
    }
 }

@@ -22,9 +22,9 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.aio.AioFollower;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
-import com.vanillasource.aio.channel.ReadableByteChannelLeader;
+import com.vanillasource.aio.AioSlave;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
+import com.vanillasource.aio.channel.ReadableByteChannelMaster;
 import static com.vanillasource.gerec.mediatype.MediaTypeSpecification.*;
 import java.util.function.Function;
 import java.util.function.Consumer;
@@ -57,8 +57,8 @@ public class LineBasedCollectionTypeTests {
    @SuppressWarnings("unchecked")
    private void responseContent(String content) {
       doAnswer(invocation -> {
-         AioFollower<String> follower = ((Function<ReadableByteChannelLeader, AioFollower<String>>) invocation.getArguments()[0])
-            .apply(new UncontrollableByteArrayReadableByteChannelLeader(content.getBytes()));
+         AioSlave<String> follower = ((Function<ReadableByteChannelMaster, AioSlave<String>>) invocation.getArguments()[0])
+            .apply(new UncontrollableByteArrayReadableByteChannelMaster(content.getBytes()));
          follower.onReady();
          return CompletableFuture.completedFuture(follower.onCompleted());
       }).when(response).consumeContent(any(Function.class));

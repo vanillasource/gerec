@@ -16,25 +16,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package com.vanillasource.aio;
+package com.vanillasource.aio.channel;
+
+import com.vanillasource.aio.AioSlave;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.channels.WritableByteChannel;
 
 /**
- * An AIO (Asynchronous IO) Follower is a peer in an AIO communication
- * which is driven by the Leader to produce or consume data to- or from-
- * the Leader.
+ * A follower of <code>WritableByteChannel</code> that doesn't write anything, and
+ * closes the channel as soon as it's allocated.
  */
-public interface AioFollower<T> {
-   /**
-    * Follower is notified by the leader to read or write data. I/O is
-    * only allowed during this method call.
-    */
-   void onReady();
+public final class NullWritableByteChannelSlave implements AioSlave<Void> {
+   private final WritableByteChannel channel;
 
-   /**
-    * Called by the leader to indicate that the I/O conversation completed.
-    * There will be no more calls to <code>onReady()</code>.
-    * @return An object that is either the result of reading the data, or
-    * an object indicating completion of writing all data.
-    */
-   T onCompleted();
+   public NullWritableByteChannelSlave(WritableByteChannel channel) {
+      this.channel = channel;
+   }
+
+   @Override
+   public void onReady() {
+      try {
+         channel.close();
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
+      }
+   }
+
+   @Override
+   public Void onCompleted() {
+      return null;
+   }
 }
+
+
+
+

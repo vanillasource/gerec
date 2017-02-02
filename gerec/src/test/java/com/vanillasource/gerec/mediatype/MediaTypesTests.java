@@ -26,11 +26,11 @@ import com.vanillasource.gerec.HttpRequest;
 import java.util.function.Function;
 import static com.vanillasource.gerec.mediatype.MediaTypes.*;
 import com.vanillasource.gerec.http.Headers;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelLeader;
-import com.vanillasource.aio.channel.UncontrollableByteArrayWritableByteChannelLeader;
-import com.vanillasource.aio.channel.WritableByteChannelLeader;
-import com.vanillasource.aio.AioFollower;
-import com.vanillasource.aio.channel.ReadableByteChannelLeader;
+import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
+import com.vanillasource.aio.channel.UncontrollableByteArrayWritableByteChannelMaster;
+import com.vanillasource.aio.channel.WritableByteChannelMaster;
+import com.vanillasource.aio.AioSlave;
+import com.vanillasource.aio.channel.ReadableByteChannelMaster;
 import com.vanillasource.gerec.http.ValueWithParameter;
 import java.util.concurrent.CompletableFuture;
 
@@ -85,8 +85,8 @@ public class MediaTypesTests {
    @SuppressWarnings("unchecked")
    private void responseContent(String content, String encoding) {
       doAnswer(invocation -> {
-         AioFollower<String> follower = ((Function<ReadableByteChannelLeader, AioFollower<String>>) invocation.getArguments()[0])
-            .apply(new UncontrollableByteArrayReadableByteChannelLeader(content.getBytes(encoding)));
+         AioSlave<String> follower = ((Function<ReadableByteChannelMaster, AioSlave<String>>) invocation.getArguments()[0])
+            .apply(new UncontrollableByteArrayReadableByteChannelMaster(content.getBytes(encoding)));
          follower.onReady();
          return CompletableFuture.completedFuture(follower.onCompleted());
       }).when(response).consumeContent(any());
@@ -98,12 +98,12 @@ public class MediaTypesTests {
       response = mock(HttpResponse.class);
       request = mock(HttpRequest.class);
       doAnswer(invocation -> {
-         UncontrollableByteArrayWritableByteChannelLeader byteArrayLeader = new UncontrollableByteArrayWritableByteChannelLeader();
-         AioFollower<Void> follower = ((Function<WritableByteChannelLeader, AioFollower<Void>>) invocation.getArguments()[0])
-            .apply(byteArrayLeader);
+         UncontrollableByteArrayWritableByteChannelMaster byteArrayMaster = new UncontrollableByteArrayWritableByteChannelMaster();
+         AioSlave<Void> follower = ((Function<WritableByteChannelMaster, AioSlave<Void>>) invocation.getArguments()[0])
+            .apply(byteArrayMaster);
          follower.onReady();
          follower.onCompleted();
-         requestContent = new String(byteArrayLeader.toByteArray());
+         requestContent = new String(byteArrayMaster.toByteArray());
          return null;
       }).when(request).setByteProducer(any(), anyInt());
    }
