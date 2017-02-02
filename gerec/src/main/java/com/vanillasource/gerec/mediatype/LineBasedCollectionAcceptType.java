@@ -44,13 +44,13 @@ import java.io.UncheckedIOException;
  * Because only non-empty lines are deserialized, empty lines (line breaks) can be used by
  * the server to keep the connection alive.
  */
-public class LineBasedCollectionType<T> implements AcceptMediaType<Void> {
+public class LineBasedCollectionAcceptType<T> implements AcceptMediaType<Void> {
    private static final int READ_BUFFER_SIZE = 4096;
    private final MediaTypeSpecification mediaType;
    private final AcceptMediaType<T> acceptType;
    private final Consumer<T> consumer;
 
-   public LineBasedCollectionType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
+   public LineBasedCollectionAcceptType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
       this.mediaType = mediaType;
       this.acceptType = acceptType;
       this.consumer = consumer;

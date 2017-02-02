@@ -31,9 +31,9 @@ import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
 
 @Test
-public class LineBasedCollectionTypeTests {
+public class LineBasedCollectionAcceptTypeTests {
    private HttpResponse response;
-   private LineBasedCollectionType<String> type;
+   private LineBasedCollectionAcceptType<String> type;
    private Consumer<String> consumer;
 
    public void testProcessingDoesConsumeStreamItems() throws Exception {
@@ -69,6 +69,6 @@ public class LineBasedCollectionTypeTests {
    protected void setUp() {
       response = mock(HttpResponse.class);
       consumer = mock(Consumer.class);
-      type = new LineBasedCollectionType<String>(mediaType("application/vnd.vanillasource.lines"), MediaTypes.textPlain(), consumer);
+      type = new LineBasedCollectionAcceptType<String>(mediaType("application/vnd.vanillasource.lines"), MediaTypes.textPlain(), consumer);
    }
 }
