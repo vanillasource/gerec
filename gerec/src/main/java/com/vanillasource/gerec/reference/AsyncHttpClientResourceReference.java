@@ -18,6 +18,7 @@
 
 package com.vanillasource.gerec.reference;
 
+import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.HttpStatusCode;
@@ -58,7 +59,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    @Override
    public CompletableFuture<Response> head(HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doHead(uri, change)
-         .thenCompose(response -> createResponse(response, null))
+         .thenCompose(response -> createResponse(response, MediaType.NONE))
          .thenApply(response -> response); // Don't want to change signature to CompletableFuture<? extends Response>
    }
 
@@ -78,8 +79,6 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
                logger.debug("cached full error contents, returning with exception");
                throw new HttpErrorException("error in response, status code: "+response.getStatusCode(), new HttpErrorResponse(response, content));
             });
-      } else if (acceptType == null) {
-         return CompletableFuture.completedFuture(new HttpContentResponse<>(response, null));
       } else {
          return acceptType.deserialize(response, this::follow)
             .thenApply(content -> new HttpContentResponse<>(response, content));

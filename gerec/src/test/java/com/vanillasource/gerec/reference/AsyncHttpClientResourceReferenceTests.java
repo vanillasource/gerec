@@ -39,6 +39,7 @@ public class AsyncHttpClientResourceReferenceTests {
    public void testSyncHeadInvokesHead() throws Exception {
       when(client.doHead(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
 
       reference.sync().head();
 
@@ -107,6 +108,7 @@ public class AsyncHttpClientResourceReferenceTests {
    public void testHeadInvokesHead() throws Exception {
       when(client.doHead(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
 
       reference.head().get();
 
@@ -188,6 +190,16 @@ public class AsyncHttpClientResourceReferenceTests {
          .get();
 
       assertEquals(retrievedContent, "TEST");
+   }
+
+   public void testHeadConsumesContent() throws Exception {
+      when(client.doHead(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
+
+      reference.head().get();
+
+      verify(response).consumeContent(any());
    }
 
    @BeforeMethod
