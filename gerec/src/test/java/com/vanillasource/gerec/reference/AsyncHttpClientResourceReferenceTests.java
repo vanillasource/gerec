@@ -23,6 +23,8 @@ import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.HttpErrorException;
+import com.vanillasource.gerec.http.Headers;
+import com.vanillasource.gerec.http.ValueWithParameter;
 import org.testng.annotations.*;
 import java.util.concurrent.CompletionException;
 import static org.testng.Assert.*;
@@ -168,6 +170,8 @@ public class AsyncHttpClientResourceReferenceTests {
    public void testSuccessfulOperationRetrievesContentWithMediaType() throws Exception {
       when(client.doGet(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.hasHeader(Headers.CONTENT_TYPE)).thenReturn(true);
+      when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/plain"));
       when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
 
       String retrievedContent = reference.get(MediaTypes.textPlain()).get().getContent();
@@ -200,6 +204,21 @@ public class AsyncHttpClientResourceReferenceTests {
       reference.head().get();
 
       verify(response).consumeContent(any());
+   }
+
+   public void testIfMediaTypeDoesNotMatchExceptionIsThrown() throws Exception {
+      when(client.doGet(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference
+         .get(MediaTypes.textPlain())
+         .handle((content, exception) -> {
+            assertNull(content);
+            assertTrue(((CompletionException) exception).getCause() instanceof HttpErrorException);
+            return null;
+         })
+         .get();
    }
 
    @BeforeMethod

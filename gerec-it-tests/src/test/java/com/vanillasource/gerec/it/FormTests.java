@@ -27,8 +27,9 @@ import com.vanillasource.gerec.mediatype.MediaTypes;
 @Test
 public class FormTests extends HttpTestsBase {
    public void testFormCanDeserializeCorrectly() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
-                  "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.searchpage")
+               .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
 
@@ -36,8 +37,11 @@ public class FormTests extends HttpTestsBase {
    }
 
    public void testGetFormSubmitsWithoutParameters() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
-                  "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.searchpage")
+               .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/nini\", \"method\":\"GET\"}}")));
+      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse()
+               .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().submit(MediaTypes.textPlain()).get();
@@ -46,9 +50,11 @@ public class FormTests extends HttpTestsBase {
    }
 
    public void testGetFormSubmitsWithiParameterValues() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
-                  "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
-      stubFor(get(urlEqualTo("/?q=nini")).willReturn(aResponse()));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.searchpage")
+               .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
+      stubFor(get(urlEqualTo("/?q=nini")).willReturn(aResponse()
+               .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().put("q", "nini");
@@ -58,9 +64,11 @@ public class FormTests extends HttpTestsBase {
    }
 
    public void testPostFormPostsParameterValues() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody(
-                  "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"POST\"}}")));
-      stubFor(post(urlEqualTo("/")).willReturn(aResponse()));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.searchpage")
+               .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"POST\"}}")));
+      stubFor(post(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
       page.getSearchForm().put("q", "nini");

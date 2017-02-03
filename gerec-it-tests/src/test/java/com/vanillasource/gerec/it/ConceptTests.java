@@ -35,7 +35,9 @@ import static java.util.Arrays.asList;
 @Test
 public class ConceptTests extends HttpTestsBase {
    public void testSimpleGetRequest() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.person")
+               .withBody("{\"name\":\"John\", \"age\": 35}")));
 
       Person person = reference().get(Person.TYPE).get().getContent();
 
@@ -43,7 +45,9 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testSimpleGetSubmitsTheAcceptMediaType() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.person")
+               .withBody("{\"name\":\"John\", \"age\": 35}")));
 
       Person person = reference().get(Person.TYPE).get().getContent();
 
@@ -51,7 +55,10 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testUsingMatchUsesETag() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}").withHeader("ETag","ABCD")));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.person")
+               .withBody("{\"name\":\"John\", \"age\": 35}")
+               .withHeader("ETag","ABCD")));
 
       ContentResponse<Person> personResponse = reference().get(Person.TYPE).get();
       reference().get(Person.TYPE, personResponse.ifMatch());
@@ -60,7 +67,10 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testUsingMultipleRequestChanges() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}").withHeader("ETag","ABCD")));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.person")
+               .withBody("{\"name\":\"John\", \"age\": 35}")
+               .withHeader("ETag","ABCD")));
 
       reference().get(Person.TYPE, maxAge(10).and(maxStale(10))).get();
 
@@ -68,7 +78,9 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testPostSubmitsCorrectJsonData() throws Exception {
-      stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
+      stubFor(post(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.person")
+               .withBody("{\"name\":\"John\", \"age\": 35}")));
 
       reference().post(Person.TYPE, new Person("Jack", 50)).get();
 
@@ -76,7 +88,9 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testPutSubmitsCorrectJsonData() throws Exception {
-      stubFor(put(urlEqualTo("/")).willReturn(aResponse().withBody("{\"name\":\"John\", \"age\": 35}")));
+      stubFor(put(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.person")
+               .withBody("{\"name\":\"John\", \"age\": 35}")));
 
       reference().put(Person.TYPE, new Person("Jack", 50)).get();
 
@@ -92,7 +106,9 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testPostCanHaveDifferentMediaTypesForContentAndAccept() throws Exception {
-      stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("OK")));
+      stubFor(post(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "text/plain")
+               .withBody("OK")));
 
       String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.textPlain()).get().getContent();
 
@@ -101,7 +117,8 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testIndicatesAllowedIsPresentIfHeaderSupplied() throws Exception {
-      stubFor(options(urlEqualTo("/")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("OK")));
+      stubFor(options(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Allow", "GET, POST").withBody("OK")));
 
       Response response = reference().options().get();
 
@@ -109,7 +126,9 @@ public class ConceptTests extends HttpTestsBase {
    }
 
    public void testIndicatesGetMethodAllowedWhenSupplied() throws Exception {
-      stubFor(options(urlEqualTo("/")).willReturn(aResponse().withHeader("Allow", "GET, POST").withBody("OK")));
+      stubFor(options(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Allow", "GET, POST")
+               .withBody("OK")));
 
       Response response = reference().options().get();
 
@@ -127,7 +146,7 @@ public class ConceptTests extends HttpTestsBase {
             .get();
          fail("should have thrown exception");
       } catch (ExecutionException e) {
-         assertEquals(e.getCause().getClass(), IllegalStateException.class);
+         assertEquals(e.getCause().getClass(), HttpErrorException.class);
       }
    }
 

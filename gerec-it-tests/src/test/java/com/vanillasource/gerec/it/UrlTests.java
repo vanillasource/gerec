@@ -27,8 +27,11 @@ import com.vanillasource.gerec.mediatype.MediaTypes;
 @Test
 public class UrlTests extends HttpTestsBase {
    public void testCanFollowAsciiLink() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"link\": { \"href\": \"/nini\" }}")));
-      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse()));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.link")
+               .withBody("{\"link\": { \"href\": \"/nini\" }}")));
+      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse()
+               .withHeader("Content-Type", "text/plain")));
 
       Link link = reference().get(Link.TYPE).get().getContent();
       link.getLink().get(MediaTypes.textPlain()).get();
@@ -37,8 +40,11 @@ public class UrlTests extends HttpTestsBase {
    }
 
    public void testCanFollowLinkWithSpaceEncoded() throws Exception {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse().withBody("{\"link\": { \"href\": \"/ni%20ni\" }}")));
-      stubFor(get(urlEqualTo("/ni%20ni")).willReturn(aResponse()));
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.link")
+               .withBody("{\"link\": { \"href\": \"/ni%20ni\" }}")));
+      stubFor(get(urlEqualTo("/ni%20ni")).willReturn(aResponse()
+               .withHeader("Content-Type", "text/plain")));
 
       Link link = reference().get(Link.TYPE).get().getContent();
       link.getLink().get(MediaTypes.textPlain()).get();
