@@ -24,9 +24,13 @@ package com.vanillasource.gerec;
 public class HttpErrorException extends RuntimeException {
    private final ErrorResponse response; 
 
-   public HttpErrorException(String msg, ErrorResponse response) {
-      super(msg);
+   public HttpErrorException(String msg, ErrorResponse response, Exception e) {
+      super(msg, e);
       this.response = response;
+   }
+
+   public HttpErrorException(String msg, ErrorResponse response) {
+      this(msg, response, null);
    }
 
    public ErrorResponse getResponse() {

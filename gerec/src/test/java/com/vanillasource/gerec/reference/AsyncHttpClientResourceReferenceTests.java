@@ -19,6 +19,7 @@
 package com.vanillasource.gerec.reference;
 
 import com.vanillasource.gerec.HttpResponse;
+import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpStatusCode;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import com.vanillasource.gerec.MediaType;
@@ -219,6 +220,20 @@ public class AsyncHttpClientResourceReferenceTests {
             return null;
          })
          .get();
+   }
+
+   @SuppressWarnings("unchecked")
+   public void testEvenIfMediaTypeThrowsExceptionResponseIsProcessed() throws Exception {
+      AcceptMediaType<String> throwingType = mock(AcceptMediaType.class);
+      when(throwingType.isHandling(any())).thenReturn(true);
+      when(throwingType.deserialize(any(), any())).thenThrow(new IllegalStateException("test"));
+      when(client.doGet(any(), any())).thenReturn(CompletableFuture.completedFuture(response));
+      when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
+      when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
+
+      reference.get(throwingType);
+
+      verify(response).consumeContent(any());
    }
 
    @BeforeMethod

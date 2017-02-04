@@ -74,18 +74,22 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
          if (logger.isDebugEnabled()) {
             logger.debug("received status code "+response.getStatusCode()+", throwing error");
          }
-         return error(response);
+         return error(response, null);
       } else {
          if (acceptType.isHandling(response)) {
-            return acceptType.deserialize(response, this::follow)
-               .thenApply(content -> new HttpContentResponse<>(response, content));
+            try {
+               return acceptType.deserialize(response, this::follow)
+                  .thenApply(content -> new HttpContentResponse<>(response, content));
+            } catch (RuntimeException e) {
+               return error(response, e);
+            }
          } else {
-            return error(response);
+            return error(response, null);
          }
       }
    }
 
-   private <T> CompletableFuture<ContentResponse<T>> error(HttpResponse response) {
+   private <T> CompletableFuture<ContentResponse<T>> error(HttpResponse response, Exception cause) {
       return new ByteArrayAcceptType(MediaTypeSpecification.WILDCARD).deserialize(response, this::follow)
          .thenApply(content -> {
             logger.debug("cached full error contents, returning with exception");
