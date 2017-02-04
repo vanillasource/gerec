@@ -21,7 +21,7 @@ Add this dependency to your Maven build:
 <dependency>
    <groupId>com.vanillasource.gerec</groupId>
    <artifactId>gerec</artifactId>
-   <version>1.0.0</version>
+   <version>2.0.0</version>
 </dependency>
 ```
 
@@ -54,7 +54,7 @@ contain additional information for making subsequent requests, such as links (ad
 Simple `GET` requests are made the following way:
 
 ```java
-String body = reference.get(MediaTypes.TEXT_PLAIN).getContent();
+String body = reference.get(MediaTypes.textPlain()).getContent();
 ```
 
 Media types can be freely created for any representation, as they should be. So `GET`ting
