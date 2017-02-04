@@ -12,6 +12,9 @@ A small wrapper over HTTP Clients to support building a proper RESTful
 * Easy cache control
 * Conditional requests
 * Very simple and minimal API
+* Asynchronous-first design
+* Synchronous objects available for simplicity
+* Zero-copy operation possible
 
 ### Getting the library
 
