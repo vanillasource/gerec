@@ -4,7 +4,7 @@
    <groupId>com.vanillasource.gerec</groupId>
    <artifactId>gerec-parent</artifactId>
    <packaging>pom</packaging>
-   <version>2.0.0</version>
+   <version>2.0.1-SNAPSHOT</version>
    <name>Gerec Parent</name>
    <description>The Generic REST Client for Java</description>
    <url>https://github.com/vanillasource/gerec</url>
@@ -38,7 +38,7 @@
       <connection>scm:git:git@github.com:vanillasource/gerec.git</connection>
       <developerConnection>scm:git:git@github.com:vanillasource/gerec.git</developerConnection>
       <url>git@github.com:vanillasource/gerec.git</url>
-     <tag>gerec-parent-2.0.0</tag>
+     <tag>HEAD</tag>
    </scm>
 
    <distributionManagement>
