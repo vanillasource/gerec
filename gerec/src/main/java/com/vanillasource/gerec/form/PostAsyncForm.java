@@ -29,15 +29,20 @@ import java.util.concurrent.CompletableFuture;
  */
 public final class PostAsyncForm implements AsyncForm {
    private final AsyncResourceReference target;
-   private final FormParameters parameters = new FormParameters();
+   private final FormParameters parameters;
 
    public PostAsyncForm(AsyncResourceReference target) {
+      this(target, new FormParameters());
+   }
+
+   private PostAsyncForm(AsyncResourceReference target, FormParameters parameters) {
       this.target = target;
+      this.parameters = parameters;
    }
 
    @Override
-   public void put(String key, String value) {
-      parameters.put(key, value);
+   public PostAsyncForm put(String key, String value) {
+      return new PostAsyncForm(target, parameters.put(key, value));
    }
 
    @Override

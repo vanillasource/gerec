@@ -26,17 +26,18 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A generic form that can be filled out with string
  * keys and values and submitted.
+ * Note: forms are immutable, always work with returned Form.
  */
 public interface AsyncForm {
-   void put(String key, String value);
+   AsyncForm put(String key, String value);
 
    <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType);
 
    default Form sync() {
       return new Form() {
          @Override
-         public void put(String key, String value) {
-            AsyncForm.this.put(key, value);
+         public Form put(String key, String value) {
+            return AsyncForm.this.put(key, value).sync();
          }
 
          @Override

@@ -31,16 +31,21 @@ import java.util.concurrent.CompletableFuture;
 public final class GetAsyncForm implements AsyncForm {
    private final URI target;
    private final Function<URI, AsyncResourceReference> referenceResolver;
-   private final FormParameters parameters = new FormParameters();
+   private final FormParameters parameters;
 
    public GetAsyncForm(URI target, Function<URI, AsyncResourceReference> referenceResolver) {
+      this(target, referenceResolver, new FormParameters());
+   }
+
+   private GetAsyncForm(URI target, Function<URI, AsyncResourceReference> referenceResolver, FormParameters parameters) {
       this.target = target;
       this.referenceResolver = referenceResolver;
+      this.parameters = parameters;
    }
 
    @Override
-   public void put(String key, String value) {
-      parameters.put(key, value);
+   public GetAsyncForm put(String key, String value) {
+      return new GetAsyncForm(target, referenceResolver, parameters.put(key, value));
    }
 
    @Override

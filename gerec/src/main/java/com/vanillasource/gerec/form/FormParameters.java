@@ -18,26 +18,22 @@
 
 package com.vanillasource.gerec.form;
 
-import java.util.Map;
-import java.util.HashMap;
-
 public final class FormParameters {
-   private final Map<String, String> values = new HashMap<>();
+   private final String aggregate;
 
-   public void put(String key, String value) {
-      values.put(key, value);
+   public FormParameters() {
+      this("");
+   }
+
+   private FormParameters(String aggregate) {
+      this.aggregate = aggregate;
+   }
+
+   public FormParameters put(String key, String value) {
+      return new FormParameters((aggregate.isEmpty()?"":(aggregate+"&")) + key + "=" + value);
    }
 
    public String aggregate() {
-      StringBuilder builder = new StringBuilder();
-      for (Map.Entry<String, String> parameter : values.entrySet()) {
-         if (builder.length() > 0) {
-            builder.append("&");
-         }
-         builder.append(parameter.getKey());
-         builder.append("=");
-         builder.append(parameter.getValue());
-      }
-      return builder.toString();
+      return aggregate;
    }
 }

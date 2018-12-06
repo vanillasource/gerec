@@ -42,9 +42,10 @@ public class GetAsyncFormTests {
    @SuppressWarnings("unchecked")
    public void testGetAsyncFormPutsFormValuesIntoQueryParameters() {
       GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
-      form.put("q", "search");
 
-      form.submit(null);
+      form
+         .put("q", "search")
+         .submit(null);
 
       verify(referenceResolver).apply(URI.create("/root?q=search"));
    }
@@ -52,10 +53,11 @@ public class GetAsyncFormTests {
    @SuppressWarnings("unchecked")
    public void testGetAsyncFormPutsFormValuesIntoQueryParametersSeparatedWithAmp() {
       GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
-      form.put("q", "search");
-      form.put("lang", "en");
 
-      form.submit(null);
+      form
+         .put("q", "search")
+         .put("lang", "en")
+         .submit(null);
 
       verify(referenceResolver).apply(URI.create("/root?q=search&lang=en"));
    }
@@ -63,9 +65,10 @@ public class GetAsyncFormTests {
    @SuppressWarnings("unchecked")
    public void testGetAsyncFormPutsFormValuesIntoQueryParametersWithAmpIfQueryPresent() {
       GetAsyncForm form = new GetAsyncForm(URI.create("/root?ni=nu"), referenceResolver);
-      form.put("q", "search");
 
-      form.submit(null);
+      form
+         .put("q", "search")
+         .submit(null);
 
       verify(referenceResolver).apply(URI.create("/root?ni=nu&q=search"));
    }

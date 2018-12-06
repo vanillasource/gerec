@@ -42,10 +42,11 @@ public class PostAsyncFormTests {
    @SuppressWarnings("unchecked")
    public void testPostPostsParametersAsContent() {
       PostAsyncForm form = new PostAsyncForm(target);
-      form.put("q", "search");
-      form.put("lang", "en");
 
-      form.submit(null);
+      form
+         .put("q", "search")
+         .put("lang", "en")
+         .submit(null);
 
       verify(target).post(any(ContentMediaType.class), eq("q=search&lang=en"), any(AcceptMediaType.class));
    }

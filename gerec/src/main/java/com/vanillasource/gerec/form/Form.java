@@ -24,9 +24,10 @@ import com.vanillasource.gerec.AcceptMediaType;
 /**
  * A generic form that can be filled out with string
  * keys and values and submitted.
+ * Note: forms are immutable, always work with returned Form.
  */
 public interface Form {
-   void put(String key, String value);
+   Form put(String key, String value);
 
    <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType);
 
