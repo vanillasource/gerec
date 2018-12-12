@@ -84,6 +84,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
                return error(response, e);
             }
          } else {
+            logger.warn("accept type is not handling response, so returning error");
             return error(response, null);
          }
       }
@@ -92,7 +93,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    private <T> CompletableFuture<ContentResponse<T>> error(HttpResponse response, Exception cause) {
       return new ByteArrayAcceptType(MediaTypeSpecification.WILDCARD).deserialize(response, this::follow)
          .thenApply(content -> {
-            logger.debug("cached full error contents, returning with exception");
+            logger.debug("cached full error contents, returning with exception", cause);
             throw new HttpErrorException("error in response, status code: "+response.getStatusCode(), new HttpErrorResponse(response, content));
          });
    }
