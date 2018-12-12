@@ -29,7 +29,14 @@ import com.vanillasource.gerec.AcceptMediaType;
 public interface Form {
    Form put(String key, String value);
 
+   Form putInt(String key, int value);
+
+   Form putLong(String key, long value);
+
+   Form putBytes(String key, byte[] value);
+
    <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType);
 
    AsyncForm async();
 }
+

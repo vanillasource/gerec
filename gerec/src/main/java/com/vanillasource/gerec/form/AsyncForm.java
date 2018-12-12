@@ -31,6 +31,12 @@ import java.util.concurrent.CompletableFuture;
 public interface AsyncForm {
    AsyncForm put(String key, String value);
 
+   AsyncForm putInt(String key, int value);
+
+   AsyncForm putLong(String key, long value);
+
+   AsyncForm putBytes(String key, byte[] value);
+
    <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType);
 
    default Form sync() {
@@ -38,6 +44,21 @@ public interface AsyncForm {
          @Override
          public Form put(String key, String value) {
             return AsyncForm.this.put(key, value).sync();
+         }
+
+         @Override
+         public Form putInt(String key, int value) {
+            return AsyncForm.this.putInt(key, value).sync();
+         }
+
+         @Override
+         public Form putLong(String key, long value) {
+            return AsyncForm.this.putLong(key, value).sync();
+         }
+
+         @Override
+         public Form putBytes(String key, byte[] value) {
+            return AsyncForm.this.putBytes(key, value).sync();
          }
 
          @Override

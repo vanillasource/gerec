@@ -23,6 +23,7 @@ import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import java.util.concurrent.CompletableFuture;
+import java.util.Base64;
 
 /**
  * A form that posts all parameters as form encoded, just like a HTML Form with POST method.
@@ -43,6 +44,21 @@ public final class PostAsyncForm implements AsyncForm {
    @Override
    public PostAsyncForm put(String key, String value) {
       return new PostAsyncForm(target, parameters.put(key, value));
+   }
+
+   @Override
+   public AsyncForm putInt(String key, int value) {
+      return new PostAsyncForm(target, parameters.put(key, ""+value));
+   }
+
+   @Override
+   public AsyncForm putLong(String key, long value) {
+      return new PostAsyncForm(target, parameters.put(key, ""+value));
+   }
+
+   @Override
+   public AsyncForm putBytes(String key, byte[] value) {
+      return new PostAsyncForm(target, parameters.put(key, Base64.getEncoder().encodeToString(value)));
    }
 
    @Override

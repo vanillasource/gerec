@@ -22,6 +22,7 @@ import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import java.net.URI;
+import java.util.Base64;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
 
@@ -46,6 +47,21 @@ public final class GetAsyncForm implements AsyncForm {
    @Override
    public GetAsyncForm put(String key, String value) {
       return new GetAsyncForm(target, referenceResolver, parameters.put(key, value));
+   }
+
+   @Override
+   public AsyncForm putInt(String key, int value) {
+      return new GetAsyncForm(target, referenceResolver, parameters.put(key, ""+value));
+   }
+
+   @Override
+   public AsyncForm putLong(String key, long value) {
+      return new GetAsyncForm(target, referenceResolver, parameters.put(key, ""+value));
+   }
+
+   @Override
+   public AsyncForm putBytes(String key, byte[] value) {
+      return new GetAsyncForm(target, referenceResolver, parameters.put(key, Base64.getEncoder().encodeToString(value)));
    }
 
    @Override

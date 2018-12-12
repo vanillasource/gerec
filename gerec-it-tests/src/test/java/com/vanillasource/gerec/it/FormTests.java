@@ -57,8 +57,9 @@ public class FormTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
-      page.getSearchForm().put("q", "nini");
-      page.getSearchForm().submit(MediaTypes.textPlain()).get();
+      page.getSearchForm()
+         .put("q", "nini")
+         .submit(MediaTypes.textPlain()).get();
 
       verify(getRequestedFor(urlEqualTo("/?q=nini")));
    }
@@ -71,8 +72,9 @@ public class FormTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
-      page.getSearchForm().put("q", "nini");
-      page.getSearchForm().submit(MediaTypes.textPlain()).get();
+      page.getSearchForm()
+         .put("q", "nini")
+         .submit(MediaTypes.textPlain()).get();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("q=nini")));
    }
