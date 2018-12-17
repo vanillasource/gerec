@@ -51,6 +51,17 @@ public class PostAsyncFormTests {
       verify(target).post(any(ContentMediaType.class), eq("q=search&lang=en"), any(AcceptMediaType.class));
    }
 
+   @SuppressWarnings("unchecked")
+   public void testQueryParametersAreEncoded() {
+      PostAsyncForm form = new PostAsyncForm(target);
+
+      form
+         .put("q", "a+b&c d")
+         .submit(null);
+
+      verify(target).post(any(ContentMediaType.class), eq("q=a%2Bb%26c+d"), any(AcceptMediaType.class));
+   }
+
    @BeforeMethod
    protected void setUp() {
       target = mock(AsyncResourceReference.class);

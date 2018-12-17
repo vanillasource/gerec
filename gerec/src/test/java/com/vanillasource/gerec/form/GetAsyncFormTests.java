@@ -73,6 +73,16 @@ public class GetAsyncFormTests {
       verify(referenceResolver).apply(URI.create("/root?ni=nu&q=search"));
    }
 
+   public void testQueryParametersAreEncoded() {
+      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
+
+      form
+         .put("q", "a+b&c d")
+         .submit(null);
+
+      verify(referenceResolver).apply(URI.create("/root?q=a%2Bb%26c+d"));
+   }
+
    @BeforeMethod
    @SuppressWarnings("unchecked")
    protected void setUp() {

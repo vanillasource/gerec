@@ -18,6 +18,10 @@
 
 package com.vanillasource.gerec.form;
 
+import java.net.URLEncoder;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 public final class FormParameters {
    private final String aggregate;
 
@@ -30,7 +34,11 @@ public final class FormParameters {
    }
 
    public FormParameters put(String key, String value) {
-      return new FormParameters((aggregate.isEmpty()?"":(aggregate+"&")) + key + "=" + value);
+      try {
+         return new FormParameters((aggregate.isEmpty()?"":(aggregate+"&")) + key + "=" + URLEncoder.encode(value, "UTF-8"));
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
+      }
    }
 
    public String aggregate() {
