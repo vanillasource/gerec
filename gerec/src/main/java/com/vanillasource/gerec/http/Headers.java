@@ -41,6 +41,7 @@ public class Headers {
    public static final Header<String> LAST_MODIFIED = singleStringHeader("Last-Modified");
    public static final Header<String> LOCATION = singleStringHeader("Location");
    public static final Header<Long> CONTENT_LENGTH = singleLongHeader("Content-Length");
+   public static final Header<String> AUTHORIZATION = singleStringHeader("Authorization");
 
    private Headers() {
    }
