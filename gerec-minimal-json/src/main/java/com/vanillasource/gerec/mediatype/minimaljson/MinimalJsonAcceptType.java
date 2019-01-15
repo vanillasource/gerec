@@ -64,11 +64,29 @@ public class MinimalJsonAcceptType<T> implements AcceptMediaType<T> {
          .thenApply(jsonString -> deserializer.apply(Json.parse(jsonString), new JsonContext() {
             @Override
             public AsyncForm parseForm(JsonObject object) {
+               return withControls(object, createForm(object));
+            }
+
+            private AsyncForm createForm(JsonObject object) {
                if (object.getString("method","get").equalsIgnoreCase("post")) {
                   return new PostAsyncForm(parseLink(object));
                } else {
                   return new GetAsyncForm(URI.create(object.getString("href","")), context::resolve);
                }
+            }
+
+            private AsyncForm withControls(JsonObject object, AsyncForm form) {
+               AsyncForm result = form;
+               JsonValue controls = object.get("controls");
+               if (controls != null) {
+                  for (JsonObject.Member member: controls.asObject()) {
+                     JsonValue defaultValue = member.getValue().asObject().get("default");
+                     if (defaultValue != null) {
+                        result = result.put(member.getName(), defaultValue.asString());
+                     }
+                  }
+               }
+               return result;
             }
 
             @Override
