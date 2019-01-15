@@ -37,5 +37,11 @@ public class Authorization {
       return new SingleHeaderValueSet(Headers.AUTHORIZATION, "Basic "+Base64.getEncoder().encodeToString((username+":"+password).getBytes(StandardCharsets.UTF_8)));
    }
 
+   /**
+    * Adds a bearer token to the request.
+    */
+   public static HttpRequest.HttpRequestChange bearing(String token) {
+      return new SingleHeaderValueSet(Headers.AUTHORIZATION, "Bearer "+token);
+   }
 }
 
