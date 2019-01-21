@@ -295,5 +295,10 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
          }
       }
    }
+
+   @Override
+   public String toString() {
+      return uri.toString();
+   }
 }
 
