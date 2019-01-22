@@ -287,8 +287,9 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
          return new HttpAsyncResponseConsumer<Void>() {
             private boolean done = false;
             private Exception e;
-            private Function<ReadableByteChannelMaster, AioSlave<Object>> followerFactory;
+            private volatile Function<ReadableByteChannelMaster, AioSlave<Object>> followerFactory;
             private AioSlave<Object> follower;
+            private volatile ReadableByteChannelMaster master;
             private CompletableFuture<Object> result;
 
             @Override
@@ -341,12 +342,20 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                      followerFactory = (Function<ReadableByteChannelMaster, AioSlave<Object>>)(Object) consumerFactory;
                      result = new CompletableFuture<>();
                      logger.debug("client will consume content");
+                     if (master != null) {
+                        initializeFollower();
+                        master.resume();
+                     }
                      return (CompletableFuture<R>) result;
                   }
                });
-               if (followerFactory == null) {
-                  logger.warn("no content consumer was set on HttpResponse completion, something's wrong!");
+            }
+
+            private void initializeFollower() {
+               if (follower == null) {
+                  follower = followerFactory.apply(master);
                }
+               follower.onReady();
             }
 
             @Override
@@ -362,9 +371,9 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
             @Override
             public void consumeContent(ContentDecoder contentDecoder, IOControl control) {
                logger.debug("consuming content");
-               if (follower == null) {
+               if (master == null) {
                   ReadableByteChannel delegate = new ContentDecoderChannel(contentDecoder);
-                  follower = followerFactory.apply(new ReadableByteChannelMaster() {
+                  master = new ReadableByteChannelMaster() {
                      @Override
                      public void pause() {
                         control.suspendInput();
@@ -393,9 +402,13 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                      public boolean isOpen() {
                         return delegate.isOpen();
                      }
-                  });
+                  };
                }
-               follower.onReady();
+               if (followerFactory == null) {
+                  master.pause();
+               } else {
+                  initializeFollower();
+               }
             }
          };
       }
