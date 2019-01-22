@@ -288,7 +288,6 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
             private boolean done = false;
             private Exception e;
             private Function<ReadableByteChannelMaster, AioSlave<Object>> followerFactory;
-            private IOControl ioControl;
             private AioSlave<Object> follower;
             private CompletableFuture<Object> result;
 
@@ -322,8 +321,10 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                this.done = true;
                if (!responseFuture.isDone()) {
                   responseFuture.completeExceptionally(e);
-               } else {
+               } else if (result != null) {
                   result.completeExceptionally(e);
+               } else {
+                  throw new IllegalStateException("something's wrong, there was no consumer, but there was an error", e);
                }
             }
 
