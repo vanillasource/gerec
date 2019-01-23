@@ -106,10 +106,10 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
    private CompletableFuture<HttpResponse> execute(AsyncHttpRequest request) {
       CompletableFuture<HttpResponse> result = new CompletableFuture<>();
-      logger.debug("making the async http request");
+      logger.debug("making the async http request "+request);
       httpClientSupplier.get().execute(
             request.getProducer(result),
-            AsyncHttpResponse.getConsumer(result),
+            AsyncHttpResponse.getConsumer(request, result),
             new NopFutureCallback());
       return result;
    }
@@ -163,6 +163,11 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
       private AsyncHttpRequest(HttpRequestBase request) {
          super(request);
          this.request = request;
+      }
+
+      @Override
+      public String toString() {
+         return request.toString();
       }
 
       public HttpAsyncRequestProducer getProducer(CompletableFuture<HttpResponse> responseFuture) {
@@ -220,7 +225,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
                      @Override
                      public void close() {
-                        logger.debug("completing request");
+                        logger.debug("completing request "+request);
                         try {
                            contentEncoder.complete();
                         } catch (IOException e) {
@@ -239,7 +244,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
             @Override
             public void requestCompleted(HttpContext context) {
-               logger.debug("request completed");
+               logger.debug("request "+request+" completed");
                if (follower != null) {
                   follower.onCompleted();
                }
@@ -283,7 +288,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
          return HttpStatusCode.valueOf(response.getStatusLine().getStatusCode());
       }
 
-      public static HttpAsyncResponseConsumer<Void> getConsumer(CompletableFuture<HttpResponse> responseFuture) {
+      public static HttpAsyncResponseConsumer<Void> getConsumer(AsyncHttpRequest request, CompletableFuture<HttpResponse> responseFuture) {
          return new HttpAsyncResponseConsumer<Void>() {
             private boolean done = false;
             private Exception e;
@@ -325,7 +330,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                } else if (result != null) {
                   result.completeExceptionally(e);
                } else {
-                  throw new IllegalStateException("something's wrong, there was no consumer, but there was an error", e);
+                  throw new IllegalStateException("something's wrong, there was no consumer, but there was an error with request "+request, e);
                }
             }
 
