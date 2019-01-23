@@ -41,6 +41,10 @@ public final class FormParameters {
       }
    }
 
+   public FormParameters merge(FormParameters other) {
+      return new FormParameters(aggregate+"&"+other.aggregate);
+   }
+
    public String aggregate() {
       return aggregate;
    }

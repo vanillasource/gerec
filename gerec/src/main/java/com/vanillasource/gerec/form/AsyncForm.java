@@ -22,6 +22,7 @@ import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ExceptionTransparentCall;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 /**
  * A generic form that can be filled out with string
@@ -36,6 +37,8 @@ public interface AsyncForm {
    AsyncForm putLong(String key, long value);
 
    AsyncForm putBytes(String key, byte[] value);
+
+   AsyncForm putBytes(String key, List<byte[]> values);
 
    <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType);
 
