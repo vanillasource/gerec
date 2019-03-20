@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 VanillaSource
+ * Copyright (C) 2019 VanillaSource
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,31 +18,27 @@
 
 package com.vanillasource.aio.channel;
 
-import java.nio.channels.ReadableByteChannel;
 import java.nio.ByteBuffer;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 
 /**
- * A channel leader that can not be controlled. Use only in cases where the follower can process
- * the <code>onReady()</code> call completely on first call.
+ * Channel leader that supplies bytes from an input stream. Note that this channel may be blocking
+ * iff the supplied stream blocks.
  */
-public final class UncontrollableReadableByteChannelMaster implements ReadableByteChannelMaster {
-   private final ReadableByteChannel delegate;
+public final class InputStreamReadableByteChannelMaster extends PassiveAioMaster implements ReadableByteChannelMaster {
+   private final InputStream input;
 
-   public UncontrollableReadableByteChannelMaster(ReadableByteChannel delegate) {
-      this.delegate = delegate;
-   }
-
-   @Override
-   public boolean isOpen() {
-      return delegate.isOpen();
+   public InputStreamReadableByteChannelMaster(InputStream input) {
+      this.input = input;
    }
 
    @Override
    public void close() {
+      super.close();
       try {
-         delegate.close();
+         input.close();
       } catch (IOException e) {
          throw new UncheckedIOException(e);
       }
@@ -50,17 +46,15 @@ public final class UncontrollableReadableByteChannelMaster implements ReadableBy
 
    @Override
    public int read(ByteBuffer buffer) throws IOException {
-      return delegate.read(buffer);
-   }
-
-   @Override
-   public void pause() {
-      throw new UnsupportedOperationException("can not pause uncontrollable channel");
-   }
-
-   @Override
-   public void resume() {
-      throw new UnsupportedOperationException("can not resume uncontrollable channel");
+      byte[] tmp = new byte[buffer.remaining()];
+      int length = input.read(tmp);
+      if (length < 0) {
+         close();
+      } else {
+         buffer.put(tmp, 0, length);
+      }
+      return length;
    }
 }
+
 

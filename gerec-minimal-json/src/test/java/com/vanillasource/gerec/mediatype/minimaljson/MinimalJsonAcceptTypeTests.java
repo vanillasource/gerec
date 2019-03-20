@@ -33,9 +33,10 @@ import java.util.concurrent.CompletableFuture;
 import com.eclipsesource.json.JsonValue;
 import com.eclipsesource.json.Json;
 import com.vanillasource.aio.AioSlave;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
+import com.vanillasource.aio.channel.InputStreamReadableByteChannelMaster;
 import com.vanillasource.aio.channel.ReadableByteChannelMaster;
 import java.net.URI;
+import java.io.ByteArrayInputStream;
 
 @Test
 public final class MinimalJsonAcceptTypeTests {
@@ -108,10 +109,10 @@ public final class MinimalJsonAcceptTypeTests {
    @SuppressWarnings("unchecked")
    private void responseContent(String content) {
       doAnswer(invocation -> {
+         InputStreamReadableByteChannelMaster master = new InputStreamReadableByteChannelMaster(new ByteArrayInputStream(content.getBytes()));
          AioSlave<String> follower = ((Function<ReadableByteChannelMaster, AioSlave<String>>) invocation.getArguments()[0])
-            .apply(new UncontrollableByteArrayReadableByteChannelMaster(content.getBytes()));
-         follower.onReady();
-         return CompletableFuture.completedFuture(follower.onCompleted());
+            .apply(master);
+         return master.execute(follower, Runnable::run);
       }).when(response).consumeContent(any(Function.class));
    }   
 

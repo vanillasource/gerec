@@ -26,13 +26,14 @@ import com.vanillasource.gerec.Header;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.aio.AioSlave;
 import com.vanillasource.aio.channel.ReadableByteChannelMaster;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
+import com.vanillasource.aio.channel.InputStreamReadableByteChannelMaster;
 import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
 import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.io.ByteArrayInputStream;
 
 /**
  * An accept type that with another (delegate) accept type will lazily deserialize
@@ -115,9 +116,9 @@ public class LineBasedCollectionAcceptType<T> implements AcceptMediaType<Void> {
 
                @Override
                public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelMaster, AioSlave<T>> consumerFactory) {
-                  AioSlave<T> follower = consumerFactory.apply(new UncontrollableByteArrayReadableByteChannelMaster(line.getBytes()));
-                  follower.onReady();
-                  return CompletableFuture.completedFuture(follower.onCompleted());
+                  InputStreamReadableByteChannelMaster master = new InputStreamReadableByteChannelMaster(new ByteArrayInputStream(line.getBytes()));
+                  AioSlave<T> follower = consumerFactory.apply(master);
+                  return master.execute(follower, Runnable::run);
                }
             }, context)
             .thenAccept(consumer);

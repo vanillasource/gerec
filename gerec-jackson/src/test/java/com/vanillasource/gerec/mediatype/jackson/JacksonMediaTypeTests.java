@@ -29,7 +29,7 @@ import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.aio.channel.WritableByteChannelMaster;
 import com.vanillasource.aio.AioSlave;
 import com.vanillasource.aio.channel.ReadableByteChannelMaster;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
+import com.vanillasource.aio.channel.InputStreamReadableByteChannelMaster;
 import java.util.concurrent.CompletableFuture;
 import java.net.URI;
 import java.util.function.Function;
@@ -89,11 +89,11 @@ public class JacksonMediaTypeTests {
       }).when(request).setByteProducer(any(), anyLong());
       response = mock(HttpResponse.class);
       doAnswer(invocation -> {
+         InputStreamReadableByteChannelMaster master = new InputStreamReadableByteChannelMaster(new ByteArrayInputStream(content.getBytes()));
          Function<ReadableByteChannelMaster, AioSlave<Void>> consumerFactory =
             (Function<ReadableByteChannelMaster, AioSlave<Void>>) invocation.getArguments()[0];
-         AioSlave<Void> consumer = consumerFactory.apply(new UncontrollableByteArrayReadableByteChannelMaster(content.getBytes()));
-         consumer.onReady();
-         return CompletableFuture.completedFuture(consumer.onCompleted());
+         AioSlave<Void> consumer = consumerFactory.apply(master);
+         return master.execute(consumer, Runnable::run);
       }).when(response).consumeContent(any(Function.class));
    }
 

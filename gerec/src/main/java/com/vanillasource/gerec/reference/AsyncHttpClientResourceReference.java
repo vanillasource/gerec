@@ -28,6 +28,7 @@ import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
+import com.vanillasource.aio.channel.InputStreamReadableByteChannelMaster;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.ErrorResponse;
@@ -36,12 +37,12 @@ import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
 import com.vanillasource.aio.AioSlave;
 import com.vanillasource.aio.channel.ReadableByteChannelMaster;
-import com.vanillasource.aio.channel.UncontrollableByteArrayReadableByteChannelMaster;
 import java.net.URI;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import org.apache.log4j.Logger;
+import java.io.ByteArrayInputStream;
 
 /**
  * Implement a resource reference using a HTTP Client.
@@ -283,9 +284,9 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
 
                @Override
                public <T> CompletableFuture<T> consumeContent(Function<ReadableByteChannelMaster, AioSlave<T>> followerFactory) {
-                  AioSlave<T> follower = followerFactory.apply(new UncontrollableByteArrayReadableByteChannelMaster(errorBody));
-                  follower.onReady();
-                  return CompletableFuture.completedFuture(follower.onCompleted());
+                  InputStreamReadableByteChannelMaster master = new InputStreamReadableByteChannelMaster(new ByteArrayInputStream(errorBody));
+                  AioSlave<T> follower = followerFactory.apply(master);
+                  return master.execute(follower, Runnable::run); // Safe to be sync, because slave reads everything without blocking
                }
             }, AsyncHttpClientResourceReference.this::follow).get();
          } catch (InterruptedException e) {
