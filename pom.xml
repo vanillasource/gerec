@@ -12,6 +12,7 @@
    <modules>
       <module>gerec</module>
       <module>gerec-httpclient</module>
+      <module>gerec-javanet</module>
       <module>gerec-jackson</module>
       <module>gerec-minimal-json</module>
       <module>gerec-it-tests</module>
