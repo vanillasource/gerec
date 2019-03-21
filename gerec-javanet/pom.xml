@@ -3,7 +3,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>gerec-javanet</artifactId>
    <packaging>jar</packaging>
-   <name>Gerec Standard java.net Integration</name>
+   <name>Standard java.net Integration</name>
 
    <parent>
       <groupId>com.vanillasource.gerec</groupId>
