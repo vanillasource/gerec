@@ -37,14 +37,15 @@ import com.eclipsesource.json.JsonValue;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.Json;
 import java.net.URI;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Accept media type that processes incoming json documents with
  * minimal-json.
  */
 public class MinimalJsonAcceptType<T> implements AcceptMediaType<T> {
-   private static final Logger LOGGER = Logger.getLogger(MinimalJsonAcceptType.class);
+   private static final Logger LOGGER = LoggerFactory.getLogger(MinimalJsonAcceptType.class);
    private final AcceptMediaType<String> delegate;
    private final BiFunction<JsonValue, JsonContext, T> deserializer;
 

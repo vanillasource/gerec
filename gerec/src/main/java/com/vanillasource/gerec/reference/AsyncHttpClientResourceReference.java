@@ -41,14 +41,15 @@ import java.net.URI;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 
 /**
  * Implement a resource reference using a HTTP Client.
  */
 public class AsyncHttpClientResourceReference implements AsyncResourceReference {
-   private static final Logger logger = Logger.getLogger(AsyncHttpClientResourceReference.class);
+   private static final Logger logger = LoggerFactory.getLogger(AsyncHttpClientResourceReference.class);
    private final AsyncHttpClient asyncHttpClient;
    private final URI uri;
 

@@ -47,10 +47,11 @@ import java.io.UncheckedIOException;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.http.nio.ContentDecoderChannel;
 import java.util.function.Function;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class AsyncApacheHttpClient implements AsyncHttpClient {
-   private static final Logger logger = Logger.getLogger(AsyncApacheHttpClient.class);
+   private static final Logger logger = LoggerFactory.getLogger(AsyncApacheHttpClient.class);
    private final Supplier<HttpAsyncClient> httpClientSupplier;
 
    /**
