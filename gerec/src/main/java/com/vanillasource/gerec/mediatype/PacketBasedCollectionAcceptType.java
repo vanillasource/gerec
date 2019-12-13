@@ -84,9 +84,13 @@ public class PacketBasedCollectionAcceptType<T> implements AcceptMediaType<Void>
                      int c = inputBuffer.get();
                      if (packet == null) {
                         // Building length
-                        packetLength[packetLengthOffset++] = c;
+                        packetLength[packetLengthOffset++] = c & 0xFF;
                         if (packetLengthOffset == 4) {
-                           packet = new byte[(packetLength[0]<<24) + (packetLength[1]<<16) + (packetLength[2]<<8) + packetLength[3]];
+                           int totalPacketLength = (packetLength[0]<<24) + (packetLength[1]<<16) + (packetLength[2]<<8) + packetLength[3];
+                           if (totalPacketLength < 0) {
+                              throw new IllegalStateException("packet length was negative: "+totalPacketLength+", length bytes: "+packetLength[0]+","+packetLength[1]+","+packetLength[2]+","+packetLength[3]);
+                           }
+                           packet = new byte[totalPacketLength];
                            packetLengthOffset = 0;
                            if (packet.length == 0) {
                               packet = null;
