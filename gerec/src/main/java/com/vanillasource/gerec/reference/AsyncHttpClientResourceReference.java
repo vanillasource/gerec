@@ -74,7 +74,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    private <T> CompletableFuture<ContentResponse<T>> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
       if (response.getStatusCode().isError()) {
          if (logger.isDebugEnabled()) {
-            logger.debug("received status code "+response.getStatusCode()+", throwing error");
+            logger.debug("received status "+response.getStatusCode()+", throwing error");
          }
          return error(response, null);
       } else {
@@ -96,7 +96,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
       return new ByteArrayAcceptType(MediaTypeSpecification.WILDCARD).deserialize(response, this::follow)
          .thenApply(content -> {
             logger.debug("cached full error contents, returning with exception", cause);
-            throw new HttpErrorException("error in response, status code: "+response.getStatusCode(), new HttpErrorResponse(response, content));
+            throw new HttpErrorException("error in response from '"+uri+"', status code: "+response.getStatusCode(), new HttpErrorResponse(response, content));
          });
    }
 

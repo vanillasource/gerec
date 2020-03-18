@@ -191,7 +191,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
             @Override
             public void failed(Exception e) {
-               responseFuture.completeExceptionally(e);
+               responseFuture.completeExceptionally(new Exception("failed to make request to URI: "+request.getURI(), e));
             }
 
             @Override
@@ -296,7 +296,7 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
             private volatile Function<ReadableByteChannelMaster, AioSlave<Object>> followerFactory;
             private AioSlave<Object> follower;
             private volatile ReadableByteChannelMaster master;
-            private CompletableFuture<Object> result;
+            private final CompletableFuture<Object> result = new CompletableFuture<>();
 
             @Override
             public void close() {
@@ -328,10 +328,8 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                this.done = true;
                if (!responseFuture.isDone()) {
                   responseFuture.completeExceptionally(e);
-               } else if (result != null) {
-                  result.completeExceptionally(e);
                } else {
-                  throw new IllegalStateException("something's wrong, there was no consumer, but there was an error with request "+request, e);
+                  result.completeExceptionally(e);
                }
             }
 
@@ -346,7 +344,6 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
                         throw new IllegalStateException("can only consume response once");
                      }
                      followerFactory = (Function<ReadableByteChannelMaster, AioSlave<Object>>)(Object) consumerFactory;
-                     result = new CompletableFuture<>();
                      logger.debug("client will consume content");
                      if (master != null) {
                         initializeFollower();
