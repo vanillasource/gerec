@@ -21,6 +21,7 @@ package com.vanillasource.gerec.form;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.HttpRequest;
 import java.net.URI;
 import java.util.List;
 import java.util.Base64;
@@ -74,10 +75,10 @@ public final class GetAsyncForm implements AsyncForm {
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
+   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return referenceResolver
          .apply(resolveTarget(parameters.aggregate()))
-         .get(acceptType);
+         .get(acceptType, change);
    }
 
    private URI resolveTarget(String data) {

@@ -20,6 +20,7 @@ package com.vanillasource.gerec.form;
 
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.HttpRequest;
 
 /**
  * A generic form that can be filled out with string
@@ -35,7 +36,11 @@ public interface Form {
 
    Form putBytes(String key, byte[] value);
 
-   <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType);
+   default <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType) {
+      return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
    AsyncForm async();
 }

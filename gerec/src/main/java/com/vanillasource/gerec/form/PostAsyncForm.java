@@ -22,6 +22,7 @@ import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.mediatype.MediaTypes;
+import com.vanillasource.gerec.HttpRequest;
 import java.util.concurrent.CompletableFuture;
 import java.util.Base64;
 import java.util.List;
@@ -71,8 +72,8 @@ public final class PostAsyncForm implements AsyncForm {
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
-      return target.post(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType);
+   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return target.post(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType, change);
    }
 }
 

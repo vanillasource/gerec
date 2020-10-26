@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ContentMediaType;
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.HttpRequest;
 
 @Test
 public class PostAsyncFormTests {
@@ -36,7 +37,7 @@ public class PostAsyncFormTests {
 
       form.submit(null);
 
-      verify(target).post(any(ContentMediaType.class), eq(""), any(AcceptMediaType.class));
+      verify(target).post(any(ContentMediaType.class), eq(""), any(AcceptMediaType.class), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
    }
 
    @SuppressWarnings("unchecked")
@@ -48,7 +49,7 @@ public class PostAsyncFormTests {
          .put("lang", "en")
          .submit(null);
 
-      verify(target).post(any(ContentMediaType.class), eq("q=search&lang=en"), any(AcceptMediaType.class));
+      verify(target).post(any(ContentMediaType.class), eq("q=search&lang=en"), any(AcceptMediaType.class), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
    }
 
    @SuppressWarnings("unchecked")
@@ -59,7 +60,7 @@ public class PostAsyncFormTests {
          .put("q", "a+b&c d")
          .submit(null);
 
-      verify(target).post(any(ContentMediaType.class), eq("q=a%2Bb%26c+d"), any(AcceptMediaType.class));
+      verify(target).post(any(ContentMediaType.class), eq("q=a%2Bb%26c+d"), any(AcceptMediaType.class), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
    }
 
    @BeforeMethod

@@ -23,6 +23,7 @@ import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.HttpRequest;
 import java.util.function.Function;
 import java.net.URI;
 
@@ -36,7 +37,7 @@ public class GetAsyncFormTests {
 
       form.submit(null);
 
-      verify(resolvedReference).get(null);
+      verify(resolvedReference).get(eq(null), any(HttpRequest.HttpRequestChange.class));
    }
 
    @SuppressWarnings("unchecked")

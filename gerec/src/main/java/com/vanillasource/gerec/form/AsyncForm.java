@@ -21,6 +21,7 @@ package com.vanillasource.gerec.form;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ExceptionTransparentCall;
+import com.vanillasource.gerec.HttpRequest;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 
@@ -40,7 +41,11 @@ public interface AsyncForm {
 
    AsyncForm putBytes(String key, List<byte[]> values);
 
-   <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType);
+   default <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
+      return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
    default Form sync() {
       return new Form() {
@@ -65,8 +70,8 @@ public interface AsyncForm {
          }
 
          @Override
-         public <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType) {
-            return new ExceptionTransparentCall<>(AsyncForm.this.submit(acceptType)).get();
+         public <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+            return new ExceptionTransparentCall<>(AsyncForm.this.submit(acceptType, change)).get();
          }
 
          @Override
