@@ -29,6 +29,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static java.util.Arrays.asList;
+import com.vanillasource.gerec.reference.AsyncHttpClientResourceReference;
+import com.vanillasource.gerec.mediatype.MediaTypes;
+import java.util.concurrent.CompletionException;
 
 @Test
 public class AsyncJavanetHttpClientITTests {
@@ -107,6 +110,25 @@ public class AsyncJavanetHttpClientITTests {
       HttpResponse response = client.doOptions(requestURI, change).get();
 
       assertEquals(response.getHeader(Headers.ALLOW), asList("GET", "POST"));
+   }
+
+   public void testStatusIsCorrectlyShown() throws Exception {
+      stubFor(post(urlEqualTo("/nini")).willReturn(aResponse().withStatus(409).withBody("")));
+
+      HttpResponse response = client.doPost(requestURI, change).get();
+
+      assertEquals(response.getStatusCode(), HttpStatusCode.CONFLICT);
+   }
+
+   public void testGettingContentThrowsHttpErrorOnStatusCode() throws Exception {
+      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withStatus(409).withBody("content")));
+      AsyncHttpClientResourceReference reference = new AsyncHttpClientResourceReference(client, requestURI);
+
+      try {
+         reference.get(MediaTypes.textPlain()).join();
+      } catch (CompletionException e) {
+         assertTrue(e.getCause() instanceof HttpErrorException);
+      }
    }
 
    @BeforeMethod

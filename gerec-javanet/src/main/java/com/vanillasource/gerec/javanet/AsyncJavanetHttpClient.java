@@ -205,11 +205,17 @@ public final class AsyncJavanetHttpClient implements AsyncHttpClient {
 
       @Override
       public <R> CompletableFuture<R> consumeContent(Function<ReadableByteChannelMaster, AioSlave<R>> consumerFactory) {
+         // Content can not be consumed of non-success connections (for some reason)
          try {
-            InputStreamReadableByteChannelMaster master = new InputStreamReadableByteChannelMaster(connection.getInputStream());
-            AioSlave<R> slave = consumerFactory.apply(master);
-            return master.execute(slave, executor)
-               .whenComplete((result, exception) -> connection.disconnect());
+            if (connection.getResponseCode() >= 300) {
+               connection.disconnect();
+               return CompletableFuture.completedFuture(null);
+            } else {
+               InputStreamReadableByteChannelMaster master = new InputStreamReadableByteChannelMaster(connection.getInputStream());
+               AioSlave<R> slave = consumerFactory.apply(master);
+               return master.execute(slave, executor)
+                  .whenComplete((result, exception) -> connection.disconnect());
+            }
          } catch (IOException e) {
             connection.disconnect();
             throw new UncheckedIOException(e);
