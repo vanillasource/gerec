@@ -50,11 +50,17 @@ public class LineBasedCollectionAcceptType<T> implements AcceptMediaType<Void> {
    private final MediaTypeSpecification mediaType;
    private final AcceptMediaType<T> acceptType;
    private final Consumer<T> consumer;
+   private final long timeout;
 
-   public LineBasedCollectionAcceptType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
+   public LineBasedCollectionAcceptType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer, long timeout) {
       this.mediaType = mediaType;
       this.acceptType = acceptType;
       this.consumer = consumer;
+      this.timeout = timeout;
+   }
+
+   public LineBasedCollectionAcceptType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
+      this(mediaType, acceptType, consumer, 0L);
    }
 
    @Override
@@ -72,9 +78,11 @@ public class LineBasedCollectionAcceptType<T> implements AcceptMediaType<Void> {
       return response.consumeContent(input -> new AioSlave<Void>() {
          private final ByteBuffer inputBuffer = ByteBuffer.allocate(READ_BUFFER_SIZE);
          private final StringBuilder lineBuilder = new StringBuilder();
+         private final ShutdownTimer timer = new ShutdownTimer(input::close, timeout);
 
          @Override
          public void onReady() {
+            timer.reset();
             try {
                while (input.read(inputBuffer) > 0) {
                   inputBuffer.flip();
@@ -126,6 +134,7 @@ public class LineBasedCollectionAcceptType<T> implements AcceptMediaType<Void> {
 
          @Override
          public Void onCompleted() {
+            timer.cancel();
             return null;
          }
       });

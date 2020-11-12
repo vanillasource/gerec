@@ -394,7 +394,9 @@ public final class AsyncApacheHttpClient implements AsyncHttpClient {
 
                      @Override
                      public void close() {
+                        logger.debug("closing master");
                         try {
+                           control.shutdown();
                            delegate.close();
                         } catch (IOException e) {
                            throw new UncheckedIOException(e);

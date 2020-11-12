@@ -49,11 +49,17 @@ public class PacketBasedCollectionAcceptType<T> implements AcceptMediaType<Void>
    private final MediaTypeSpecification mediaType;
    private final AcceptMediaType<T> acceptType;
    private final Consumer<T> consumer;
+   private final long timeout;
 
-   public PacketBasedCollectionAcceptType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
+   public PacketBasedCollectionAcceptType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer, long timeout) {
       this.mediaType = mediaType;
       this.acceptType = acceptType;
       this.consumer = consumer;
+      this.timeout = timeout;
+   }
+
+   public PacketBasedCollectionAcceptType(MediaTypeSpecification mediaType, AcceptMediaType<T> acceptType, Consumer<T> consumer) {
+      this(mediaType, acceptType, consumer, 0L);
    }
 
    @Override
@@ -69,6 +75,7 @@ public class PacketBasedCollectionAcceptType<T> implements AcceptMediaType<Void>
    @Override
    public CompletableFuture<Void> deserialize(HttpResponse response, DeserializationContext context) {
       return response.consumeContent(input -> new AioSlave<Void>() {
+         private final ShutdownTimer timer = new ShutdownTimer(input::close, timeout);
          private final ByteBuffer inputBuffer = ByteBuffer.allocate(READ_BUFFER_SIZE);
          private final int[] packetLength = new int[4];
          private int packetLengthOffset = 0;
@@ -77,6 +84,7 @@ public class PacketBasedCollectionAcceptType<T> implements AcceptMediaType<Void>
 
          @Override
          public void onReady() {
+            timer.reset();
             try {
                while (input.read(inputBuffer) > 0) {
                   inputBuffer.flip();
@@ -142,6 +150,7 @@ public class PacketBasedCollectionAcceptType<T> implements AcceptMediaType<Void>
 
          @Override
          public Void onCompleted() {
+            timer.cancel();
             return null;
          }
       });
