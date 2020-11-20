@@ -24,6 +24,7 @@ import com.vanillasource.gerec.ExceptionTransparentCall;
 import com.vanillasource.gerec.HttpRequest;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
+import com.vanillasource.gerec.AsyncResourceReference;
 
 /**
  * A generic form that can be filled out with string
@@ -46,6 +47,20 @@ public interface AsyncForm {
    }
 
    <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+
+   String serialize();
+
+   static AsyncForm deserialize(AsyncResourceReference reference, String serializedAsyncForm) {
+      String parts[] = serializedAsyncForm.split("\n");
+      switch (parts[0]) {
+         case "GET":
+            return new ImmutableGetAsyncForm(reference.deserialize(parts[1]));
+         case "POST":
+            return new ImmutablePostAsyncForm(reference.deserialize(parts[1]), parts[2]);
+         default:
+            throw new IllegalArgumentException("serialized form '"+serializedAsyncForm+"' was not a GET or POST");
+      }
+   }
 
    default Form sync() {
       return new Form() {

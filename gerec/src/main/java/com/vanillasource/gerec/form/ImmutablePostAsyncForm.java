@@ -21,65 +21,59 @@ package com.vanillasource.gerec.form;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
-import com.vanillasource.gerec.mediatype.MediaTypes;
 import com.vanillasource.gerec.HttpRequest;
-import java.util.concurrent.CompletableFuture;
-import java.util.Base64;
+import com.vanillasource.gerec.mediatype.MediaTypes;
+import java.net.URI;
 import java.util.List;
+import java.util.Base64;
+import java.util.function.Function;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * A form that posts all parameters as form encoded, just like a HTML Form with POST method.
+ * An immutable form submitted with POST.
  */
-public final class PostAsyncForm implements AsyncForm {
-   private final AsyncResourceReference target;
-   private final FormParameters parameters;
+public final class ImmutablePostAsyncForm implements AsyncForm {
+   private final AsyncResourceReference reference;
+   private final String content;
 
-   public PostAsyncForm(AsyncResourceReference target) {
-      this(target, new FormParameters());
-   }
-
-   private PostAsyncForm(AsyncResourceReference target, FormParameters parameters) {
-      this.target = target;
-      this.parameters = parameters;
+   public ImmutablePostAsyncForm(AsyncResourceReference reference, String content) {
+      this.reference = reference;
+      this.content = content;
    }
 
    @Override
-   public PostAsyncForm put(String key, String value) {
-      return new PostAsyncForm(target, parameters.put(key, value));
+   public AsyncForm put(String key, String value) {
+      throw new UnsupportedOperationException("can not modify immutable form");
    }
 
    @Override
    public AsyncForm putInt(String key, int value) {
-      return new PostAsyncForm(target, parameters.put(key, ""+value));
+      throw new UnsupportedOperationException("can not modify immutable form");
    }
 
    @Override
    public AsyncForm putLong(String key, long value) {
-      return new PostAsyncForm(target, parameters.put(key, ""+value));
+      throw new UnsupportedOperationException("can not modify immutable form");
    }
 
    @Override
    public AsyncForm putBytes(String key, byte[] value) {
-      return new PostAsyncForm(target, parameters.put(key, Base64.getEncoder().encodeToString(value)));
+      throw new UnsupportedOperationException("can not modify immutable form");
    }
 
    @Override
    public AsyncForm putBytes(String key, List<byte[]> values) {
-      return new PostAsyncForm(target,
-            values.stream().reduce(parameters,
-               (p, v) -> p.put(key, Base64.getEncoder().encodeToString(v)),
-               FormParameters::merge));
+      throw new UnsupportedOperationException("can not modify immutable form");
    }
 
    @Override
    public String serialize() {
-      return "POST\n" + target.serialize() + "\n" + parameters.aggregate();
+      return "POST\n" + reference.serialize() + "\n" + content;
    }
 
    @Override
    public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return target.post(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType, change);
+      return reference.post(MediaTypes.formUrlEncoded(), content, acceptType, change);
    }
 }
-
 

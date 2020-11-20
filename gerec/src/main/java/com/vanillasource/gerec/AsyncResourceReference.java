@@ -80,6 +80,10 @@ public interface AsyncResourceReference extends Serializable {
          .thenApply(response -> response);
    }
 
+   String serialize();
+
+   AsyncResourceReference deserialize(String serializedReference);
+
    default ResourceReference sync() {
       return new ResourceReference() {
          @Override
