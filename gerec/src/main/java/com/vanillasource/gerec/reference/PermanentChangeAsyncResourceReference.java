@@ -104,15 +104,5 @@ public final class PermanentChangeAsyncResourceReference implements AsyncResourc
          }
       };
    }
-
-   @Override
-   public String serialize() {
-      throw new UnsupportedOperationException("serialization is not supported");
-   }
-
-   @Override
-   public AsyncResourceReference deserialize(String serializedReference) {
-      throw new UnsupportedOperationException("serialization is not supported");
-   }
 }
 

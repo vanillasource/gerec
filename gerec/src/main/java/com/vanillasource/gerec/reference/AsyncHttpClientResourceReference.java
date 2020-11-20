@@ -44,7 +44,6 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
-import java.net.URISyntaxException;
 
 /**
  * Implement a resource reference using a HTTP Client.
@@ -296,20 +295,6 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
          } catch (ExecutionException e) {
             throw new IllegalStateException("exception while reading error message", e.getCause());
          }
-      }
-   }
-
-   @Override
-   public String serialize() {
-      return uri.toString();
-   }
-
-   @Override
-   public AsyncResourceReference deserialize(String serializedReference) {
-      try {
-         return new AsyncHttpClientResourceReference(asyncHttpClient, new URI(serializedReference));
-      } catch (URISyntaxException e) {
-         throw new IllegalArgumentException("serialized reference '"+serializedReference+"' does not seem to be a valid URI", e);
       }
    }
 
