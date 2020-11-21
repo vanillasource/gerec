@@ -33,69 +33,14 @@ import java.util.function.Predicate;
 import java.net.URI;
 
 @Test
-public final class PermanentChangeAsyncResourceReferenceTests {
+public final class ChangedAsyncResourceReferenceTests {
    private AsyncResourceReference reference;
-   private PermanentChangeAsyncResourceReference changedReference;
-   private Predicate<URI> predicate;
+   private ChangedAsyncResourceReference changedReference;
    private HttpRequest request;
    private AcceptMediaType<String> acceptType;
-   private AsyncResourceReference nextReference;
 
    public void testAppliesChangeToCurrentReference() {
       changedReference.get(acceptType);
-
-      verify(request).setHeader(Headers.AUTHORIZATION, "Bearer token");
-   }
-
-   public void testAppliesToNextRequestIfPredicateHolds() {
-      when(predicate.test(any())).thenReturn(true);
-      changedReference.get(new AcceptMediaType<String>() {
-         @Override
-         public void applyAsOption(HttpRequest request) {
-         }
-
-         @Override
-         public boolean isHandling(HttpResponse response) {
-            return true;
-         }
-
-         @Override
-         public CompletableFuture<String> deserialize(HttpResponse response, DeserializationContext context) {
-            try {
-               nextReference = context.resolve(new URI("test"));
-            } catch (Exception e) {
-            }
-            return CompletableFuture.completedFuture(null);
-         }
-      });
-
-      nextReference.get(acceptType);
-
-      verify(request, times(2)).setHeader(Headers.AUTHORIZATION, "Bearer token");
-   }
-
-   public void testDoesNotApplyToNextRequestIfPredicateDoesNotHold() {
-      changedReference.get(new AcceptMediaType<String>() {
-         @Override
-         public void applyAsOption(HttpRequest request) {
-         }
-
-         @Override
-         public boolean isHandling(HttpResponse response) {
-            return true;
-         }
-
-         @Override
-         public CompletableFuture<String> deserialize(HttpResponse response, DeserializationContext context) {
-            try {
-               nextReference = context.resolve(new URI("test"));
-            } catch (Exception e) {
-            }
-            return CompletableFuture.completedFuture(null);
-         }
-      });
-
-      nextReference.get(acceptType);
 
       verify(request).setHeader(Headers.AUTHORIZATION, "Bearer token");
    }
@@ -106,7 +51,6 @@ public final class PermanentChangeAsyncResourceReferenceTests {
       acceptType = mock(AcceptMediaType.class);
       request = mock(HttpRequest.class);
       reference = mock(AsyncResourceReference.class);
-      predicate = mock(Predicate.class);
       DeserializationContext context = mock(DeserializationContext.class);
       when(context.resolve(any())).thenReturn(reference);
       when(reference.get(any(), any())).thenAnswer(invocation -> {
@@ -115,8 +59,7 @@ public final class PermanentChangeAsyncResourceReferenceTests {
          acceptType.deserialize(mock(HttpResponse.class), context);
          return null; // TODO
       });
-      changedReference = new PermanentChangeAsyncResourceReference(reference,
-            predicate, Authorization.bearing("token"));
+      changedReference = new ChangedAsyncResourceReference(reference, Authorization.bearing("token"));
    }
 }
 

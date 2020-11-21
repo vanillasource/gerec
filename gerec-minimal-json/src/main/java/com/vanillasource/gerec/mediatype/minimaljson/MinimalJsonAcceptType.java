@@ -24,9 +24,8 @@ import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import com.vanillasource.gerec.mediatype.StringAcceptType;
-import static com.vanillasource.gerec.reference.UriPredicates.*;
 import static com.vanillasource.gerec.http.Authorization.bearing;
-import com.vanillasource.gerec.reference.PermanentChangeAsyncResourceReference;
+import com.vanillasource.gerec.reference.ChangedAsyncResourceReference;
 import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.form.AsyncForm;
 import com.vanillasource.gerec.form.PostAsyncForm;
@@ -109,8 +108,7 @@ public class MinimalJsonAcceptType<T> implements AcceptMediaType<T> {
                JsonValue bearing = object.get("bearing");
                if (bearing != null) {
                   LOGGER.debug("parsing link bearing token");
-                  return new PermanentChangeAsyncResourceReference(original,
-                        localhost().or(sameSecondLevelDomain(uri)),
+                  return new ChangedAsyncResourceReference(original,
                         bearing(bearing.asString()));
                } else {
                   return original;

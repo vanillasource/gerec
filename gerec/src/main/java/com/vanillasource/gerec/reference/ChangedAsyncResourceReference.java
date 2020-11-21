@@ -32,84 +32,52 @@ import com.vanillasource.gerec.ContentMediaType;
 import java.util.function.Consumer;
 
 /**
- * A <code>ResourceReference</code> that applies a constant change to this requests
- * and all follow-up requests while the URI predicate holds.
+ * A <code>ResourceReference</code> that applies a default change to all methods
+ * of this reference.
  */
-public final class PermanentChangeAsyncResourceReference implements AsyncResourceReference {
+public final class ChangedAsyncResourceReference implements AsyncResourceReference {
    private final AsyncResourceReference delegate;
-   private final Predicate<URI> uriPredicate;
-   private final HttpRequest.HttpRequestChange permanentChange;
+   private final HttpRequest.HttpRequestChange defaultChange;
 
-   public PermanentChangeAsyncResourceReference(AsyncResourceReference delegate, HttpRequest.HttpRequestChange permanentChange) {
-      this(delegate, uri -> true, permanentChange);
-   }
-
-   public PermanentChangeAsyncResourceReference(AsyncResourceReference delegate, Predicate<URI> uriPredicate,
-         HttpRequest.HttpRequestChange permanentChange) {
+   public ChangedAsyncResourceReference(AsyncResourceReference delegate, HttpRequest.HttpRequestChange defaultChange) {
       this.delegate = delegate;
-      this.uriPredicate = uriPredicate;
-      this.permanentChange = permanentChange;
+      this.defaultChange = defaultChange;
    }
 
    @Override
    public CompletableFuture<Response> head(HttpRequest.HttpRequestChange change) {
-      return delegate.head(permanentChange.and(change));
+      return delegate.head(defaultChange.and(change));
    }
 
    @Override
    public <T> CompletableFuture<ContentResponse<T>> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.get(passChange(acceptType), permanentChange.and(change));
+      return delegate.get(acceptType, defaultChange.and(change));
    }
 
    @Override
    public <R, T> CompletableFuture<ContentResponse<T>> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.post(contentType, content, passChange(acceptType), permanentChange.and(change));
+      return delegate.post(contentType, content, acceptType, defaultChange.and(change));
    }
 
    @Override
    public <R, T> CompletableFuture<ContentResponse<T>> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.put(contentType, content, passChange(acceptType), permanentChange.and(change));
+      return delegate.put(contentType, content, acceptType, defaultChange.and(change));
    }
 
    @Override
    public <T> CompletableFuture<ContentResponse<T>> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.delete(passChange(acceptType), permanentChange.and(change));
+      return delegate.delete(acceptType, defaultChange.and(change));
    }
 
    @Override
    public <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      return delegate.options(contentType, content, passChange(acceptType));
-   }
-
-   private <T> AcceptMediaType<T> passChange(AcceptMediaType<T> delegateType) {
-      return new AcceptMediaType<T>() {
-         @Override
-         public void applyAsOption(HttpRequest request) {
-            delegateType.applyAsOption(request);
-         }
-
-         @Override
-         public boolean isHandling(HttpResponse response) {
-            return delegateType.isHandling(response);
-         }
-
-         @Override
-         public CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context) {
-            return delegateType.deserialize(response, uri -> {
-               if (uriPredicate.test(uri)) {
-                  return new PermanentChangeAsyncResourceReference(context.resolve(uri), uriPredicate, permanentChange);
-               } else {
-                  return context.resolve(uri);
-               }
-            });
-         }
-      };
+      return delegate.options(contentType, content, acceptType);
    }
 
    @Override
    public byte[] suspend(Consumer<AsyncResourceReference> call) {
       return delegate.suspend(suspendedDelegate ->
-            call.accept(new PermanentChangeAsyncResourceReference(suspendedDelegate, uriPredicate, permanentChange)));
+            call.accept(new ChangedAsyncResourceReference(suspendedDelegate, defaultChange)));
    }
 
    @Override
