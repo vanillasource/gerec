@@ -81,6 +81,13 @@ public final class GetAsyncForm implements AsyncForm {
          .get(acceptType, change);
    }
 
+   @Override
+   public byte[] suspend(AcceptMediaType<?> acceptType, HttpRequest.HttpRequestChange change) {
+      return referenceResolver
+         .apply(resolveTarget(parameters.aggregate()))
+         .suspend(ref -> ref.get(acceptType, change));
+   }
+
    private URI resolveTarget(String data) {
       String parameterConcatenator = "?";
       if (target.getQuery() != null) {

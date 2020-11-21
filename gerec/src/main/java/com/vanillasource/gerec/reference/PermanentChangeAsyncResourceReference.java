@@ -29,6 +29,7 @@ import com.vanillasource.gerec.Response;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
+import java.util.function.Consumer;
 
 /**
  * A <code>ResourceReference</code> that applies a constant change to this requests
@@ -104,5 +105,22 @@ public final class PermanentChangeAsyncResourceReference implements AsyncResourc
          }
       };
    }
+
+   @Override
+   public byte[] suspend(Consumer<AsyncResourceReference> call) {
+      return delegate.suspend(suspendedDelegate ->
+            call.accept(new PermanentChangeAsyncResourceReference(suspendedDelegate, uriPredicate, permanentChange)));
+   }
+
+   @Override
+   public CompletableFuture<Response> execute(byte[] suspendedCall) {
+      return delegate.execute(suspendedCall);
+   }
+
+   @Override
+   public <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType) {
+      return delegate.execute(suspendedCall, acceptType);
+   }
+
 }
 

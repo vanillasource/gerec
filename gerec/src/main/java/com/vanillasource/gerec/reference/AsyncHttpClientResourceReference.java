@@ -44,6 +44,7 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
+import java.util.function.Consumer;
 
 /**
  * Implement a resource reference using a HTTP Client.
@@ -127,6 +128,26 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    @Override
    public <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       return asyncHttpClient.doOptions(uri, HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption))
+         .thenCompose(response -> createResponse(response, acceptType));
+   }
+
+   @Override
+   public byte[] suspend(Consumer<AsyncResourceReference> call) {
+      SuspendingAsyncHttpClient suspendingClient = new SuspendingAsyncHttpClient();
+      call.accept(new AsyncHttpClientResourceReference(suspendingClient, uri));
+      return suspendingClient.suspend();
+   }
+
+   @Override
+   public CompletableFuture<Response> execute(byte[] suspendedCall) {
+      return execute(suspendedCall, MediaType.NONE)
+         .thenApply(response -> response); // Don't want to change signature to CompletableFuture<? extends Response>
+   }
+
+   @Override
+   public <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType) {
+      SuspendingAsyncHttpClient suspendingClient = new SuspendingAsyncHttpClient(suspendedCall);
+      return suspendingClient.execute(asyncHttpClient)
          .thenCompose(response -> createResponse(response, acceptType));
    }
 

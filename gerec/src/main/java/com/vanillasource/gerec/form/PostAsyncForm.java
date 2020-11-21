@@ -75,6 +75,12 @@ public final class PostAsyncForm implements AsyncForm {
    public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return target.post(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType, change);
    }
+
+   @Override
+   public byte[] suspend(AcceptMediaType<?> acceptType, HttpRequest.HttpRequestChange change) {
+      return target.suspend(ref -> ref.post(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType, change));
+   }
+
 }
 
 

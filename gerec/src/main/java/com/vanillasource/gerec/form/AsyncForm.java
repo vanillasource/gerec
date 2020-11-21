@@ -47,6 +47,13 @@ public interface AsyncForm {
 
    <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
+
+   default byte[] suspend(AcceptMediaType<?> acceptType) {
+      return suspend(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   byte[] suspend(AcceptMediaType<?> acceptType, HttpRequest.HttpRequestChange change);
+
    default Form sync() {
       return new Form() {
          @Override

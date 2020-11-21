@@ -20,6 +20,7 @@ package com.vanillasource.gerec;
 
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * An asynchronous version of <code>ResourceReference</code>, with exactly the
@@ -79,6 +80,22 @@ public interface AsyncResourceReference extends Serializable {
       return options(MediaType.NONE, null)
          .thenApply(response -> response);
    }
+
+   /**
+    * Suspend the execution given into a serialized form.
+    * Note: only a single call can be suspended.
+    */
+   byte[] suspend(Consumer<AsyncResourceReference> call);
+
+   /**
+    * Execute a suspended call, with no returned content.
+    */
+   CompletableFuture<Response> execute(byte[] suspendedCall);
+
+   /**
+    * Execute a suspended call, with parsing of returned content.
+    */
+   <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType);
 
    default ResourceReference sync() {
       return new ResourceReference() {
