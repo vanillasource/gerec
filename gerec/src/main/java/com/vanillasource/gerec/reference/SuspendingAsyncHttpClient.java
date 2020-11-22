@@ -40,11 +40,14 @@ import java.io.DataInputStream;
 import java.net.URISyntaxException;
 import com.vanillasource.aio.channel.ByteArrayWritableByteChannelSlave;
 import java.util.ArrayList;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * An http client which can suspend and re-execute a single call.
  */
 public final class SuspendingAsyncHttpClient implements AsyncHttpClient {
+   private static final Logger logger = LoggerFactory.getLogger(SuspendingAsyncHttpClient.class);
    private byte[] suspendedCall;
 
    public SuspendingAsyncHttpClient() {
@@ -83,16 +86,22 @@ public final class SuspendingAsyncHttpClient implements AsyncHttpClient {
          }
          switch (actionCode) {
             case 1:
+               logger.debug("executing suspended HEAD {}", uri);
                return client.doHead(uri, change);
             case 2:
+               logger.debug("executing suspended OPTIONS {}", uri);
                return client.doOptions(uri, change);
             case 3:
+               logger.debug("executing suspended GET {}", uri);
                return client.doGet(uri, change);
             case 4:
+               logger.debug("executing suspended POST {}", uri);
                return client.doPost(uri, change);
             case 5:
+               logger.debug("executing suspended PUT {}", uri);
                return client.doPut(uri, change);
             case 6:
+               logger.debug("executing suspended DELETE {}", uri);
                return client.doDelete(uri, change);
             default:
                throw new IllegalArgumentException("action code "+actionCode+" in suspended call is unknown");
@@ -182,36 +191,42 @@ public final class SuspendingAsyncHttpClient implements AsyncHttpClient {
 
    @Override
    public CompletableFuture<HttpResponse> doHead(URI uri, HttpRequest.HttpRequestChange change) {
+      logger.debug("suspending HEAD {}", uri);
       suspend(1, uri, change);
       return new CompletableFuture<>();
    }
 
    @Override
    public CompletableFuture<HttpResponse> doOptions(URI uri, HttpRequest.HttpRequestChange change) {
+      logger.debug("suspending OPTIONS {}", uri);
       suspend(2, uri, change);
       return new CompletableFuture<>();
    }
 
    @Override
    public CompletableFuture<HttpResponse> doGet(URI uri, HttpRequest.HttpRequestChange change) {
+      logger.debug("suspending GET {}", uri);
       suspend(3, uri, change);
       return new CompletableFuture<>();
    }
 
    @Override
    public CompletableFuture<HttpResponse> doPost(URI uri, HttpRequest.HttpRequestChange change) {
+      logger.debug("suspending POST {}", uri);
       suspend(4, uri, change);
       return new CompletableFuture<>();
    }
 
    @Override
    public CompletableFuture<HttpResponse> doPut(URI uri, HttpRequest.HttpRequestChange change) {
+      logger.debug("suspending PUT {}", uri);
       suspend(5, uri, change);
       return new CompletableFuture<>();
    }
 
    @Override
    public CompletableFuture<HttpResponse> doDelete(URI uri, HttpRequest.HttpRequestChange change) {
+      logger.debug("suspending DELETE {}", uri);
       suspend(6, uri, change);
       return new CompletableFuture<>();
    }
