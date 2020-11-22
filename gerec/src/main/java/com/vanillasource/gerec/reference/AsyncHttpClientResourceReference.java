@@ -148,7 +148,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    public <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType) {
       SuspendingAsyncHttpClient suspendingClient = new SuspendingAsyncHttpClient(suspendedCall);
       return suspendingClient.execute(asyncHttpClient)
-         .thenCompose(response -> createResponse(response, acceptType));
+         .thenCompose(uriResponseEntry -> new AsyncHttpClientResourceReference(asyncHttpClient, uriResponseEntry.getKey()).createResponse(uriResponseEntry.getValue(), acceptType));
    }
 
    private class HttpBaseResponse<T> implements Response {

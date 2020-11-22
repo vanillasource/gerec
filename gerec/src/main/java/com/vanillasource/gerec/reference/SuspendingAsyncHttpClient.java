@@ -30,6 +30,7 @@ import java.io.UncheckedIOException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.AbstractMap;
 import com.vanillasource.aio.AioSlave;
 import com.vanillasource.aio.channel.WritableByteChannelMaster;
 import java.util.function.Function;
@@ -57,7 +58,7 @@ public final class SuspendingAsyncHttpClient implements AsyncHttpClient {
       this.suspendedCall = suspendedCall;
    }
 
-   public CompletableFuture<HttpResponse> execute(AsyncHttpClient client) {
+   public CompletableFuture<Map.Entry<URI, HttpResponse>> execute(AsyncHttpClient client) {
       try {
          DataInputStream dis = new DataInputStream(new ByteArrayInputStream(suspendedCall));
          int actionCode = dis.readByte();
@@ -87,22 +88,28 @@ public final class SuspendingAsyncHttpClient implements AsyncHttpClient {
          switch (actionCode) {
             case 1:
                logger.debug("executing suspended HEAD {}", uri);
-               return client.doHead(uri, change);
+               return client.doHead(uri, change)
+                  .thenApply(response -> new AbstractMap.SimpleEntry<>(uri, response));
             case 2:
                logger.debug("executing suspended OPTIONS {}", uri);
-               return client.doOptions(uri, change);
+               return client.doOptions(uri, change)
+                  .thenApply(response -> new AbstractMap.SimpleEntry<>(uri, response));
             case 3:
                logger.debug("executing suspended GET {}", uri);
-               return client.doGet(uri, change);
+               return client.doGet(uri, change)
+                  .thenApply(response -> new AbstractMap.SimpleEntry<>(uri, response));
             case 4:
                logger.debug("executing suspended POST {}", uri);
-               return client.doPost(uri, change);
+               return client.doPost(uri, change)
+                  .thenApply(response -> new AbstractMap.SimpleEntry<>(uri, response));
             case 5:
                logger.debug("executing suspended PUT {}", uri);
-               return client.doPut(uri, change);
+               return client.doPut(uri, change)
+                  .thenApply(response -> new AbstractMap.SimpleEntry<>(uri, response));
             case 6:
                logger.debug("executing suspended DELETE {}", uri);
-               return client.doDelete(uri, change);
+               return client.doDelete(uri, change)
+                  .thenApply(response -> new AbstractMap.SimpleEntry<>(uri, response));
             default:
                throw new IllegalArgumentException("action code "+actionCode+" in suspended call is unknown");
          }

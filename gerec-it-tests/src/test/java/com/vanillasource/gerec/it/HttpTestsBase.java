@@ -35,19 +35,21 @@ import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 
 public class HttpTestsBase {
-   private AsyncHttpClientResourceReference reference;
    private CloseableHttpAsyncClient httpClient;
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
 
+   protected AsyncResourceReference reference(String path) {
+      return new AsyncHttpClientResourceReference(new AsyncApacheHttpClient(httpClient), URI.create("http://localhost:8091/").resolve(path));
+   }
+
    protected AsyncResourceReference reference() {
-      return reference;
+      return reference("");
    }
 
    @BeforeMethod
    protected void setUp() throws Exception {
       httpClient = HttpAsyncClients.createDefault();
       httpClient.start();
-      reference = new AsyncHttpClientResourceReference(new AsyncApacheHttpClient(httpClient), URI.create("http://localhost:8091/"));
       WireMock.reset();
    }
 

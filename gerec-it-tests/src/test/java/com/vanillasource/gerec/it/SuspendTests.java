@@ -55,4 +55,21 @@ public class SuspendTests extends HttpTestsBase {
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("q=nini")));
    }
+
+   public void testRequestAfterExecuteIsRelativeToExecute() throws Exception {
+      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "application/vnd.test.searchpage")
+               .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"POST\"}}")));
+      stubFor(post(urlEqualTo("/")).willReturn(aResponse()
+               .withHeader("Content-Type", "text/plain")));
+
+      byte[] suspendedCall = reference().suspend(ref -> ref.get(SearchPage.TYPE));
+      SearchPage page = reference("http://some.other.server:8888").execute(suspendedCall, SearchPage.TYPE).get().getContent();
+      page.getSearchForm()
+         .put("q", "nini")
+         .submit(MediaTypes.textPlain())
+         .join();
+
+      verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("q=nini")));
+   }
 }
