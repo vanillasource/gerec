@@ -22,7 +22,7 @@ import org.testng.annotations.*;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.AcceptMediaType;
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.http.Authorization;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.HttpRequest;
@@ -33,9 +33,9 @@ import java.util.function.Predicate;
 import java.net.URI;
 
 @Test
-public final class ChangedAsyncResourceReferenceTests {
-   private AsyncResourceReference reference;
-   private ChangedAsyncResourceReference changedReference;
+public final class ChangedResourceReferenceTests {
+   private ResourceReference reference;
+   private ChangedResourceReference changedReference;
    private HttpRequest request;
    private AcceptMediaType<String> acceptType;
 
@@ -50,7 +50,7 @@ public final class ChangedAsyncResourceReferenceTests {
    protected void setUp() {
       acceptType = mock(AcceptMediaType.class);
       request = mock(HttpRequest.class);
-      reference = mock(AsyncResourceReference.class);
+      reference = mock(ResourceReference.class);
       DeserializationContext context = mock(DeserializationContext.class);
       when(context.resolve(any())).thenReturn(reference);
       when(reference.getResponse(any(), any())).thenAnswer(invocation -> {
@@ -59,7 +59,7 @@ public final class ChangedAsyncResourceReferenceTests {
          acceptType.deserialize(mock(HttpResponse.class), context);
          return null; // TODO
       });
-      changedReference = new ChangedAsyncResourceReference(reference, Authorization.bearing("token"));
+      changedReference = new ChangedResourceReference(reference, Authorization.bearing("token"));
    }
 }
 

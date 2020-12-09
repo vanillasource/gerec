@@ -18,11 +18,11 @@
 
 package com.vanillasource.gerec.mediatype.minimaljson;
 
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
-import com.vanillasource.gerec.form.AsyncForm;
+import com.vanillasource.gerec.form.Form;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
 import static org.mockito.Mockito.*;
@@ -73,7 +73,7 @@ public final class MinimalJsonAcceptTypeTests {
    }
 
    public void testDeserializesGetForms() throws Exception {
-      AsyncForm[] form = new AsyncForm[1];
+      Form[] form = new Form[1];
       responseContent("{\"href\":\"form\", \"method\":\"get\"}");
       withDeserializer((json, context) -> {
          form[0] = context.parseForm(json.asObject());
@@ -86,7 +86,7 @@ public final class MinimalJsonAcceptTypeTests {
    }
 
    public void testDeserializedDefaultFormElements() throws Exception {
-      AsyncForm[] form = new AsyncForm[1];
+      Form[] form = new Form[1];
       responseContent("{\"href\":\"form\", \"method\":\"get\", \"controls\":{\"name\":{\"default\":\"defaultName\"}}}");
       withDeserializer((json, context) -> {
          form[0] = context.parseForm(json.asObject());
@@ -122,7 +122,7 @@ public final class MinimalJsonAcceptTypeTests {
       deserializer = mock(BiFunction.class);
       type = new MinimalJsonAcceptType(MediaTypeSpecification.WILDCARD, deserializer);
       context = mock(DeserializationContext.class);
-      when(context.resolve(any())).thenReturn(mock(AsyncResourceReference.class));
+      when(context.resolve(any())).thenReturn(mock(ResourceReference.class));
       response = mock(HttpResponse.class);
    }
 }

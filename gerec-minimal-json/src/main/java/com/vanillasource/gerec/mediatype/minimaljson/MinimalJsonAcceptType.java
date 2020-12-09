@@ -25,11 +25,11 @@ import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import com.vanillasource.gerec.mediatype.StringAcceptType;
 import static com.vanillasource.gerec.http.Authorization.bearing;
-import com.vanillasource.gerec.reference.ChangedAsyncResourceReference;
-import com.vanillasource.gerec.AsyncResourceReference;
-import com.vanillasource.gerec.form.AsyncForm;
-import com.vanillasource.gerec.form.PostAsyncForm;
-import com.vanillasource.gerec.form.GetAsyncForm;
+import com.vanillasource.gerec.reference.ChangedResourceReference;
+import com.vanillasource.gerec.ResourceReference;
+import com.vanillasource.gerec.form.Form;
+import com.vanillasource.gerec.form.PostForm;
+import com.vanillasource.gerec.form.GetForm;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import com.eclipsesource.json.JsonValue;
@@ -68,21 +68,21 @@ public class MinimalJsonAcceptType<T> implements AcceptMediaType<T> {
       return delegate.deserialize(response, context)
          .thenApply(jsonString -> deserializer.apply(Json.parse(jsonString), new JsonContext() {
             @Override
-            public AsyncForm parseForm(JsonObject object) {
+            public Form parseForm(JsonObject object) {
                LOGGER.debug("parsing form");
                return withControls(object, createForm(object));
             }
 
-            private AsyncForm createForm(JsonObject object) {
+            private Form createForm(JsonObject object) {
                if (object.getString("method","get").equalsIgnoreCase("post")) {
-                  return new PostAsyncForm(parseLink(object));
+                  return new PostForm(parseLink(object));
                } else {
-                  return new GetAsyncForm(URI.create(object.getString("href","")), uri -> parseLink(object, uri));
+                  return new GetForm(URI.create(object.getString("href","")), uri -> parseLink(object, uri));
                }
             }
 
-            private AsyncForm withControls(JsonObject object, AsyncForm form) {
-               AsyncForm result = form;
+            private Form withControls(JsonObject object, Form form) {
+               Form result = form;
                JsonValue controls = object.get("controls");
                if (controls != null) {
                   LOGGER.debug("parsing form controls");
@@ -97,18 +97,18 @@ public class MinimalJsonAcceptType<T> implements AcceptMediaType<T> {
             }
 
             @Override
-            public AsyncResourceReference parseLink(JsonObject object) {
+            public ResourceReference parseLink(JsonObject object) {
                LOGGER.debug("parsing link");
                URI uri = URI.create(object.getString("href",""));
                return parseLink(object, uri);
             }
 
-            private AsyncResourceReference parseLink(JsonObject object, URI uri) {
-               AsyncResourceReference original = context.resolve(uri);
+            private ResourceReference parseLink(JsonObject object, URI uri) {
+               ResourceReference original = context.resolve(uri);
                JsonValue bearing = object.get("bearing");
                if (bearing != null) {
                   LOGGER.debug("parsing link bearing token");
-                  return new ChangedAsyncResourceReference(original,
+                  return new ChangedResourceReference(original,
                         bearing(bearing.asString()));
                } else {
                   return original;
@@ -118,9 +118,9 @@ public class MinimalJsonAcceptType<T> implements AcceptMediaType<T> {
    }
 
    public interface JsonContext {
-      AsyncForm parseForm(JsonObject object);
+      Form parseForm(JsonObject object);
 
-      AsyncResourceReference parseLink(JsonObject object);
+      ResourceReference parseLink(JsonObject object);
    }
 }
 

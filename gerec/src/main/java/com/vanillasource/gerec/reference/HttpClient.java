@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A generic HTTP Client for the <code>HttpClientResourceReference</code>.
  */
-public interface AsyncHttpClient {
+public interface HttpClient {
    CompletableFuture<HttpResponse> doHead(URI uri, HttpRequest.HttpRequestChange change);
 
    CompletableFuture<HttpResponse> doOptions(URI uri, HttpRequest.HttpRequestChange change);

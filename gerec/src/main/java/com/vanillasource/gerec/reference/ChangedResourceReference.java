@@ -21,7 +21,7 @@ package com.vanillasource.gerec.reference;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.net.URI;
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
@@ -35,11 +35,11 @@ import java.util.function.Consumer;
  * A <code>ResourceReference</code> that applies a default change to all methods
  * of this reference.
  */
-public final class ChangedAsyncResourceReference implements AsyncResourceReference {
-   private final AsyncResourceReference delegate;
+public final class ChangedResourceReference implements ResourceReference {
+   private final ResourceReference delegate;
    private final HttpRequest.HttpRequestChange defaultChange;
 
-   public ChangedAsyncResourceReference(AsyncResourceReference delegate, HttpRequest.HttpRequestChange defaultChange) {
+   public ChangedResourceReference(ResourceReference delegate, HttpRequest.HttpRequestChange defaultChange) {
       this.delegate = delegate;
       this.defaultChange = defaultChange;
    }
@@ -75,9 +75,9 @@ public final class ChangedAsyncResourceReference implements AsyncResourceReferen
    }
 
    @Override
-   public byte[] suspend(Consumer<AsyncResourceReference> call) {
+   public byte[] suspend(Consumer<ResourceReference> call) {
       return delegate.suspend(suspendedDelegate ->
-            call.accept(new ChangedAsyncResourceReference(suspendedDelegate, defaultChange)));
+            call.accept(new ChangedResourceReference(suspendedDelegate, defaultChange)));
    }
 
    @Override

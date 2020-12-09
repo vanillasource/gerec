@@ -18,7 +18,7 @@
 
 package com.vanillasource.gerec.javanet;
 
-import com.vanillasource.gerec.reference.AsyncHttpClient;
+import com.vanillasource.gerec.reference.HttpClient;
 import com.vanillasource.gerec.*;
 import java.util.function.Function;
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +45,7 @@ import com.vanillasource.aio.channel.NullWritableByteChannelSlave;
  * operation, an appropriate executor has to be supplied on which operations
  * will be pushed to.
  */
-public final class AsyncJavanetHttpClient implements AsyncHttpClient {
+public final class AsyncJavanetHttpClient implements HttpClient {
    private final Executor executor;
    private final Function<URL, HttpURLConnection> connectionFactory;
 

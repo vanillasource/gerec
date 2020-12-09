@@ -32,7 +32,7 @@ import java.util.function.Function;
 import java.io.ByteArrayOutputStream;
 import com.vanillasource.aio.channel.OutputStreamWritableByteChannelMaster;
 
-public final class RecordingAsyncHttpClient implements AsyncHttpClient {
+public final class RecordingHttpClient implements HttpClient {
    public RecordedRequest lastRequest;
 
    @Override

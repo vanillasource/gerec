@@ -18,7 +18,7 @@
 
 package com.vanillasource.gerec.form;
 
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.mediatype.MediaTypes;
@@ -30,42 +30,42 @@ import java.util.List;
 /**
  * A form that posts all parameters as form encoded, just like a HTML Form with POST method.
  */
-public final class PostAsyncForm implements AsyncForm {
-   private final AsyncResourceReference target;
+public final class PostForm implements Form {
+   private final ResourceReference target;
    private final FormParameters parameters;
 
-   public PostAsyncForm(AsyncResourceReference target) {
+   public PostForm(ResourceReference target) {
       this(target, new FormParameters());
    }
 
-   private PostAsyncForm(AsyncResourceReference target, FormParameters parameters) {
+   private PostForm(ResourceReference target, FormParameters parameters) {
       this.target = target;
       this.parameters = parameters;
    }
 
    @Override
-   public PostAsyncForm put(String key, String value) {
-      return new PostAsyncForm(target, parameters.put(key, value));
+   public PostForm put(String key, String value) {
+      return new PostForm(target, parameters.put(key, value));
    }
 
    @Override
-   public AsyncForm putInt(String key, int value) {
-      return new PostAsyncForm(target, parameters.put(key, ""+value));
+   public Form putInt(String key, int value) {
+      return new PostForm(target, parameters.put(key, ""+value));
    }
 
    @Override
-   public AsyncForm putLong(String key, long value) {
-      return new PostAsyncForm(target, parameters.put(key, ""+value));
+   public Form putLong(String key, long value) {
+      return new PostForm(target, parameters.put(key, ""+value));
    }
 
    @Override
-   public AsyncForm putBytes(String key, byte[] value) {
-      return new PostAsyncForm(target, parameters.put(key, Base64.getEncoder().encodeToString(value)));
+   public Form putBytes(String key, byte[] value) {
+      return new PostForm(target, parameters.put(key, Base64.getEncoder().encodeToString(value)));
    }
 
    @Override
-   public AsyncForm putBytes(String key, List<byte[]> values) {
-      return new PostAsyncForm(target,
+   public Form putBytes(String key, List<byte[]> values) {
+      return new PostForm(target,
             values.stream().reduce(parameters,
                (p, v) -> p.put(key, Base64.getEncoder().encodeToString(v)),
                FormParameters::merge));

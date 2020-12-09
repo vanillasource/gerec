@@ -18,7 +18,7 @@
 
 package com.vanillasource.gerec.form;
 
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
@@ -31,44 +31,44 @@ import java.util.concurrent.CompletableFuture;
 /**
  * A form that adds all parameters to the URI, just like a HTML Form with GET method.
  */
-public final class GetAsyncForm implements AsyncForm {
+public final class GetForm implements Form {
    private final URI target;
-   private final Function<URI, AsyncResourceReference> referenceResolver;
+   private final Function<URI, ResourceReference> referenceResolver;
    private final FormParameters parameters;
 
-   public GetAsyncForm(URI target, Function<URI, AsyncResourceReference> referenceResolver) {
+   public GetForm(URI target, Function<URI, ResourceReference> referenceResolver) {
       this(target, referenceResolver, new FormParameters());
    }
 
-   private GetAsyncForm(URI target, Function<URI, AsyncResourceReference> referenceResolver, FormParameters parameters) {
+   private GetForm(URI target, Function<URI, ResourceReference> referenceResolver, FormParameters parameters) {
       this.target = target;
       this.referenceResolver = referenceResolver;
       this.parameters = parameters;
    }
 
    @Override
-   public GetAsyncForm put(String key, String value) {
-      return new GetAsyncForm(target, referenceResolver, parameters.put(key, value));
+   public GetForm put(String key, String value) {
+      return new GetForm(target, referenceResolver, parameters.put(key, value));
    }
 
    @Override
-   public AsyncForm putInt(String key, int value) {
-      return new GetAsyncForm(target, referenceResolver, parameters.put(key, ""+value));
+   public Form putInt(String key, int value) {
+      return new GetForm(target, referenceResolver, parameters.put(key, ""+value));
    }
 
    @Override
-   public AsyncForm putLong(String key, long value) {
-      return new GetAsyncForm(target, referenceResolver, parameters.put(key, ""+value));
+   public Form putLong(String key, long value) {
+      return new GetForm(target, referenceResolver, parameters.put(key, ""+value));
    }
 
    @Override
-   public AsyncForm putBytes(String key, byte[] value) {
-      return new GetAsyncForm(target, referenceResolver, parameters.put(key, Base64.getEncoder().encodeToString(value)));
+   public Form putBytes(String key, byte[] value) {
+      return new GetForm(target, referenceResolver, parameters.put(key, Base64.getEncoder().encodeToString(value)));
    }
 
    @Override
-   public AsyncForm putBytes(String key, List<byte[]> values) {
-      return new GetAsyncForm(target, referenceResolver,
+   public Form putBytes(String key, List<byte[]> values) {
+      return new GetForm(target, referenceResolver,
             values.stream().reduce(parameters,
                (p, v) -> p.put(key, Base64.getEncoder().encodeToString(v)),
                FormParameters::merge));

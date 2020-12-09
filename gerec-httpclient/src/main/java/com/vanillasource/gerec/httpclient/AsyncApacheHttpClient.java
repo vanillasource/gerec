@@ -21,7 +21,7 @@ package com.vanillasource.gerec.httpclient;
 import com.vanillasource.aio.channel.WritableByteChannelMaster;
 import com.vanillasource.aio.AioSlave;
 import com.vanillasource.aio.channel.ReadableByteChannelMaster;
-import com.vanillasource.gerec.reference.AsyncHttpClient;
+import com.vanillasource.gerec.reference.HttpClient;
 import com.vanillasource.gerec.*;
 import org.apache.http.client.methods.*;
 import org.apache.http.nio.client.HttpAsyncClient;
@@ -50,7 +50,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class AsyncApacheHttpClient implements AsyncHttpClient {
+public final class AsyncApacheHttpClient implements HttpClient {
    private static final Logger logger = LoggerFactory.getLogger(AsyncApacheHttpClient.class);
    private final Supplier<HttpAsyncClient> httpClientSupplier;
 

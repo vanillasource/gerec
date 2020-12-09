@@ -24,7 +24,7 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.aio.channel.WritableByteChannelMaster;
 import com.vanillasource.aio.AioSlave;
@@ -66,7 +66,7 @@ public class JacksonMediaTypeTests {
    public void testReferencesGetDeserializedUsedReferenceResolver() throws Exception {
       JacksonMediaType<ReferenceObject> mediaType = new JacksonMediaType<>(ReferenceObject.class, "application/vnd.vanillasource.referenceobject+json");
       content = "{\"reference\":{\"href\":\"/relative/uri\"}}";
-      AsyncResourceReference reference = mock(AsyncResourceReference.class);
+      ResourceReference reference = mock(ResourceReference.class);
       when(context.resolve(URI.create("/relative/uri"))).thenReturn(reference);
 
       ReferenceObject object = mediaType.deserialize(response, context).get();
@@ -151,16 +151,16 @@ public class JacksonMediaTypeTests {
    }
 
    public static final class ReferenceObject {
-      private AsyncResourceReference reference;
+      private ResourceReference reference;
 
       protected ReferenceObject() {
       }
 
-      public ReferenceObject(AsyncResourceReference reference) {
+      public ReferenceObject(ResourceReference reference) {
          this.reference = reference;
       }
 
-      public AsyncResourceReference getReference() {
+      public ResourceReference getReference() {
          return reference;
       }
    }

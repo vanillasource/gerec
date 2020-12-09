@@ -29,7 +29,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static java.util.Arrays.asList;
-import com.vanillasource.gerec.reference.AsyncHttpClientResourceReference;
+import com.vanillasource.gerec.reference.HttpClientResourceReference;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import java.util.concurrent.CompletionException;
 
@@ -122,7 +122,7 @@ public class AsyncJavanetHttpClientITTests {
 
    public void testGettingContentThrowsHttpErrorOnStatusCode() throws Exception {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse().withStatus(409).withBody("content")));
-      AsyncHttpClientResourceReference reference = new AsyncHttpClientResourceReference(client, requestURI);
+      HttpClientResourceReference reference = new HttpClientResourceReference(client, requestURI);
 
       try {
          reference.get(MediaTypes.textPlain()).join();

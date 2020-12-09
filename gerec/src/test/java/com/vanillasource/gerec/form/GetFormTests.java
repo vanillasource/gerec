@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import java.util.function.Function;
 import java.net.URI;
@@ -30,12 +30,12 @@ import com.vanillasource.gerec.ContentResponse;
 import java.util.concurrent.CompletableFuture;
 
 @Test
-public class GetAsyncFormTests {
-   private AsyncResourceReference resolvedReference;
-   private Function<URI, AsyncResourceReference> referenceResolver;
+public class GetFormTests {
+   private ResourceReference resolvedReference;
+   private Function<URI, ResourceReference> referenceResolver;
 
-   public void testGetAsyncFormMakesAGetRequestToResolvedReference() {
-      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
+   public void testGetFormMakesAGetRequestToResolvedReference() {
+      GetForm form = new GetForm(URI.create("/root"), referenceResolver);
 
       form.submit(null);
 
@@ -43,8 +43,8 @@ public class GetAsyncFormTests {
    }
 
    @SuppressWarnings("unchecked")
-   public void testGetAsyncFormPutsFormValuesIntoQueryParameters() {
-      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
+   public void testGetFormPutsFormValuesIntoQueryParameters() {
+      GetForm form = new GetForm(URI.create("/root"), referenceResolver);
 
       form
          .put("q", "search")
@@ -54,8 +54,8 @@ public class GetAsyncFormTests {
    }
 
    @SuppressWarnings("unchecked")
-   public void testGetAsyncFormPutsFormValuesIntoQueryParametersSeparatedWithAmp() {
-      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
+   public void testGetFormPutsFormValuesIntoQueryParametersSeparatedWithAmp() {
+      GetForm form = new GetForm(URI.create("/root"), referenceResolver);
 
       form
          .put("q", "search")
@@ -66,8 +66,8 @@ public class GetAsyncFormTests {
    }
 
    @SuppressWarnings("unchecked")
-   public void testGetAsyncFormPutsFormValuesIntoQueryParametersWithAmpIfQueryPresent() {
-      GetAsyncForm form = new GetAsyncForm(URI.create("/root?ni=nu"), referenceResolver);
+   public void testGetFormPutsFormValuesIntoQueryParametersWithAmpIfQueryPresent() {
+      GetForm form = new GetForm(URI.create("/root?ni=nu"), referenceResolver);
 
       form
          .put("q", "search")
@@ -77,7 +77,7 @@ public class GetAsyncFormTests {
    }
 
    public void testQueryParametersAreEncoded() {
-      GetAsyncForm form = new GetAsyncForm(URI.create("/root"), referenceResolver);
+      GetForm form = new GetForm(URI.create("/root"), referenceResolver);
 
       form
          .put("q", "a+b&c d")
@@ -89,7 +89,7 @@ public class GetAsyncFormTests {
    @BeforeMethod
    @SuppressWarnings("unchecked")
    protected void setUp() {
-      resolvedReference = mock(AsyncResourceReference.class);
+      resolvedReference = mock(ResourceReference.class);
       referenceResolver = mock(Function.class);
       when(referenceResolver.apply(any())).thenReturn(resolvedReference);
       when(resolvedReference.getResponse(any(), any())).thenReturn(CompletableFuture.completedFuture(mock(ContentResponse.class)));

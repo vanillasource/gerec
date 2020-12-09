@@ -94,6 +94,6 @@ public interface Response {
    /**
     * Follow the 'Location' header received from the server.
     */
-   AsyncResourceReference followLocation();
+   ResourceReference followLocation();
 }
 

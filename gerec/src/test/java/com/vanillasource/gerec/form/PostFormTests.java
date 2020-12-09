@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentMediaType;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
@@ -30,12 +30,12 @@ import com.vanillasource.gerec.ContentResponse;
 import java.util.concurrent.CompletableFuture;
 
 @Test
-public class PostAsyncFormTests {
-   private AsyncResourceReference target;
+public class PostFormTests {
+   private ResourceReference target;
 
    @SuppressWarnings("unchecked")
-   public void testPostAsyncFormMakesPostToTarget() {
-      PostAsyncForm form = new PostAsyncForm(target);
+   public void testPostFormMakesPostToTarget() {
+      PostForm form = new PostForm(target);
 
       form.submit(null);
 
@@ -44,7 +44,7 @@ public class PostAsyncFormTests {
 
    @SuppressWarnings("unchecked")
    public void testPostPostsParametersAsContent() {
-      PostAsyncForm form = new PostAsyncForm(target);
+      PostForm form = new PostForm(target);
 
       form
          .put("q", "search")
@@ -56,7 +56,7 @@ public class PostAsyncFormTests {
 
    @SuppressWarnings("unchecked")
    public void testQueryParametersAreEncoded() {
-      PostAsyncForm form = new PostAsyncForm(target);
+      PostForm form = new PostForm(target);
 
       form
          .put("q", "a+b&c d")
@@ -68,7 +68,7 @@ public class PostAsyncFormTests {
    @BeforeMethod
    @SuppressWarnings("unchecked")
    protected void setUp() {
-      target = mock(AsyncResourceReference.class);
+      target = mock(ResourceReference.class);
       when(target.postResponse(any(), any(), any(), any())).thenReturn(CompletableFuture.completedFuture(mock(ContentResponse.class)));
    }
 }

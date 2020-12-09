@@ -20,17 +20,17 @@ package com.vanillasource.gerec.it;
 
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
-import com.vanillasource.gerec.form.AsyncForm;
+import com.vanillasource.gerec.form.Form;
 
 public class SearchPage {
    public static final AcceptMediaType<SearchPage> TYPE = new JacksonMediaType<>(SearchPage.class, "application/vnd.test.searchpage");
    private String greetingMessage;
-   private AsyncForm searchForm;
+   private Form searchForm;
 
    protected SearchPage() {
    }
 
-   public AsyncForm getSearchForm() {
+   public Form getSearchForm() {
       return searchForm;
    }
 

@@ -29,7 +29,7 @@ import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
 import com.vanillasource.aio.channel.InputStreamReadableByteChannelMaster;
-import com.vanillasource.gerec.AsyncResourceReference;
+import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.ErrorResponse;
 import com.vanillasource.gerec.Response;
@@ -49,12 +49,12 @@ import java.util.function.Consumer;
 /**
  * Implement a resource reference using a HTTP Client.
  */
-public class AsyncHttpClientResourceReference implements AsyncResourceReference {
-   private static final Logger logger = LoggerFactory.getLogger(AsyncHttpClientResourceReference.class);
-   private final AsyncHttpClient asyncHttpClient;
+public class HttpClientResourceReference implements ResourceReference {
+   private static final Logger logger = LoggerFactory.getLogger(HttpClientResourceReference.class);
+   private final HttpClient asyncHttpClient;
    private final URI uri;
 
-   public AsyncHttpClientResourceReference(AsyncHttpClient asyncHttpClient, URI uri) {
+   public HttpClientResourceReference(HttpClient asyncHttpClient, URI uri) {
       this.asyncHttpClient = asyncHttpClient;
       this.uri = uri;
    }
@@ -101,8 +101,8 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
          });
    }
 
-   private AsyncResourceReference follow(URI linkUri) {
-      return new AsyncHttpClientResourceReference(asyncHttpClient, uri.resolve(linkUri));
+   private ResourceReference follow(URI linkUri) {
+      return new HttpClientResourceReference(asyncHttpClient, uri.resolve(linkUri));
    }
 
    @Override
@@ -132,9 +132,9 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    }
 
    @Override
-   public byte[] suspend(Consumer<AsyncResourceReference> call) {
-      SuspendingAsyncHttpClient suspendingClient = new SuspendingAsyncHttpClient();
-      call.accept(new AsyncHttpClientResourceReference(suspendingClient, uri));
+   public byte[] suspend(Consumer<ResourceReference> call) {
+      SuspendingHttpClient suspendingClient = new SuspendingHttpClient();
+      call.accept(new HttpClientResourceReference(suspendingClient, uri));
       return suspendingClient.suspend();
    }
 
@@ -146,9 +146,9 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
 
    @Override
    public <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType) {
-      SuspendingAsyncHttpClient suspendingClient = new SuspendingAsyncHttpClient(suspendedCall);
+      SuspendingHttpClient suspendingClient = new SuspendingHttpClient(suspendedCall);
       return suspendingClient.execute(asyncHttpClient)
-         .thenCompose(uriResponseEntry -> new AsyncHttpClientResourceReference(asyncHttpClient, uriResponseEntry.getKey()).createResponse(uriResponseEntry.getValue(), acceptType));
+         .thenCompose(uriResponseEntry -> new HttpClientResourceReference(asyncHttpClient, uriResponseEntry.getKey()).createResponse(uriResponseEntry.getValue(), acceptType));
    }
 
    private class HttpBaseResponse<T> implements Response {
@@ -209,7 +209,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
       }
 
       @Override
-      public AsyncResourceReference followLocation() {
+      public ResourceReference followLocation() {
          return follow(URI.create(response.getHeader(Headers.LOCATION)));
       }
 
@@ -310,7 +310,7 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
                   AioSlave<T> follower = followerFactory.apply(master);
                   return master.execute(follower, Runnable::run); // Safe to be sync, because slave reads everything without blocking
                }
-            }, AsyncHttpClientResourceReference.this::follow).get();
+            }, HttpClientResourceReference.this::follow).get();
          } catch (InterruptedException e) {
             throw new IllegalStateException("interrupted reading error message", e);
          } catch (ExecutionException e) {

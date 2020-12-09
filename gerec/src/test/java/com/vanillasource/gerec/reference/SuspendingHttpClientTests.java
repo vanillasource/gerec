@@ -19,7 +19,7 @@
 package com.vanillasource.gerec.reference;
 
 import static com.vanillasource.gerec.http.CacheControl.*;
-import com.vanillasource.gerec.reference.RecordingAsyncHttpClient.RecordedRequest;
+import com.vanillasource.gerec.reference.RecordingHttpClient.RecordedRequest;
 import com.vanillasource.gerec.HttpRequest;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
@@ -33,15 +33,15 @@ import static java.util.Arrays.asList;
 import static org.testng.Assert.*;
 
 @Test
-public final class SuspendingAsyncHttpClientTests {
-   private RecordingAsyncHttpClient recordingClient;
-   private SuspendingAsyncHttpClient suspendingClient;
+public final class SuspendingHttpClientTests {
+   private RecordingHttpClient recordingClient;
+   private SuspendingHttpClient suspendingClient;
 
    public void testGetSuspendGetsExecutedCorrectly() throws Exception {
       suspendingClient.doGet(new URI("https://localhost:8086/api"),
             noCache().and(content("CONTENT")));
 
-      suspendingClient = new SuspendingAsyncHttpClient(suspendingClient.suspend());
+      suspendingClient = new SuspendingHttpClient(suspendingClient.suspend());
       suspendingClient.execute(recordingClient);
 
       assertEquals(recordingClient.lastRequest,
@@ -52,7 +52,7 @@ public final class SuspendingAsyncHttpClientTests {
       suspendingClient.doPost(new URI("https://localhost:8086/api"),
             noCache().and(content("CONTENT")));
 
-      suspendingClient = new SuspendingAsyncHttpClient(suspendingClient.suspend());
+      suspendingClient = new SuspendingHttpClient(suspendingClient.suspend());
       suspendingClient.execute(recordingClient);
 
       assertEquals(recordingClient.lastRequest,
@@ -63,7 +63,7 @@ public final class SuspendingAsyncHttpClientTests {
       suspendingClient.doOptions(new URI("https://localhost:8086/api"),
             noCache().and(content("CONTENT")));
 
-      suspendingClient = new SuspendingAsyncHttpClient(suspendingClient.suspend());
+      suspendingClient = new SuspendingHttpClient(suspendingClient.suspend());
       suspendingClient.execute(recordingClient);
 
       assertEquals(recordingClient.lastRequest,
@@ -74,7 +74,7 @@ public final class SuspendingAsyncHttpClientTests {
       suspendingClient.doDelete(new URI("https://localhost:8086/api"),
             noCache().and(content("CONTENT")));
 
-      suspendingClient = new SuspendingAsyncHttpClient(suspendingClient.suspend());
+      suspendingClient = new SuspendingHttpClient(suspendingClient.suspend());
       suspendingClient.execute(recordingClient);
 
       assertEquals(recordingClient.lastRequest,
@@ -85,7 +85,7 @@ public final class SuspendingAsyncHttpClientTests {
       suspendingClient.doHead(new URI("https://localhost:8086/api"),
             noCache().and(content("CONTENT")));
 
-      suspendingClient = new SuspendingAsyncHttpClient(suspendingClient.suspend());
+      suspendingClient = new SuspendingHttpClient(suspendingClient.suspend());
       suspendingClient.execute(recordingClient);
 
       assertEquals(recordingClient.lastRequest,
@@ -96,7 +96,7 @@ public final class SuspendingAsyncHttpClientTests {
       suspendingClient.doPut(new URI("https://localhost:8086/api"),
             noCache().and(content("CONTENT")));
 
-      suspendingClient = new SuspendingAsyncHttpClient(suspendingClient.suspend());
+      suspendingClient = new SuspendingHttpClient(suspendingClient.suspend());
       suspendingClient.execute(recordingClient);
 
       assertEquals(recordingClient.lastRequest,
@@ -117,7 +117,7 @@ public final class SuspendingAsyncHttpClientTests {
 
    @BeforeMethod
    protected void setUp() {
-      recordingClient = new RecordingAsyncHttpClient();
-      suspendingClient = new SuspendingAsyncHttpClient();
+      recordingClient = new RecordingHttpClient();
+      suspendingClient = new SuspendingHttpClient();
    }
 }

@@ -27,7 +27,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import com.vanillasource.gerec.reference.AsyncHttpClientResourceReference;
+import com.vanillasource.gerec.reference.HttpClientResourceReference;
 import com.vanillasource.gerec.httpclient.AsyncApacheHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
@@ -38,11 +38,11 @@ public class HttpTestsBase {
    private CloseableHttpAsyncClient httpClient;
    private WireMockServer wireMock = new WireMockServer(wireMockConfig().port(8091));
 
-   protected AsyncResourceReference reference(String path) {
-      return new AsyncHttpClientResourceReference(new AsyncApacheHttpClient(httpClient), URI.create("http://localhost:8091/").resolve(path));
+   protected ResourceReference reference(String path) {
+      return new HttpClientResourceReference(new AsyncApacheHttpClient(httpClient), URI.create("http://localhost:8091/").resolve(path));
    }
 
-   protected AsyncResourceReference reference() {
+   protected ResourceReference reference() {
       return reference("");
    }
 

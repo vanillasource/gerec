@@ -47,18 +47,18 @@ import org.slf4j.Logger;
 /**
  * An http client which can suspend and re-execute a single call.
  */
-public final class SuspendingAsyncHttpClient implements AsyncHttpClient {
-   private static final Logger logger = LoggerFactory.getLogger(SuspendingAsyncHttpClient.class);
+public final class SuspendingHttpClient implements HttpClient {
+   private static final Logger logger = LoggerFactory.getLogger(SuspendingHttpClient.class);
    private byte[] suspendedCall;
 
-   public SuspendingAsyncHttpClient() {
+   public SuspendingHttpClient() {
    }
 
-   public SuspendingAsyncHttpClient(byte[] suspendedCall) {
+   public SuspendingHttpClient(byte[] suspendedCall) {
       this.suspendedCall = suspendedCall;
    }
 
-   public CompletableFuture<Map.Entry<URI, HttpResponse>> execute(AsyncHttpClient client) {
+   public CompletableFuture<Map.Entry<URI, HttpResponse>> execute(HttpClient client) {
       try {
          DataInputStream dis = new DataInputStream(new ByteArrayInputStream(suspendedCall));
          int actionCode = dis.readByte();

@@ -19,93 +19,100 @@
 package com.vanillasource.gerec;
 
 import java.io.Serializable;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
- * References to resources are the main method by which users of this library should interact
- * with RESTful HTTP resources. All actions to the resources should go through classes from this
- * interface. All implementations should be serializable, without serializing any underlying
- * infrastructure, like caches.
+ * An asynchronous version of <code>ResourceReference</code>, with exactly the
+ * same functionality, except it returns a <code>CompletableFuture</code> for all operations.
  */
 public interface ResourceReference extends Serializable {
-   Response headResponse(HttpRequest.HttpRequestChange change);
+   CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change);
 
-   default Response headResponse() {
+   default CompletableFuture<Response> headResponse() {
       return headResponse(HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> ContentResponse<T> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> ContentResponse<T> getResponse(AcceptMediaType<T> acceptType) {
+   default <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType) {
       return getResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <T> T get(AcceptMediaType<T> acceptType) {
-      return getResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE)
-         .getContent();
+   default <T> CompletableFuture<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return getResponse(acceptType, change)
+         .thenApply(ContentResponse::getContent);
    }
 
-   default <T> T get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   default <T> CompletableFuture<T> get(AcceptMediaType<T> acceptType) {
       return get(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> ContentResponse<T> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> T post(MediaType<T> type, T content) {
-      return postResponse(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE)
-         .getContent();
-   }
-
-   default <R, T> T post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      return postResponse(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE)
-         .getContent();
-   }
-
-   default <R, T> T post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   default <R, T> CompletableFuture<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return postResponse(contentType, content, acceptType, change)
-         .getContent();
+         .thenApply(ContentResponse::getContent);
    }
 
-   <R, T> ContentResponse<T> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   default <T> CompletableFuture<T> post(MediaType<T> type, T content) {
+      return post(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
 
-   default <R, T> T put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   default <R, T> CompletableFuture<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+      return post(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+
+   default <R, T> CompletableFuture<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return putResponse(contentType, content, acceptType, change)
-         .getContent();
+         .thenApply(ContentResponse::getContent);
    }
 
-   default <T> T put(MediaType<T> type, T content) {
+   default <T> CompletableFuture<T> put(MediaType<T> type, T content) {
       return put(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <R, T> T put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+   default <R, T> CompletableFuture<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       return put(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> ContentResponse<T> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> T delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   default <T> CompletableFuture<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return deleteResponse(acceptType, change)
-         .getContent();
+         .thenApply(ContentResponse::getContent);
    }
 
-   default <T> T delete(AcceptMediaType<T> acceptType) {
+   default <T> CompletableFuture<T> delete(AcceptMediaType<T> acceptType) {
       return delete(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default void delete() {
-      delete(MediaType.NONE);
+   default CompletableFuture<Void> delete() {
+      return delete(MediaType.NONE, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> ContentResponse<T> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
+   <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
 
-   default <R, T> T options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      return optionsResponse(contentType, content, acceptType)
-         .getContent();
-   }
-   
-   default Response optionsResponse() {
+   default CompletableFuture<ContentResponse<Void>> optionsResponse() {
       return optionsResponse(MediaType.NONE, null, MediaType.NONE);
    }
+   
+   /**
+    * Suspend the execution given into a serialized form.
+    * Note: only a single call can be suspended.
+    */
+   byte[] suspend(Consumer<ResourceReference> call);
 
-   AsyncResourceReference async();
+   /**
+    * Execute a suspended call, with no returned content.
+    */
+   CompletableFuture<Response> execute(byte[] suspendedCall);
+
+   /**
+    * Execute a suspended call, with parsing of returned content.
+    */
+   <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType);
 }
 

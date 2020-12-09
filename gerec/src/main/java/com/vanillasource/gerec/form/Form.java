@@ -20,7 +20,10 @@ package com.vanillasource.gerec.form;
 
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.ExceptionTransparentCall;
 import com.vanillasource.gerec.HttpRequest;
+import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 /**
  * A generic form that can be filled out with string
@@ -36,17 +39,28 @@ public interface Form {
 
    Form putBytes(String key, byte[] value);
 
-   <T> ContentResponse<T> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   Form putBytes(String key, List<byte[]> values);
 
-   default <T> T submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return submitResponse(acceptType, change)
-         .getContent();
+   <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+
+   default <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType) {
+      return submitResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <T> T submit(AcceptMediaType<T> acceptType) {
+   default <T> CompletableFuture<T> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return submitResponse(acceptType, change)
+         .thenApply(ContentResponse::getContent);
+   }
+
+   default <T> CompletableFuture<T> submit(AcceptMediaType<T> acceptType) {
       return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   AsyncForm async();
+   default byte[] suspend(AcceptMediaType<?> acceptType) {
+      return suspend(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   byte[] suspend(AcceptMediaType<?> acceptType, HttpRequest.HttpRequestChange change);
 }
+
 
