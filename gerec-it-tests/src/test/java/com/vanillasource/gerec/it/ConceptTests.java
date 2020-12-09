@@ -39,7 +39,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "application/vnd.test.person")
                .withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      Person person = reference().get(Person.TYPE).get().getContent();
+      Person person = reference().get(Person.TYPE).join();
 
       assertEquals(person, new Person("John", 35));
    }
@@ -49,7 +49,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "application/vnd.test.person")
                .withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      Person person = reference().get(Person.TYPE).get().getContent();
+      Person person = reference().get(Person.TYPE).join();
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("Accept", equalTo("application/vnd.test.person")));
    }
@@ -60,7 +60,7 @@ public class ConceptTests extends HttpTestsBase {
                .withBody("{\"name\":\"John\", \"age\": 35}")
                .withHeader("ETag","ABCD")));
 
-      ContentResponse<Person> personResponse = reference().get(Person.TYPE).get();
+      ContentResponse<Person> personResponse = reference().getResponse(Person.TYPE).join();
       reference().get(Person.TYPE, personResponse.ifMatch());
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("If-Match", equalTo("ABCD")));
@@ -110,7 +110,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")
                .withBody("OK")));
 
-      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.textPlain()).get().getContent();
+      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.textPlain()).join();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
       assertEquals(result, "OK");
@@ -120,7 +120,7 @@ public class ConceptTests extends HttpTestsBase {
       stubFor(options(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Allow", "GET, POST").withBody("OK")));
 
-      Response response = reference().options().get();
+      Response response = reference().optionsResponse().join();
 
       assertTrue(response.hasAllow());
    }
@@ -130,7 +130,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Allow", "GET, POST")
                .withBody("OK")));
 
-      Response response = reference().options().get();
+      Response response = reference().optionsResponse().join();
 
       assertTrue(response.isGetAllowed());
    }
@@ -156,7 +156,7 @@ public class ConceptTests extends HttpTestsBase {
       Person person = reference().get(
             new SameTypesMediaType<>(asList(
                new JacksonMediaType<>(Person.class, "application/vnd.test.person-v1"),
-               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2")))).get().getContent();
+               new JacksonMediaType<>(Person.class, "application/vnd.test.person-v2")))).join();
    }
 
    public void testNotFoundIsThrownAsException() throws Exception {

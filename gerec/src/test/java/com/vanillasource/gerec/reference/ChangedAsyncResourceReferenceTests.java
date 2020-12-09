@@ -40,7 +40,7 @@ public final class ChangedAsyncResourceReferenceTests {
    private AcceptMediaType<String> acceptType;
 
    public void testAppliesChangeToCurrentReference() {
-      changedReference.get(acceptType);
+      changedReference.getResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
 
       verify(request).setHeader(Headers.AUTHORIZATION, "Bearer token");
    }
@@ -53,7 +53,7 @@ public final class ChangedAsyncResourceReferenceTests {
       reference = mock(AsyncResourceReference.class);
       DeserializationContext context = mock(DeserializationContext.class);
       when(context.resolve(any())).thenReturn(reference);
-      when(reference.get(any(), any())).thenAnswer(invocation -> {
+      when(reference.getResponse(any(), any())).thenAnswer(invocation -> {
          ((HttpRequest.HttpRequestChange) invocation.getArguments()[1]).applyTo(request);
          AcceptMediaType<String> acceptType = (AcceptMediaType<String>) invocation.getArguments()[0];
          acceptType.deserialize(mock(HttpResponse.class), context);

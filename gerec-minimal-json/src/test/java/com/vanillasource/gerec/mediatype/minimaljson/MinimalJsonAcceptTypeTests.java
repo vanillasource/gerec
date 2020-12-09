@@ -80,7 +80,7 @@ public final class MinimalJsonAcceptTypeTests {
       });
       type.deserialize(response, context);
 
-      form[0].submit(null);
+      form[0].submitResponse(null);
 
       verify(context).resolve(new URI("form?"));
    }
@@ -93,7 +93,7 @@ public final class MinimalJsonAcceptTypeTests {
       });
       type.deserialize(response, context);
 
-      form[0].submit(null);
+      form[0].submitResponse(null);
 
       verify(context).resolve(new URI("form?name=defaultName"));
    }

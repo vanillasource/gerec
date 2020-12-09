@@ -26,6 +26,8 @@ import com.vanillasource.gerec.AsyncResourceReference;
 import com.vanillasource.gerec.HttpRequest;
 import java.util.function.Function;
 import java.net.URI;
+import com.vanillasource.gerec.ContentResponse;
+import java.util.concurrent.CompletableFuture;
 
 @Test
 public class GetAsyncFormTests {
@@ -37,7 +39,7 @@ public class GetAsyncFormTests {
 
       form.submit(null);
 
-      verify(resolvedReference).get(eq(null), any(HttpRequest.HttpRequestChange.class));
+      verify(resolvedReference).getResponse(eq(null), any(HttpRequest.HttpRequestChange.class));
    }
 
    @SuppressWarnings("unchecked")
@@ -90,5 +92,6 @@ public class GetAsyncFormTests {
       resolvedReference = mock(AsyncResourceReference.class);
       referenceResolver = mock(Function.class);
       when(referenceResolver.apply(any())).thenReturn(resolvedReference);
+      when(resolvedReference.getResponse(any(), any())).thenReturn(CompletableFuture.completedFuture(mock(ContentResponse.class)));
    }
 }

@@ -45,33 +45,33 @@ public final class ChangedAsyncResourceReference implements AsyncResourceReferen
    }
 
    @Override
-   public CompletableFuture<Response> head(HttpRequest.HttpRequestChange change) {
-      return delegate.head(defaultChange.and(change));
+   public CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change) {
+      return delegate.headResponse(defaultChange.and(change));
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.get(acceptType, defaultChange.and(change));
+   public <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return delegate.getResponse(acceptType, defaultChange.and(change));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.post(contentType, content, acceptType, defaultChange.and(change));
+   public <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return delegate.postResponse(contentType, content, acceptType, defaultChange.and(change));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.put(contentType, content, acceptType, defaultChange.and(change));
+   public <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return delegate.putResponse(contentType, content, acceptType, defaultChange.and(change));
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.delete(acceptType, defaultChange.and(change));
+   public <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return delegate.deleteResponse(acceptType, defaultChange.and(change));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      return delegate.options(contentType, content, acceptType);
+   public <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+      return delegate.optionsResponse(contentType, content, acceptType);
    }
 
    @Override

@@ -27,60 +27,78 @@ import java.util.function.Consumer;
  * same functionality, except it returns a <code>CompletableFuture</code> for all operations.
  */
 public interface AsyncResourceReference extends Serializable {
-   CompletableFuture<Response> head(HttpRequest.HttpRequestChange change);
+   CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change);
 
-   default CompletableFuture<Response> head() {
-      return head(HttpRequest.HttpRequestChange.NO_CHANGE);
+   default CompletableFuture<Response> headResponse() {
+      return headResponse(HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> CompletableFuture<ContentResponse<T>> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> CompletableFuture<ContentResponse<T>> get(AcceptMediaType<T> acceptType) {
+   default <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType) {
+      return getResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <T> CompletableFuture<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return getResponse(acceptType, change)
+         .thenApply(ContentResponse::getContent);
+   }
+
+   default <T> CompletableFuture<T> get(AcceptMediaType<T> acceptType) {
       return get(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> CompletableFuture<ContentResponse<T>> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> CompletableFuture<ContentResponse<T>> post(MediaType<T> type, T content) {
+   default <R, T> CompletableFuture<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return postResponse(contentType, content, acceptType, change)
+         .thenApply(ContentResponse::getContent);
+   }
+
+   default <T> CompletableFuture<T> post(MediaType<T> type, T content) {
       return post(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <R, T> CompletableFuture<ContentResponse<T>> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+   default <R, T> CompletableFuture<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       return post(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> CompletableFuture<ContentResponse<T>> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> CompletableFuture<ContentResponse<T>> put(MediaType<T> type, T content) {
+   default <R, T> CompletableFuture<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return putResponse(contentType, content, acceptType, change)
+         .thenApply(ContentResponse::getContent);
+   }
+
+   default <T> CompletableFuture<T> put(MediaType<T> type, T content) {
       return put(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <R, T> CompletableFuture<ContentResponse<T>> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+   default <R, T> CompletableFuture<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       return put(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> CompletableFuture<ContentResponse<T>> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> CompletableFuture<ContentResponse<T>> delete(AcceptMediaType<T> acceptType) {
+   default <T> CompletableFuture<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return deleteResponse(acceptType, change)
+         .thenApply(ContentResponse::getContent);
+   }
+
+   default <T> CompletableFuture<T> delete(AcceptMediaType<T> acceptType) {
       return delete(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default CompletableFuture<Response> delete() {
-      return delete(MediaType.NONE)
-         .thenApply(response -> response);
+   default CompletableFuture<Void> delete() {
+      return delete(MediaType.NONE, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
+   <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
+
+   default CompletableFuture<ContentResponse<Void>> optionsResponse() {
+      return optionsResponse(MediaType.NONE, null, MediaType.NONE);
+   }
    
-   default <T> CompletableFuture<ContentResponse<T>> options(MediaType<T> type, T content) {
-      return options(type, content, type);
-   }
-
-   default CompletableFuture<Response> options() {
-      return options(MediaType.NONE, null)
-         .thenApply(response -> response);
-   }
-
    /**
     * Suspend the execution given into a serialized form.
     * Note: only a single call can be suspended.
@@ -100,33 +118,33 @@ public interface AsyncResourceReference extends Serializable {
    default ResourceReference sync() {
       return new ResourceReference() {
          @Override
-         public Response head(HttpRequest.HttpRequestChange change) {
-            return new ExceptionTransparentCall<>(AsyncResourceReference.this.head(change)).get();
+         public Response headResponse(HttpRequest.HttpRequestChange change) {
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.headResponse(change)).get();
          }
 
          @Override
-         public <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return new ExceptionTransparentCall<>(AsyncResourceReference.this.get(acceptType, change)).get();
+         public <T> ContentResponse<T> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.getResponse(acceptType, change)).get();
          }
 
          @Override
-         public <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return new ExceptionTransparentCall<>(AsyncResourceReference.this.post(contentType, content, acceptType, change)).get();
+         public <R, T> ContentResponse<T> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.postResponse(contentType, content, acceptType, change)).get();
          }
 
          @Override
-         public <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return new ExceptionTransparentCall<>(AsyncResourceReference.this.put(contentType, content, acceptType, change)).get();
+         public <R, T> ContentResponse<T> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.putResponse(contentType, content, acceptType, change)).get();
          }
 
          @Override
-         public <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return new ExceptionTransparentCall<>(AsyncResourceReference.this.delete(acceptType, change)).get();
+         public <T> ContentResponse<T> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.deleteResponse(acceptType, change)).get();
          }
 
          @Override
-         public <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-            return new ExceptionTransparentCall<>(AsyncResourceReference.this.options(contentType, content, acceptType)).get();
+         public <R, T> ContentResponse<T> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+            return new ExceptionTransparentCall<>(AsyncResourceReference.this.optionsResponse(contentType, content, acceptType)).get();
          }
 
          @Override

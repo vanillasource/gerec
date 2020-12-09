@@ -44,7 +44,7 @@ public class AsyncHttpClientResourceReferenceTests {
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
       when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
 
-      reference.sync().head();
+      reference.sync().headResponse();
 
       verify(client).doHead(any(), any());
    }
@@ -54,7 +54,7 @@ public class AsyncHttpClientResourceReferenceTests {
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
       when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
 
-      reference.sync().options();
+      reference.sync().optionsResponse();
 
       verify(client).doOptions(any(), any());
    }
@@ -113,7 +113,7 @@ public class AsyncHttpClientResourceReferenceTests {
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
       when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
 
-      reference.head().get();
+      reference.headResponse().get();
 
       verify(client).doHead(any(), any());
    }
@@ -123,7 +123,7 @@ public class AsyncHttpClientResourceReferenceTests {
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
       when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(null));
 
-      reference.options().get();
+      reference.optionsResponse().get();
 
       verify(client).doOptions(any(), any());
    }
@@ -175,7 +175,7 @@ public class AsyncHttpClientResourceReferenceTests {
       when(response.getHeader(Headers.CONTENT_TYPE)).thenReturn(new ValueWithParameter("text/plain"));
       when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
 
-      String retrievedContent = reference.get(MediaTypes.textPlain()).get().getContent();
+      String retrievedContent = reference.get(MediaTypes.textPlain()).join();
 
       assertEquals(retrievedContent, "TEST");
    }
@@ -202,7 +202,7 @@ public class AsyncHttpClientResourceReferenceTests {
       when(response.getStatusCode()).thenReturn(HttpStatusCode.OK);
       when(response.consumeContent(any())).thenReturn(CompletableFuture.completedFuture(new byte[] {'T', 'E', 'S', 'T'}));
 
-      reference.head().get();
+      reference.headResponse().join();
 
       verify(response).consumeContent(any());
    }

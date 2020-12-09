@@ -46,7 +46,7 @@ public class SuspendTests extends HttpTestsBase {
                .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"POST\"}}")));
       stubFor(post(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
-      SearchPage page = reference().get(SearchPage.TYPE).get().getContent();
+      SearchPage page = reference().get(SearchPage.TYPE).join();
       byte[] suspendedCall = page.getSearchForm()
          .put("q", "nini")
          .suspend(MediaTypes.textPlain());

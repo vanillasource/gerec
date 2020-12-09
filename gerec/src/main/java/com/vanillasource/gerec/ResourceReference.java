@@ -27,56 +27,83 @@ import java.io.Serializable;
  * infrastructure, like caches.
  */
 public interface ResourceReference extends Serializable {
-   Response head(HttpRequest.HttpRequestChange change);
+   Response headResponse(HttpRequest.HttpRequestChange change);
 
-   default Response head() {
-      return head(HttpRequest.HttpRequestChange.NO_CHANGE);
+   default Response headResponse() {
+      return headResponse(HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> ContentResponse<T> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <T> ContentResponse<T> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> ContentResponse<T> get(AcceptMediaType<T> acceptType) {
+   default <T> ContentResponse<T> getResponse(AcceptMediaType<T> acceptType) {
+      return getResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <T> T get(AcceptMediaType<T> acceptType) {
+      return getResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE)
+         .getContent();
+   }
+
+   default <T> T get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return get(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <R, T> ContentResponse<T> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> ContentResponse<T> post(MediaType<T> type, T content) {
-      return post(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE);
+   default <T> T post(MediaType<T> type, T content) {
+      return postResponse(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE)
+         .getContent();
    }
 
-   default <R, T> ContentResponse<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      return post(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   default <R, T> T post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+      return postResponse(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE)
+         .getContent();
    }
 
-   <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   default <R, T> T post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return postResponse(contentType, content, acceptType, change)
+         .getContent();
+   }
 
-   default <T> ContentResponse<T> put(MediaType<T> type, T content) {
+   <R, T> ContentResponse<T> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+
+   default <R, T> T put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return putResponse(contentType, content, acceptType, change)
+         .getContent();
+   }
+
+   default <T> T put(MediaType<T> type, T content) {
       return put(type, content, type, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default <R, T> ContentResponse<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+   default <R, T> T put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       return put(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <T> ContentResponse<T> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> ContentResponse<T> delete(AcceptMediaType<T> acceptType) {
+   default <T> T delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return deleteResponse(acceptType, change)
+         .getContent();
+   }
+
+   default <T> T delete(AcceptMediaType<T> acceptType) {
       return delete(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default Response delete() {
-      return delete(MediaType.NONE);
+   default void delete() {
+      delete(MediaType.NONE);
    }
 
-   <R, T> ContentResponse<T> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
+   <R, T> ContentResponse<T> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
+
+   default <R, T> T options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+      return optionsResponse(contentType, content, acceptType)
+         .getContent();
+   }
    
-   default <T> ContentResponse<T> options(MediaType<T> type, T content) {
-      return options(type, content, type);
-   }
-
-   default Response options() {
-      return options(MediaType.NONE, null);
+   default Response optionsResponse() {
+      return optionsResponse(MediaType.NONE, null, MediaType.NONE);
    }
 
    AsyncResourceReference async();

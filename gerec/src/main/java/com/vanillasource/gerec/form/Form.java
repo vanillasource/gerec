@@ -36,11 +36,16 @@ public interface Form {
 
    Form putBytes(String key, byte[] value);
 
-   default <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType) {
-      return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   <T> ContentResponse<T> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+
+   default <T> T submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return submitResponse(acceptType, change)
+         .getContent();
    }
 
-   <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   default <T> T submit(AcceptMediaType<T> acceptType) {
+      return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
 
    AsyncForm async();
 }

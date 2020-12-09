@@ -33,7 +33,7 @@ public class UrlTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/nini")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
 
-      Link link = reference().get(Link.TYPE).get().getContent();
+      Link link = reference().get(Link.TYPE).join();
       link.getLink().get(MediaTypes.textPlain()).get();
 
       verify(getRequestedFor(urlEqualTo("/nini")));
@@ -46,7 +46,7 @@ public class UrlTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/ni%20ni")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
 
-      Link link = reference().get(Link.TYPE).get().getContent();
+      Link link = reference().get(Link.TYPE).join();
       link.getLink().get(MediaTypes.textPlain()).get();
 
       verify(getRequestedFor(urlEqualTo("/ni%20ni")));

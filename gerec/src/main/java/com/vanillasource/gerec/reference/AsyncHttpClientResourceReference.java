@@ -60,14 +60,14 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    }
 
    @Override
-   public CompletableFuture<Response> head(HttpRequest.HttpRequestChange change) {
+   public CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doHead(uri, change)
          .thenCompose(response -> createResponse(response, MediaType.NONE))
          .thenApply(response -> response); // Don't want to change signature to CompletableFuture<? extends Response>
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> get(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doGet(uri, change.and(acceptType::applyAsOption))
          .thenCompose(response -> createResponse(response, acceptType));
    }
@@ -106,27 +106,27 @@ public class AsyncHttpClientResourceReference implements AsyncResourceReference 
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doPost(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)))
          .thenCompose(response -> createResponse(response, acceptType));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doPut(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
             request -> contentType.serialize(content, request)))
          .thenCompose(response -> createResponse(response, acceptType));
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return asyncHttpClient.doDelete(uri, change.and(acceptType::applyAsOption))
          .thenCompose(response -> createResponse(response, acceptType));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> options(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
+   public <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
       return asyncHttpClient.doOptions(uri, HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption))
          .thenCompose(response -> createResponse(response, acceptType));
    }

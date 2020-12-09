@@ -75,10 +75,10 @@ public final class GetAsyncForm implements AsyncForm {
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return referenceResolver
          .apply(resolveTarget(parameters.aggregate()))
-         .get(acceptType, change);
+         .getResponse(acceptType, change);
    }
 
    @Override

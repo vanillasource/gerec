@@ -41,12 +41,20 @@ public interface AsyncForm {
 
    AsyncForm putBytes(String key, List<byte[]> values);
 
-   default <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType) {
-      return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+
+   default <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType) {
+      return submitResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> CompletableFuture<ContentResponse<T>> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   default <T> CompletableFuture<T> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return submitResponse(acceptType, change)
+         .thenApply(ContentResponse::getContent);
+   }
 
+   default <T> CompletableFuture<T> submit(AcceptMediaType<T> acceptType) {
+      return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
 
    default byte[] suspend(AcceptMediaType<?> acceptType) {
       return suspend(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
@@ -77,8 +85,8 @@ public interface AsyncForm {
          }
 
          @Override
-         public <T> ContentResponse<T> submit(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-            return new ExceptionTransparentCall<>(AsyncForm.this.submit(acceptType, change)).get();
+         public <T> ContentResponse<T> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+            return new ExceptionTransparentCall<>(AsyncForm.this.submitResponse(acceptType, change)).get();
          }
 
          @Override
