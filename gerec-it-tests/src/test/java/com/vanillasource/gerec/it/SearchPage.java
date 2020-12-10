@@ -19,6 +19,7 @@
 package com.vanillasource.gerec.it;
 
 import com.vanillasource.gerec.AcceptMediaType;
+import com.vanillasource.gerec.Request;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
 import com.vanillasource.gerec.form.Form;
 
@@ -30,8 +31,10 @@ public class SearchPage {
    protected SearchPage() {
    }
 
-   public Form getSearchForm() {
-      return searchForm;
+   public Request search(String query) {
+      return searchForm
+         .put("q", query)
+         .prepareSubmit();
    }
 
    public String getGreetingMessage() {

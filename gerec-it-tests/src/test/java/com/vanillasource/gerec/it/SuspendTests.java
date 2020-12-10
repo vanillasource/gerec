@@ -47,9 +47,7 @@ public class SuspendTests extends HttpTestsBase {
       stubFor(post(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
       SearchPage page = reference().get(SearchPage.TYPE).join();
-      byte[] suspendedCall = page.getSearchForm()
-         .put("q", "nini")
-         .prepareSubmit().suspend();
+      byte[] suspendedCall = page.search("nini").suspend();
 
       reference().resume(suspendedCall, MediaTypes.textPlain()).join();
 
@@ -65,9 +63,8 @@ public class SuspendTests extends HttpTestsBase {
 
       byte[] suspendedCall = reference().prepareGet().suspend();
       SearchPage page = reference("http://some.other.server:8888").resume(suspendedCall, SearchPage.TYPE).join();
-      page.getSearchForm()
-         .put("q", "nini")
-         .submit(MediaTypes.textPlain())
+      page.search("nini")
+         .send(MediaTypes.textPlain())
          .join();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("q=nini")));

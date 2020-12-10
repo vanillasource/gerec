@@ -40,13 +40,13 @@ public class FormTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Content-Type", "application/vnd.test.searchpage")
                .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/nini\", \"method\":\"GET\"}}")));
-      stubFor(get(urlEqualTo("/nini")).willReturn(aResponse()
+      stubFor(get(urlEqualTo("/nini?q=")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).join();
-      page.getSearchForm().submit(MediaTypes.textPlain()).get();
+      page.search("").send(MediaTypes.textPlain()).join();
 
-      verify(getRequestedFor(urlEqualTo("/")));
+      verify(getRequestedFor(urlEqualTo("/nini?q=")));
    }
 
    public void testGetFormSubmitsWithiParameterValues() throws Exception {
@@ -57,9 +57,8 @@ public class FormTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).join();
-      page.getSearchForm()
-         .put("q", "nini")
-         .submit(MediaTypes.textPlain()).get();
+      page.search("nini")
+         .send(MediaTypes.textPlain()).join();
 
       verify(getRequestedFor(urlEqualTo("/?q=nini")));
    }
@@ -72,9 +71,8 @@ public class FormTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")));
 
       SearchPage page = reference().get(SearchPage.TYPE).join();
-      page.getSearchForm()
-         .put("q", "nini")
-         .submit(MediaTypes.textPlain()).get();
+      page.search("nini")
+         .send(MediaTypes.textPlain()).join();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("q=nini")));
    }
