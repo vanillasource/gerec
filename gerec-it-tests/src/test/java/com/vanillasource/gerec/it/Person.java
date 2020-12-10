@@ -34,14 +34,6 @@ public class Person {
       this.age = age;
    }
 
-   public String getName() {
-      return name;
-   }
-
-   public int getAge() {
-      return age;
-   }
-
    public boolean equals(Object that) {
       if ((that == null) || (!(that instanceof Person))) {
          return false;

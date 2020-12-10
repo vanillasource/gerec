@@ -20,6 +20,7 @@ package com.vanillasource.gerec.it;
 
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.MediaType;
+import com.vanillasource.gerec.Request;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
 
 public class Link {
@@ -29,8 +30,8 @@ public class Link {
    protected Link() {
    }
 
-   public ResourceReference getLink() {
-      return link;
+   public Request follow() {
+      return link.prepareGet();
    }
 }
 

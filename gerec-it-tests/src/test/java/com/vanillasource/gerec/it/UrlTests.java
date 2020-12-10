@@ -34,7 +34,7 @@ public class UrlTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")));
 
       Link link = reference().get(Link.TYPE).join();
-      link.getLink().get(MediaTypes.textPlain()).get();
+      link.follow().send(MediaTypes.textPlain()).join();
 
       verify(getRequestedFor(urlEqualTo("/nini")));
    }
@@ -47,7 +47,7 @@ public class UrlTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")));
 
       Link link = reference().get(Link.TYPE).join();
-      link.getLink().get(MediaTypes.textPlain()).get();
+      link.follow().send(MediaTypes.textPlain()).join();
 
       verify(getRequestedFor(urlEqualTo("/ni%20ni")));
    }

@@ -41,6 +41,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.core.JsonParseException;
 import java.util.concurrent.CompletableFuture;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 public class JacksonMediaType<T> implements MediaType<T> {
    private final Class<T> type;
@@ -89,6 +90,11 @@ public class JacksonMediaType<T> implements MediaType<T> {
 
    private ObjectMapper createDeserializerObjectMapper(DeserializationContext context) {
       ObjectMapper mapper = new ObjectMapper();
+      mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
+            .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+            .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+            .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+            .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
       mapperCustomizer.accept(mapper);
       SimpleModule module = new SimpleModule();
       module.addDeserializer(ResourceReference.class, new ResourceReferenceDeserializer(context));
@@ -109,6 +115,11 @@ public class JacksonMediaType<T> implements MediaType<T> {
 
    private ObjectMapper createSerializerObjectMapper() {
       ObjectMapper mapper = new ObjectMapper();
+      mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
+            .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+            .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+            .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+            .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
       mapperCustomizer.accept(mapper);
       return mapper;
    }
