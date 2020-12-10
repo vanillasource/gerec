@@ -25,15 +25,24 @@ import java.util.concurrent.CompletableFuture;
  * changes to the <code>HttpRequest</code>.
  */
 public interface Request {
-   <T> CompletableFuture<ContentResponse<T>> send(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <T> CompletableFuture<ContentResponse<T>> sendResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
 
-   default <T> CompletableFuture<ContentResponse<T>> send(AcceptMediaType<T> acceptType) {
-      return send(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   default <T> CompletableFuture<ContentResponse<T>> sendResponse(AcceptMediaType<T> acceptType) {
+      return sendResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default CompletableFuture<Response> send() {
-      return send(MediaType.NONE, HttpRequest.HttpRequestChange.NO_CHANGE)
+   default CompletableFuture<Response> sendResponse() {
+      return sendResponse(MediaType.NONE, HttpRequest.HttpRequestChange.NO_CHANGE)
          .thenApply(response -> response);
+   }
+
+   default <T> CompletableFuture<T> send(AcceptMediaType<T> acceptType) {
+      return sendResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE)
+         .thenApply(ContentResponse::getContent);
+   }
+
+   default CompletableFuture<Void> send() {
+      return send(MediaType.NONE);
    }
 
    /**

@@ -19,6 +19,7 @@
 package com.vanillasource.gerec;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * The part of a media-type for receiving the given type. This includes adding the necessary
@@ -40,4 +41,25 @@ public interface AcceptMediaType<T> {
     * Deserialize the contents of the response to the given object type.
     */
    CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context);
+
+   default <R> AcceptMediaType<R>  map(Function<T, R> mapper) {
+      AcceptMediaType<T> parent = this;
+      return new AcceptMediaType<R>() {
+         @Override
+         public void applyAsOption(HttpRequest request) {
+            parent.applyAsOption(request);
+         }
+
+         @Override
+         public boolean isHandling(HttpResponse response) {
+            return parent.isHandling(response);
+         }
+
+         @Override
+         public CompletableFuture<R> deserialize(HttpResponse response, DeserializationContext context) {
+            return parent.deserialize(response, context)
+               .thenApply(mapper);
+         }
+      };
+   }
 }

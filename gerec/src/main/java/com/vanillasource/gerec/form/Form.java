@@ -49,7 +49,7 @@ public interface Form {
    }
 
    default <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return prepareSubmit(change).send(acceptType);
+      return prepareSubmit(change).sendResponse(acceptType);
    }
 
    default <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType) {

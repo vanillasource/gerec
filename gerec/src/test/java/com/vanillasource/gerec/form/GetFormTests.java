@@ -95,6 +95,6 @@ public class GetFormTests {
       when(referenceResolver.apply(any())).thenReturn(resolvedReference);
       Request request = mock(Request.class);
       when(resolvedReference.prepareGet(any())).thenReturn(request);
-      when(request.send(any())).thenReturn(CompletableFuture.completedFuture(null));
+      when(request.sendResponse(any())).thenReturn(CompletableFuture.completedFuture(null));
    }
 }

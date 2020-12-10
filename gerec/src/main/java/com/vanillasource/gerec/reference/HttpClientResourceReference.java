@@ -99,7 +99,7 @@ public class HttpClientResourceReference implements ResourceReference {
    private Request request(HttpClientCall call, URI uri, HttpRequest.HttpRequestChange change) {
       return new Request() {
          @Override
-         public <T> CompletableFuture<ContentResponse<T>> send(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange additionalChange) {
+         public <T> CompletableFuture<ContentResponse<T>> sendResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange additionalChange) {
             return call.execute(asyncHttpClient, uri, change.and(acceptType::applyAsOption).and(additionalChange))
                .thenCompose(response -> createResponse(response, acceptType));
          }
@@ -117,7 +117,7 @@ public class HttpClientResourceReference implements ResourceReference {
    public Request prepareResume(byte[] suspendedRequest) {
       return new Request() {
          @Override
-         public <T> CompletableFuture<ContentResponse<T>> send(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange additionalChange) {
+         public <T> CompletableFuture<ContentResponse<T>> sendResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange additionalChange) {
             SuspendingHttpClient suspendingClient = new SuspendingHttpClient(suspendedRequest);
             return suspendingClient.execute(asyncHttpClient)
                .thenCompose(uriResponseEntry -> new HttpClientResourceReference(asyncHttpClient, uriResponseEntry.getKey()).createResponse(uriResponseEntry.getValue(), acceptType));

@@ -72,6 +72,6 @@ public class PostFormTests {
       target = mock(ResourceReference.class);
       Request request = mock(Request.class);
       when(target.preparePost(any(), any(), any())).thenReturn(request);
-      when(request.send(any())).thenReturn(CompletableFuture.completedFuture(null));
+      when(request.sendResponse(any())).thenReturn(CompletableFuture.completedFuture(null));
    }
 }
