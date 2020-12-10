@@ -57,14 +57,14 @@ contain additional information for making subsequent requests, such as links (ad
 Simple `GET` requests are made the following way:
 
 ```java
-String body = reference.get(MediaTypes.textPlain()).getContent();
+String body = reference.get(MediaTypes.textPlain());
 ```
 
 Media types can be freely created for any representation, as they should be. So `GET`ting
 a complex object looks like this:
 
 ```java
-Person person = reference.get(Person.TYPE).getContent();
+Person person = reference.get(Person.TYPE);
 ```
 
 The given media type will be properly communicated to the server, using the normal HTTP
@@ -75,7 +75,7 @@ then tries to update the server, but only if it did not change since it was requ
 known as optimistic locking):
 
 ```java
-Response<Person> personResponse = currentUserReference.get(Person.TYPE);
+Response<Person> personResponse = currentUserReference.getResponse(Person.TYPE);
 Person person = personResponse.getContent();
 person.setName("New Name");
 currentUserReference.put(person, personResponse.ifMatch());
