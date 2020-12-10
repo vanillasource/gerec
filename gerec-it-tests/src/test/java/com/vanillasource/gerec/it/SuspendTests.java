@@ -26,16 +26,16 @@ import com.vanillasource.gerec.mediatype.MediaTypes;
 @Test
 public class SuspendTests extends HttpTestsBase {
    public void testSuspendDoesNotCall() {
-      reference().suspend(ref -> ref.get(Person.TYPE));
+      reference().prepareGet().suspend();
    }
 
    public void testSuspendedCallCanBeExecuted() throws Exception {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Content-Type", "application/vnd.test.person")
                .withBody("{\"name\":\"John\", \"age\": 35}")));
-      byte[] suspendedCall = reference().suspend(ref -> ref.get(Person.TYPE));
+      byte[] suspendedCall = reference().prepareGet().suspend();
 
-      Person person = reference().execute(suspendedCall, Person.TYPE).get().getContent();
+      Person person = reference().resume(suspendedCall, Person.TYPE).join();
 
       assertEquals(person, new Person("John", 35));
    }
@@ -49,9 +49,9 @@ public class SuspendTests extends HttpTestsBase {
       SearchPage page = reference().get(SearchPage.TYPE).join();
       byte[] suspendedCall = page.getSearchForm()
          .put("q", "nini")
-         .suspend(MediaTypes.textPlain());
+         .prepareSubmit().suspend();
 
-      reference().execute(suspendedCall).get();
+      reference().resume(suspendedCall, MediaTypes.textPlain()).join();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("q=nini")));
    }
@@ -63,8 +63,8 @@ public class SuspendTests extends HttpTestsBase {
       stubFor(post(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
 
-      byte[] suspendedCall = reference().suspend(ref -> ref.get(SearchPage.TYPE));
-      SearchPage page = reference("http://some.other.server:8888").execute(suspendedCall, SearchPage.TYPE).get().getContent();
+      byte[] suspendedCall = reference().prepareGet().suspend();
+      SearchPage page = reference("http://some.other.server:8888").resume(suspendedCall, SearchPage.TYPE).join();
       page.getSearchForm()
          .put("q", "nini")
          .submit(MediaTypes.textPlain())

@@ -28,6 +28,7 @@ import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import com.vanillasource.gerec.http.SingleHeaderValueSet;
 import com.vanillasource.gerec.http.Headers;
 import com.vanillasource.gerec.Header;
+import com.vanillasource.gerec.Request;
 import com.vanillasource.aio.channel.InputStreamReadableByteChannelMaster;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
@@ -60,16 +61,73 @@ public class HttpClientResourceReference implements ResourceReference {
    }
 
    @Override
-   public CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change) {
-      return asyncHttpClient.doHead(uri, change)
-         .thenCompose(response -> createResponse(response, MediaType.NONE))
-         .thenApply(response -> response); // Don't want to change signature to CompletableFuture<? extends Response>
+   public Request prepareHead(HttpRequest.HttpRequestChange change) {
+      return request(HttpClient::doHead, uri, change);
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return asyncHttpClient.doGet(uri, change.and(acceptType::applyAsOption))
-         .thenCompose(response -> createResponse(response, acceptType));
+   public Request prepareGet(HttpRequest.HttpRequestChange change) {
+      return request(HttpClient::doGet, uri, change);
+   }
+
+   @Override
+   public <R> Request preparePost(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change) {
+      return request(HttpClient::doPost, uri, change
+            .and(contentType::applyAsContent)
+            .and(request -> contentType.serialize(content, request)));
+   }
+
+   @Override
+   public <R> Request preparePut(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change) {
+      return request(HttpClient::doPut, uri, change
+            .and(contentType::applyAsContent)
+            .and(request -> contentType.serialize(content, request)));
+   }
+
+   @Override
+   public Request prepareDelete(HttpRequest.HttpRequestChange change) {
+      return request(HttpClient::doDelete, uri, change);
+   }
+
+   @Override
+   public <R> Request prepareOptions(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change) {
+      return request(HttpClient::doOptions, uri, change
+            .and(contentType::applyAsContent)
+            .and(request -> contentType.serialize(content, request)));
+   }
+
+   private Request request(HttpClientCall call, URI uri, HttpRequest.HttpRequestChange change) {
+      return new Request() {
+         @Override
+         public <T> CompletableFuture<ContentResponse<T>> send(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange additionalChange) {
+            return call.execute(asyncHttpClient, uri, change.and(acceptType::applyAsOption).and(additionalChange))
+               .thenCompose(response -> createResponse(response, acceptType));
+         }
+
+         @Override
+         public byte[] suspend() {
+            SuspendingHttpClient suspendingClient = new SuspendingHttpClient();
+            call.execute(suspendingClient, uri, change);
+            return suspendingClient.suspend();
+         }
+      };
+   }
+
+   @Override
+   public Request prepareResume(byte[] suspendedRequest) {
+      return new Request() {
+         @Override
+         public <T> CompletableFuture<ContentResponse<T>> send(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange additionalChange) {
+            SuspendingHttpClient suspendingClient = new SuspendingHttpClient(suspendedRequest);
+            return suspendingClient.execute(asyncHttpClient)
+               .thenCompose(uriResponseEntry -> new HttpClientResourceReference(asyncHttpClient, uriResponseEntry.getKey()).createResponse(uriResponseEntry.getValue(), acceptType));
+         }
+
+         @Override
+         public byte[] suspend() {
+            return suspendedRequest;
+         }
+      };
    }
 
    private <T> CompletableFuture<ContentResponse<T>> createResponse(HttpResponse response, AcceptMediaType<T> acceptType) {
@@ -103,52 +161,6 @@ public class HttpClientResourceReference implements ResourceReference {
 
    private ResourceReference follow(URI linkUri) {
       return new HttpClientResourceReference(asyncHttpClient, uri.resolve(linkUri));
-   }
-
-   @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return asyncHttpClient.doPost(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
-            request -> contentType.serialize(content, request)))
-         .thenCompose(response -> createResponse(response, acceptType));
-   }
-
-   @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return asyncHttpClient.doPut(uri, change.and(acceptType::applyAsOption).and(contentType::applyAsContent).and(
-            request -> contentType.serialize(content, request)))
-         .thenCompose(response -> createResponse(response, acceptType));
-   }
-
-   @Override
-   public <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return asyncHttpClient.doDelete(uri, change.and(acceptType::applyAsOption))
-         .thenCompose(response -> createResponse(response, acceptType));
-   }
-
-   @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      return asyncHttpClient.doOptions(uri, HttpRequest.HttpRequestChange.NO_CHANGE.and(acceptType::applyAsOption))
-         .thenCompose(response -> createResponse(response, acceptType));
-   }
-
-   @Override
-   public byte[] suspend(Consumer<ResourceReference> call) {
-      SuspendingHttpClient suspendingClient = new SuspendingHttpClient();
-      call.accept(new HttpClientResourceReference(suspendingClient, uri));
-      return suspendingClient.suspend();
-   }
-
-   @Override
-   public CompletableFuture<Response> execute(byte[] suspendedCall) {
-      return execute(suspendedCall, MediaType.NONE)
-         .thenApply(response -> response); // Don't want to change signature to CompletableFuture<? extends Response>
-   }
-
-   @Override
-   public <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType) {
-      SuspendingHttpClient suspendingClient = new SuspendingHttpClient(suspendedCall);
-      return suspendingClient.execute(asyncHttpClient)
-         .thenCompose(uriResponseEntry -> new HttpClientResourceReference(asyncHttpClient, uriResponseEntry.getKey()).createResponse(uriResponseEntry.getValue(), acceptType));
    }
 
    private class HttpBaseResponse<T> implements Response {
@@ -317,6 +329,10 @@ public class HttpClientResourceReference implements ResourceReference {
             throw new IllegalStateException("exception while reading error message", e.getCause());
          }
       }
+   }
+
+   private interface HttpClientCall {
+      CompletableFuture<HttpResponse> execute(HttpClient httpClient, URI uri, HttpRequest.HttpRequestChange change);
    }
 
    @Override

@@ -23,6 +23,7 @@ import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Request;
 import java.util.concurrent.CompletableFuture;
 import java.util.Base64;
 import java.util.List;
@@ -72,15 +73,9 @@ public final class PostForm implements Form {
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return target.postResponse(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType, change);
+   public Request prepareSubmit(HttpRequest.HttpRequestChange change) {
+      return target.preparePost(MediaTypes.formUrlEncoded(), parameters.aggregate(), change);
    }
-
-   @Override
-   public byte[] suspend(AcceptMediaType<?> acceptType, HttpRequest.HttpRequestChange change) {
-      return target.suspend(ref -> ref.post(MediaTypes.formUrlEncoded(), parameters.aggregate(), acceptType, change));
-   }
-
 }
 
 

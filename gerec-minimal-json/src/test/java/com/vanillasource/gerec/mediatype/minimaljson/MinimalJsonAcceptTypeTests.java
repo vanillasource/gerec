@@ -22,6 +22,7 @@ import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.mediatype.MediaTypeSpecification;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.DeserializationContext;
+import com.vanillasource.gerec.Request;
 import com.vanillasource.gerec.form.Form;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
@@ -122,7 +123,9 @@ public final class MinimalJsonAcceptTypeTests {
       deserializer = mock(BiFunction.class);
       type = new MinimalJsonAcceptType(MediaTypeSpecification.WILDCARD, deserializer);
       context = mock(DeserializationContext.class);
-      when(context.resolve(any())).thenReturn(mock(ResourceReference.class));
+      ResourceReference reference = mock(ResourceReference.class);
+      when(context.resolve(any())).thenReturn(reference);
+      when(reference.prepareGet(any())).thenReturn(mock(Request.class));
       response = mock(HttpResponse.class);
    }
 }

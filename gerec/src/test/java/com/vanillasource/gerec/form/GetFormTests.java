@@ -24,6 +24,7 @@ import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
 import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Request;
 import java.util.function.Function;
 import java.net.URI;
 import com.vanillasource.gerec.ContentResponse;
@@ -39,7 +40,7 @@ public class GetFormTests {
 
       form.submit(null);
 
-      verify(resolvedReference).getResponse(eq(null), any(HttpRequest.HttpRequestChange.class));
+      verify(resolvedReference).prepareGet(any(HttpRequest.HttpRequestChange.class));
    }
 
    @SuppressWarnings("unchecked")
@@ -92,6 +93,8 @@ public class GetFormTests {
       resolvedReference = mock(ResourceReference.class);
       referenceResolver = mock(Function.class);
       when(referenceResolver.apply(any())).thenReturn(resolvedReference);
-      when(resolvedReference.getResponse(any(), any())).thenReturn(CompletableFuture.completedFuture(mock(ContentResponse.class)));
+      Request request = mock(Request.class);
+      when(resolvedReference.prepareGet(any())).thenReturn(request);
+      when(request.send(any())).thenReturn(CompletableFuture.completedFuture(null));
    }
 }

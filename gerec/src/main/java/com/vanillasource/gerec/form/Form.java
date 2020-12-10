@@ -22,6 +22,7 @@ import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ExceptionTransparentCall;
 import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Request;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 
@@ -41,7 +42,15 @@ public interface Form {
 
    Form putBytes(String key, List<byte[]> values);
 
-   <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   Request prepareSubmit(HttpRequest.HttpRequestChange change);
+
+   default Request prepareSubmit() {
+      return prepareSubmit(HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return prepareSubmit(change).send(acceptType);
+   }
 
    default <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType) {
       return submitResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
@@ -56,11 +65,5 @@ public interface Form {
       return submit(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   default byte[] suspend(AcceptMediaType<?> acceptType) {
-      return suspend(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
-   }
-
-   byte[] suspend(AcceptMediaType<?> acceptType, HttpRequest.HttpRequestChange change);
 }
-
 

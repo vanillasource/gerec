@@ -22,6 +22,7 @@ import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Request;
 import java.net.URI;
 import java.util.List;
 import java.util.Base64;
@@ -75,17 +76,10 @@ public final class GetForm implements Form {
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> submitResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+   public Request prepareSubmit(HttpRequest.HttpRequestChange change) {
       return referenceResolver
          .apply(resolveTarget(parameters.aggregate()))
-         .getResponse(acceptType, change);
-   }
-
-   @Override
-   public byte[] suspend(AcceptMediaType<?> acceptType, HttpRequest.HttpRequestChange change) {
-      return referenceResolver
-         .apply(resolveTarget(parameters.aggregate()))
-         .suspend(ref -> ref.get(acceptType, change));
+         .prepareGet(change);
    }
 
    private URI resolveTarget(String data) {

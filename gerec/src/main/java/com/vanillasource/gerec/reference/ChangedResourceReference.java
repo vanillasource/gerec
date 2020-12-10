@@ -26,6 +26,7 @@ import com.vanillasource.gerec.DeserializationContext;
 import com.vanillasource.gerec.HttpRequest;
 import com.vanillasource.gerec.HttpResponse;
 import com.vanillasource.gerec.Response;
+import com.vanillasource.gerec.Request;
 import com.vanillasource.gerec.ContentResponse;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.ContentMediaType;
@@ -45,50 +46,38 @@ public final class ChangedResourceReference implements ResourceReference {
    }
 
    @Override
-   public CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change) {
-      return delegate.headResponse(defaultChange.and(change));
+   public Request prepareHead(HttpRequest.HttpRequestChange change) {
+      return delegate.prepareHead(defaultChange.and(change));
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.getResponse(acceptType, defaultChange.and(change));
+   public Request prepareGet(HttpRequest.HttpRequestChange change) {
+      return delegate.prepareGet(defaultChange.and(change));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.postResponse(contentType, content, acceptType, defaultChange.and(change));
+   public <R> Request preparePost(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change) {
+      return delegate.preparePost(contentType, content, defaultChange.and(change));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.putResponse(contentType, content, acceptType, defaultChange.and(change));
+   public <R> Request preparePut(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change) {
+      return delegate.preparePut(contentType, content, defaultChange.and(change));
    }
 
    @Override
-   public <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
-      return delegate.deleteResponse(acceptType, defaultChange.and(change));
+   public Request prepareDelete(HttpRequest.HttpRequestChange change) {
+      return delegate.prepareDelete(defaultChange.and(change));
    }
 
    @Override
-   public <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType) {
-      return delegate.optionsResponse(contentType, content, acceptType);
+   public <R> Request prepareOptions(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change) {
+      return delegate.prepareOptions(contentType, content, change);
    }
 
    @Override
-   public byte[] suspend(Consumer<ResourceReference> call) {
-      return delegate.suspend(suspendedDelegate ->
-            call.accept(new ChangedResourceReference(suspendedDelegate, defaultChange)));
+   public Request prepareResume(byte[] suspendedRequest) {
+      return delegate.prepareResume(suspendedRequest);
    }
-
-   @Override
-   public CompletableFuture<Response> execute(byte[] suspendedCall) {
-      return delegate.execute(suspendedCall);
-   }
-
-   @Override
-   public <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType) {
-      return delegate.execute(suspendedCall, acceptType);
-   }
-
 }
 

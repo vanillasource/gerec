@@ -27,13 +27,30 @@ import java.util.function.Consumer;
  * same functionality, except it returns a <code>CompletableFuture</code> for all operations.
  */
 public interface ResourceReference extends Serializable {
-   CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change);
+   Request prepareHead(HttpRequest.HttpRequestChange change);
+
+   default Request prepareHead() {
+      return prepareHead(HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default CompletableFuture<Response> headResponse(HttpRequest.HttpRequestChange change) {
+      return prepareHead(change).send(MediaType.NONE)
+         .thenApply(response -> response);
+   }
 
    default CompletableFuture<Response> headResponse() {
       return headResponse(HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   Request prepareGet(HttpRequest.HttpRequestChange change);
+
+   default Request prepareGet() {
+      return prepareGet(HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return prepareGet(change).send(acceptType);
+   }
 
    default <T> CompletableFuture<ContentResponse<T>> getResponse(AcceptMediaType<T> acceptType) {
       return getResponse(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
@@ -48,7 +65,15 @@ public interface ResourceReference extends Serializable {
       return get(acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <R> Request preparePost(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change);
+
+   default <R> Request preparePost(ContentMediaType<R> contentType, R content) {
+      return preparePost(contentType, content, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <R, T> CompletableFuture<ContentResponse<T>> postResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return preparePost(contentType, content, change).send(acceptType);
+   }
 
    default <R, T> CompletableFuture<T> post(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return postResponse(contentType, content, acceptType, change)
@@ -63,7 +88,15 @@ public interface ResourceReference extends Serializable {
       return post(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   <R> Request preparePut(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change);
+
+   default <R> Request preparePut(ContentMediaType<R> contentType, R content) {
+      return preparePut(contentType, content, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <R, T> CompletableFuture<ContentResponse<T>> putResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return preparePut(contentType, content, change).send(acceptType);
+   }
 
    default <R, T> CompletableFuture<T> put(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return putResponse(contentType, content, acceptType, change)
@@ -78,7 +111,15 @@ public interface ResourceReference extends Serializable {
       return put(contentType, content, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change);
+   Request prepareDelete(HttpRequest.HttpRequestChange change);
+
+   default Request prepareDelete() {
+      return prepareDelete(HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <T> CompletableFuture<ContentResponse<T>> deleteResponse(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return prepareDelete(change).send(acceptType);
+   }
 
    default <T> CompletableFuture<T> delete(AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
       return deleteResponse(acceptType, change)
@@ -93,26 +134,36 @@ public interface ResourceReference extends Serializable {
       return delete(MediaType.NONE, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
 
-   <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType);
+   <R> Request prepareOptions(ContentMediaType<R> contentType, R content, HttpRequest.HttpRequestChange change);
+
+   default <R> Request prepareOptions() {
+      return prepareOptions(MediaType.NONE, null, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
+
+   default <R, T> CompletableFuture<ContentResponse<T>> optionsResponse(ContentMediaType<R> contentType, R content, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return prepareOptions(contentType, content, change).send(acceptType);
+   }
 
    default CompletableFuture<ContentResponse<Void>> optionsResponse() {
-      return optionsResponse(MediaType.NONE, null, MediaType.NONE);
+      return optionsResponse(MediaType.NONE, null, MediaType.NONE, HttpRequest.HttpRequestChange.NO_CHANGE);
    }
    
    /**
-    * Suspend the execution given into a serialized form.
-    * Note: only a single call can be suspended.
+    * Resume a request previously suspended.
     */
-   byte[] suspend(Consumer<ResourceReference> call);
+   Request prepareResume(byte[] suspendedRequest);
 
-   /**
-    * Execute a suspended call, with no returned content.
-    */
-   CompletableFuture<Response> execute(byte[] suspendedCall);
+   default <T> CompletableFuture<ContentResponse<T>> resumeResponse(byte[] suspendedRequest, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return prepareResume(suspendedRequest).send(acceptType, change);
+   }
 
-   /**
-    * Execute a suspended call, with parsing of returned content.
-    */
-   <T> CompletableFuture<ContentResponse<T>> execute(byte[] suspendedCall, AcceptMediaType<T> acceptType);
+   default <T> CompletableFuture<T> resume(byte[] suspendedRequest, AcceptMediaType<T> acceptType, HttpRequest.HttpRequestChange change) {
+      return resumeResponse(suspendedRequest, acceptType, change)
+         .thenApply(ContentResponse::getContent);
+   }
+
+   default <T> CompletableFuture<T> resume(byte[] suspendedRequest, AcceptMediaType<T> acceptType) {
+      return resume(suspendedRequest, acceptType, HttpRequest.HttpRequestChange.NO_CHANGE);
+   }
 }
 

@@ -26,6 +26,7 @@ import com.vanillasource.gerec.ResourceReference;
 import com.vanillasource.gerec.ContentMediaType;
 import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.HttpRequest;
+import com.vanillasource.gerec.Request;
 import com.vanillasource.gerec.ContentResponse;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,7 +40,7 @@ public class PostFormTests {
 
       form.submit(null);
 
-      verify(target).postResponse(any(ContentMediaType.class), eq(""), any(AcceptMediaType.class), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
+      verify(target).preparePost(any(ContentMediaType.class), eq(""), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
    }
 
    @SuppressWarnings("unchecked")
@@ -51,7 +52,7 @@ public class PostFormTests {
          .put("lang", "en")
          .submit(null);
 
-      verify(target).postResponse(any(ContentMediaType.class), eq("q=search&lang=en"), any(AcceptMediaType.class), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
+      verify(target).preparePost(any(ContentMediaType.class), eq("q=search&lang=en"), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
    }
 
    @SuppressWarnings("unchecked")
@@ -62,13 +63,15 @@ public class PostFormTests {
          .put("q", "a+b&c d")
          .submit(null);
 
-      verify(target).postResponse(any(ContentMediaType.class), eq("q=a%2Bb%26c+d"), any(AcceptMediaType.class), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
+      verify(target).preparePost(any(ContentMediaType.class), eq("q=a%2Bb%26c+d"), eq(HttpRequest.HttpRequestChange.NO_CHANGE));
    }
 
    @BeforeMethod
    @SuppressWarnings("unchecked")
    protected void setUp() {
       target = mock(ResourceReference.class);
-      when(target.postResponse(any(), any(), any(), any())).thenReturn(CompletableFuture.completedFuture(mock(ContentResponse.class)));
+      Request request = mock(Request.class);
+      when(target.preparePost(any(), any(), any())).thenReturn(request);
+      when(request.send(any())).thenReturn(CompletableFuture.completedFuture(null));
    }
 }
