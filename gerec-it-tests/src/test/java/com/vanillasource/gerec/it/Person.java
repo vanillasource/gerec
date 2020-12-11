@@ -23,7 +23,7 @@ import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Person {
-   public static final MediaType<Person> TYPE = new JacksonMediaType<>(Person.class, "application/vnd.test.person");
+   public static final MediaType<Person> MEDIA_TYPE = new JacksonMediaType<>(Person.class, "application/vnd.test.person");
    private String name;
    private int age;
 

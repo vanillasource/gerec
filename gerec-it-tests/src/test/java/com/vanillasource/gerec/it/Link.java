@@ -24,7 +24,7 @@ import com.vanillasource.gerec.Request;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
 
 public class Link {
-   public static final MediaType<Link> TYPE = new JacksonMediaType<>(Link.class, "application/vnd.test.link");
+   public static final MediaType<Link> MEDIA_TYPE = new JacksonMediaType<>(Link.class, "application/vnd.test.link");
    private ResourceReference link;
 
    protected Link() {

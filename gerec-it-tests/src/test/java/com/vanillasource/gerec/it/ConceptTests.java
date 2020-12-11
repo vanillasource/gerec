@@ -39,7 +39,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "application/vnd.test.person")
                .withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      Person person = reference().get(Person.TYPE).join();
+      Person person = reference().get(Person.MEDIA_TYPE).join();
 
       assertEquals(person, new Person("John", 35));
    }
@@ -49,7 +49,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "application/vnd.test.person")
                .withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      Person person = reference().get(Person.TYPE).join();
+      Person person = reference().get(Person.MEDIA_TYPE).join();
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("Accept", equalTo("application/vnd.test.person")));
    }
@@ -60,8 +60,8 @@ public class ConceptTests extends HttpTestsBase {
                .withBody("{\"name\":\"John\", \"age\": 35}")
                .withHeader("ETag","ABCD")));
 
-      ContentResponse<Person> personResponse = reference().getResponse(Person.TYPE).join();
-      reference().get(Person.TYPE, personResponse.ifMatch());
+      ContentResponse<Person> personResponse = reference().getResponse(Person.MEDIA_TYPE).join();
+      reference().get(Person.MEDIA_TYPE, personResponse.ifMatch());
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("If-Match", equalTo("ABCD")));
    }
@@ -72,7 +72,7 @@ public class ConceptTests extends HttpTestsBase {
                .withBody("{\"name\":\"John\", \"age\": 35}")
                .withHeader("ETag","ABCD")));
 
-      reference().get(Person.TYPE, maxAge(10).and(maxStale(10))).get();
+      reference().get(Person.MEDIA_TYPE, maxAge(10).and(maxStale(10))).get();
 
       verify(getRequestedFor(urlEqualTo("/")).withHeader("Cache-Control", equalTo("max-age=10, max-stale=10")));
    }
@@ -82,7 +82,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "application/vnd.test.person")
                .withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      reference().post(Person.TYPE, new Person("Jack", 50)).get();
+      reference().post(Person.MEDIA_TYPE, new Person("Jack", 50)).get();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
    }
@@ -92,7 +92,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "application/vnd.test.person")
                .withBody("{\"name\":\"John\", \"age\": 35}")));
 
-      reference().put(Person.TYPE, new Person("Jack", 50)).get();
+      reference().put(Person.MEDIA_TYPE, new Person("Jack", 50)).get();
 
       verify(putRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
    }
@@ -110,7 +110,7 @@ public class ConceptTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")
                .withBody("OK")));
 
-      String result = reference().post(Person.TYPE, new Person("Jack", 50), MediaTypes.textPlain()).join();
+      String result = reference().post(Person.MEDIA_TYPE, new Person("Jack", 50), MediaTypes.textPlain()).join();
 
       verify(postRequestedFor(urlEqualTo("/")).withRequestBody(equalTo("{\"name\":\"Jack\",\"age\":50}")));
       assertEquals(result, "OK");
@@ -163,7 +163,7 @@ public class ConceptTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404)));
 
       try {
-         reference().get(Person.TYPE).get();
+         reference().get(Person.MEDIA_TYPE).get();
       } catch (ExecutionException e) {
          assertEquals(e.getCause().getClass(), HttpErrorException.class);
       }
@@ -173,7 +173,7 @@ public class ConceptTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/")).willReturn(aResponse().withStatus(404).withBody("Nelson: Haha!")));
 
       try {
-         reference().get(Person.TYPE).get();
+         reference().get(Person.MEDIA_TYPE).get();
          fail("should have thrown exception");
       } catch (ExecutionException rawE) {
          HttpErrorException e = (HttpErrorException) rawE.getCause();

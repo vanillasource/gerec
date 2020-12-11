@@ -31,7 +31,7 @@ public class FormTests extends HttpTestsBase {
                .withHeader("Content-Type", "application/vnd.test.searchpage")
                .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"GET\"}}")));
 
-      SearchPage page = reference().get(SearchPage.TYPE).join();
+      SearchPage page = reference().get(SearchPage.MEDIA_TYPE).join();
 
       assertEquals(page.getGreetingMessage(), "Hello!");
    }
@@ -43,7 +43,7 @@ public class FormTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/nini?q=")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
 
-      SearchPage page = reference().get(SearchPage.TYPE).join();
+      SearchPage page = reference().get(SearchPage.MEDIA_TYPE).join();
       page.search("").send(MediaTypes.textPlain()).join();
 
       verify(getRequestedFor(urlEqualTo("/nini?q=")));
@@ -56,7 +56,7 @@ public class FormTests extends HttpTestsBase {
       stubFor(get(urlEqualTo("/?q=nini")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
 
-      SearchPage page = reference().get(SearchPage.TYPE).join();
+      SearchPage page = reference().get(SearchPage.MEDIA_TYPE).join();
       page.search("nini")
          .send(MediaTypes.textPlain()).join();
 
@@ -70,7 +70,7 @@ public class FormTests extends HttpTestsBase {
       stubFor(post(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
 
-      SearchPage page = reference().get(SearchPage.TYPE).join();
+      SearchPage page = reference().get(SearchPage.MEDIA_TYPE).join();
       page.search("nini")
          .send(MediaTypes.textPlain()).join();
 

@@ -33,7 +33,7 @@ import java.util.Collections;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class ResultsPage {
-   public static final AcceptMediaType<ResultsPage> TYPE = new JacksonMediaType<>(ResultsPage.class, "application/vnd.test.resultspage");
+   public static final AcceptMediaType<ResultsPage> MEDIA_TYPE = new JacksonMediaType<>(ResultsPage.class, "application/vnd.test.resultspage");
    private ResourceReference hit1;
    private ResourceReference hit2;
    private ResourceReference nextPage;

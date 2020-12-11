@@ -42,9 +42,9 @@ public class NavigationTests extends HttpTestsBase {
       stubGet("/person4", "application/vnd.test.person", "{\"name\":\"Jane\", \"age\": 3}");
 
       Optional<Person> personMaybe = new Navigation<Person>(reference("/"))
-         .navigate(SearchPage.TYPE, follow(searchPage -> searchPage.search("all persons")))
-         .navigate(ResultsPage.TYPE, first(ResultsPage::iterate))
-         .navigate(Person.TYPE, (person, context) -> {
+         .navigate(SearchPage.MEDIA_TYPE, follow(searchPage -> searchPage.search("all persons")))
+         .navigate(ResultsPage.MEDIA_TYPE, first(ResultsPage::iterate))
+         .navigate(Person.MEDIA_TYPE, (person, context) -> {
             if (person.isAdult()) {
                return context.finish(person);
             } else {

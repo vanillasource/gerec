@@ -35,7 +35,7 @@ public class SuspendTests extends HttpTestsBase {
                .withBody("{\"name\":\"John\", \"age\": 35}")));
       byte[] suspendedCall = reference().prepareGet().suspend();
 
-      Person person = reference().resume(suspendedCall, Person.TYPE).join();
+      Person person = reference().resume(suspendedCall, Person.MEDIA_TYPE).join();
 
       assertEquals(person, new Person("John", 35));
    }
@@ -46,7 +46,7 @@ public class SuspendTests extends HttpTestsBase {
                .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"target\":\"/\", \"method\":\"POST\"}}")));
       stubFor(post(urlEqualTo("/")).willReturn(aResponse()
                .withHeader("Content-Type", "text/plain")));
-      SearchPage page = reference().get(SearchPage.TYPE).join();
+      SearchPage page = reference().get(SearchPage.MEDIA_TYPE).join();
       byte[] suspendedCall = page.search("nini").suspend();
 
       reference().resume(suspendedCall, MediaTypes.textPlain()).join();
@@ -62,7 +62,7 @@ public class SuspendTests extends HttpTestsBase {
                .withHeader("Content-Type", "text/plain")));
 
       byte[] suspendedCall = reference().prepareGet().suspend();
-      SearchPage page = reference("http://some.other.server:8888").resume(suspendedCall, SearchPage.TYPE).join();
+      SearchPage page = reference("http://some.other.server:8888").resume(suspendedCall, SearchPage.MEDIA_TYPE).join();
       page.search("nini")
          .send(MediaTypes.textPlain())
          .join();

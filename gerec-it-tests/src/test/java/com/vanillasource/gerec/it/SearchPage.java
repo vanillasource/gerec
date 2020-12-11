@@ -24,7 +24,7 @@ import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
 import com.vanillasource.gerec.form.Form;
 
 public class SearchPage {
-   public static final AcceptMediaType<SearchPage> TYPE = new JacksonMediaType<>(SearchPage.class, "application/vnd.test.searchpage");
+   public static final AcceptMediaType<SearchPage> MEDIA_TYPE = new JacksonMediaType<>(SearchPage.class, "application/vnd.test.searchpage");
    private String greetingMessage;
    private Form searchForm;
 
