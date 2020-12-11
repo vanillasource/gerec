@@ -9,11 +9,11 @@ A small wrapper over HTTP Clients to support building a proper RESTful
 
 * Media-type centered
 * Following links made easy
+* Navigating complex use-cases made easy
 * Easy cache control
 * Conditional requests
 * Very simple and minimal API
-* Asynchronous-first design
-* Synchronous objects available for simplicity
+* Asynchronous design
 * Zero-copy operation possible
 
 ### Getting the library
@@ -29,15 +29,15 @@ Add this dependency to your Maven build:
 ```
 
 To include the "API" of Gerec. If you want to instantiate a `ResourceReference` you
-need to include `gerec-httpclient` to use the Apache HttpClient implementation.
-And to use Jackson for the media-types, include `gerec-jackson`.
+need to include `gerec-httpclient` for example to use the Apache HttpClient implementation.
+To use Jackson for the media-types, include `gerec-jackson`.
 
 ### The basics
 
-In Gerec, everything revolves around the concept of a `ResourceReference`. This is
-a serializable object that can be used to manipulate the remote resource it points to.
+The central concept in Gerec is a `ResourceReference`. This is
+an object that can be used to manipulate the remote resource it points to.
 These references are not instantiated by the user, as often is the case with other
-frameworks, but they are created when following links. The only exception is the very
+frameworks, but they are created by following links or submitting forms. The only exception is the very
 first reference, created from a bookmark to some entry point into a web of resources.
 
 The reference contains the usual methods to manipulate the resource it points to:
@@ -46,11 +46,12 @@ The reference contains the usual methods to manipulate the resource it points to
 * `PUT`
 * `DELETE`
 * `HEAD`
+* `OPTIONS`
 
 The result of any of the HTTP methods will result in a `Response`. A `Response` can contain
-a response body, the format of which is described in a `MediaType`. A `Response` might also
-contain additional information for making subsequent requests, such as links (additional
-`ResourceReference` objects) or conditions.
+a response body, the format of which is described by a `MediaType`. The content of the `Response` might / should also
+include additional information for making subsequent requests, such as links (additional
+`ResourceReference` objects) or forms.
 
 ### Some random examples
 
@@ -64,13 +65,13 @@ Media types can be freely created for any representation, as they should be. So 
 a complex object looks like this:
 
 ```java
-Person person = reference.get(Person.TYPE).join();
+Person person = reference.get(Person.MEDIA_TYPE).join();
 ```
 
 The given media type will be properly communicated to the server, using the normal HTTP
 content negotiation mechanisms.
 
-You can easily make conditional requests. The following example gets a mutable _Person_ object, modifies it,
+You can also easily make conditional requests. The following example gets a mutable `Person` object, modifies it,
 then tries to update the server, but only if it did not change since it was requested. (Also
 known as optimistic locking):
 
