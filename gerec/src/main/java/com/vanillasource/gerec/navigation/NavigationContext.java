@@ -18,11 +18,44 @@
 
 package com.vanillasource.gerec.navigation;
 
+import com.vanillasource.gerec.AcceptMediaType;
 import com.vanillasource.gerec.Request;
 import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.List;
 
-public interface NavigationContext<R> {
-   CompletableFuture<R> finish(R value);
-   
-   CompletableFuture<R> follow(Request request);
+public final class NavigationContext<R> {
+   private final AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<Optional<R>>>> acceptType;
+
+   public NavigationContext(AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<Optional<R>>>> acceptType) {
+      this.acceptType = acceptType;
+   }
+
+   public CompletableFuture<Optional<R>> back() {
+      return CompletableFuture.completedFuture(Optional.empty());
+   }
+
+   public CompletableFuture<Optional<R>> finish(R value) {
+      return CompletableFuture.completedFuture(Optional.of(value));
+   }
+
+   public CompletableFuture<Optional<R>> follow(Request request) {
+      return request.send(acceptType)
+         .thenCompose(rule -> rule.apply(this));
+   }
+
+   public CompletableFuture<Optional<R>> first(List<Request> requests) {
+      CompletableFuture<Optional<R>> result = back();
+      for (Request request: requests) {
+         result = result.thenCompose(value -> {
+            if (value.isPresent()) {
+               return finish(value.get());
+            } else {
+               return follow(request);
+            }
+         });
+      }
+      return result;
+   }
 }

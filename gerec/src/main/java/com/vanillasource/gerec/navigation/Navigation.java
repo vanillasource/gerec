@@ -28,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * Define navigation to reach a certain result or overall processing state. 
@@ -42,43 +43,24 @@ import java.util.ArrayList;
  */
 public final class Navigation<R> {
    private final ResourceReference startReference;
-   private final List<AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<R>>>> types;
+   private final List<AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<Optional<R>>>>> types;
 
    public Navigation(ResourceReference startReference) {
       this.startReference = startReference;
       this.types = new ArrayList<>();
    }
 
-   public <T> Navigation<R> navigate(AcceptMediaType<T> type, BiFunction<T, NavigationContext<R>, CompletableFuture<R>> decision) {
+   public <T> Navigation<R> navigate(AcceptMediaType<T> type, BiFunction<T, NavigationContext<R>, CompletableFuture<Optional<R>>> decision) {
       types.add(type.map(value -> context -> decision.apply(value, context)));
       return this;
    }
 
-   public CompletableFuture<R> execute() {
-      AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<R>>> acceptType =
+   public CompletableFuture<Optional<R>> execute() {
+      AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<Optional<R>>>> acceptType =
          new PolymorphicAcceptType<>(types);
-      Context context = new Context(acceptType);
+      NavigationContext<R> context = new NavigationContext<>(acceptType);
       return startReference.get(acceptType)
          .thenCompose(rule -> rule.apply(context));
-   }
-
-   private final class Context implements NavigationContext<R> {
-      private final AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<R>>> acceptType;
-
-      public Context(AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<R>>> acceptType) {
-         this.acceptType = acceptType;
-      }
-
-      @Override
-      public CompletableFuture<R> finish(R value) {
-         return CompletableFuture.completedFuture(value);
-      }
-
-      @Override
-      public CompletableFuture<R> follow(Request request) {
-         return request.send(acceptType)
-            .thenCompose(rule -> rule.apply(this));
-      }
    }
 }
 

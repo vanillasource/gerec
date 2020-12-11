@@ -20,6 +20,7 @@ package com.vanillasource.gerec.it;
 
 import com.vanillasource.gerec.MediaType;
 import com.vanillasource.gerec.mediatype.jackson.JacksonMediaType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Person {
    public static final MediaType<Person> TYPE = new JacksonMediaType<>(Person.class, "application/vnd.test.person");
@@ -32,6 +33,11 @@ public class Person {
    public Person(String name, int age) {
       this.name = name;
       this.age = age;
+   }
+
+   @JsonIgnore
+   public boolean isAdult() {
+      return age >= 18;
    }
 
    public boolean equals(Object that) {

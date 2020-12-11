@@ -139,11 +139,15 @@ public class JacksonMediaType<T> implements MediaType<T> {
          }
          jp.nextFieldName(new SerializedString("href"));
          String uri = jp.nextTextValue();
-         JsonToken token = jp.nextToken();
-         if (token != JsonToken.END_OBJECT) {
-            throw new JsonParseException("tried to read a link, but it was not finished after reading href", jp.getCurrentLocation());
-         }
+         skipToObjectEnd(jp, jp.nextToken());
          return context.resolve(URI.create(uri));
+      }
+   }
+
+   private static void skipToObjectEnd(JsonParser jp, JsonToken prereadToken) throws IOException {
+      JsonToken token = prereadToken;
+      while (token != null && token != JsonToken.END_OBJECT) {
+         token = jp.nextToken();
       }
    }
 
@@ -156,18 +160,18 @@ public class JacksonMediaType<T> implements MediaType<T> {
 
       @Override
       public Form deserialize(JsonParser jp, com.fasterxml.jackson.databind.DeserializationContext jacksonContext) throws IOException {
-         // Parse { "target": "<uri>", "method": "GET" }, current token is the start of the object
+         // Parse { "href": "<uri>", "method": "GET" }, current token is the start of the object
          if (jp.getCurrentToken() != JsonToken.START_OBJECT) {
             throw new JsonParseException("tried to read a form, but it was not an object", jp.getCurrentLocation());
          }
-         jp.nextFieldName(new SerializedString("target"));
+         jp.nextFieldName(new SerializedString("href"));
          String target = jp.nextTextValue();
-         jp.nextFieldName(new SerializedString("method"));
-         String method = jp.nextTextValue();
-         JsonToken token = jp.nextToken();
-         if (token != JsonToken.END_OBJECT) {
-            throw new JsonParseException("tried to read a form, but it was not finished after reading target and method", jp.getCurrentLocation());
+         JsonToken nextToken = jp.nextToken();
+         String method = "GET";
+         if (nextToken == JsonToken.FIELD_NAME && jp.getCurrentName().equals("method")) {
+            method = jp.nextTextValue();
          }
+         skipToObjectEnd(jp, nextToken);
          if (method.equals("GET")) {
             return new GetForm(URI.create(target), context::resolve);
          } else if (method.equals("POST")) {
