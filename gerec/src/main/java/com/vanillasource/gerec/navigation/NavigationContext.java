@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.List;
+import java.util.function.BiFunction;
 
 public final class NavigationContext<R> {
    private final AcceptMediaType<Function<NavigationContext<R>, CompletableFuture<Optional<R>>>> acceptType;
@@ -45,6 +46,11 @@ public final class NavigationContext<R> {
          .thenCompose(rule -> rule.apply(this));
    }
 
+   public static <T, R> BiFunction<T, NavigationContext<R>, CompletableFuture<Optional<R>>> follow(
+         Function<T, Request> singleDecision) {
+      return (page, context) -> context.follow(singleDecision.apply(page));
+   }
+
    public CompletableFuture<Optional<R>> first(List<Request> requests) {
       CompletableFuture<Optional<R>> result = back();
       for (Request request: requests) {
@@ -58,4 +64,10 @@ public final class NavigationContext<R> {
       }
       return result;
    }
+
+   public static <T, R> BiFunction<T, NavigationContext<R>, CompletableFuture<Optional<R>>> first(
+         Function<T, List<Request>> singleListDecision) {
+      return (page, context) -> context.first(singleListDecision.apply(page));
+   }
+
 }

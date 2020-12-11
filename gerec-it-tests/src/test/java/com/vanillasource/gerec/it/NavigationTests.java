@@ -24,6 +24,7 @@ import static org.mockito.Mockito.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import com.vanillasource.gerec.mediatype.MediaTypes;
 import com.vanillasource.gerec.navigation.Navigation;
+import static com.vanillasource.gerec.navigation.NavigationContext.*;
 import java.util.Optional;
 
 @Test
@@ -41,8 +42,8 @@ public class NavigationTests extends HttpTestsBase {
       stubGet("/person4", "application/vnd.test.person", "{\"name\":\"Jane\", \"age\": 3}");
 
       Optional<Person> personMaybe = new Navigation<Person>(reference("/"))
-         .navigate(SearchPage.TYPE, (searchPage, context) -> context.follow(searchPage.search("all persons")))
-         .navigate(ResultsPage.TYPE, (resultsPage, context) -> context.first(resultsPage.iterate()))
+         .navigate(SearchPage.TYPE, follow(searchPage -> searchPage.search("all persons")))
+         .navigate(ResultsPage.TYPE, first(ResultsPage::iterate))
          .navigate(Person.TYPE, (person, context) -> {
             if (person.isAdult()) {
                return context.finish(person);
