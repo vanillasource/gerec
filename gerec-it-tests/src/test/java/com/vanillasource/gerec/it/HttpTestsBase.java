@@ -46,6 +46,12 @@ public class HttpTestsBase {
       return reference("");
    }
 
+   protected void stubGet(String path, String contentType, String content) {
+      stubFor(get(urlEqualTo(path)).willReturn(aResponse()
+               .withHeader("Content-Type", contentType)
+               .withBody(content)));
+   }
+
    @BeforeMethod
    protected void setUp() throws Exception {
       httpClient = HttpAsyncClients.createDefault();

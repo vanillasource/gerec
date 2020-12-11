@@ -29,27 +29,16 @@ import java.util.Optional;
 @Test
 public class NavigationTests extends HttpTestsBase {
    public void testSearchForFirstAdult() {
-      stubFor(get(urlEqualTo("/")).willReturn(aResponse()
-               .withHeader("Content-Type", "application/vnd.test.searchpage")
-               .withBody("{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"href\":\"/1\"}}")));
-      stubFor(get(urlEqualTo("/1?q=all+persons")).willReturn(aResponse()
-               .withHeader("Content-Type", "application/vnd.test.resultspage")
-               .withBody("{\"hit1\": {\"href\":\"/person1\"}, \"hit2\": {\"href\":\"/person2\"}, \"nextPage\":{\"href\":\"/2?q=all+persons\"}}")));
-      stubFor(get(urlEqualTo("/2?q=all+persons")).willReturn(aResponse()
-               .withHeader("Content-Type", "application/vnd.test.resultspage")
-               .withBody("{\"hit1\": {\"href\":\"/person3\"}, \"hit2\": {\"href\":\"/person4\"}}")));
-      stubFor(get(urlEqualTo("/person1")).willReturn(aResponse()
-               .withHeader("Content-Type", "application/vnd.test.person")
-               .withBody("{\"name\":\"Jack\", \"age\": 15}")));
-      stubFor(get(urlEqualTo("/person2")).willReturn(aResponse()
-               .withHeader("Content-Type", "application/vnd.test.person")
-               .withBody("{\"name\":\"Jill\", \"age\": 16}")));
-      stubFor(get(urlEqualTo("/person3")).willReturn(aResponse()
-               .withHeader("Content-Type", "application/vnd.test.person")
-               .withBody("{\"name\":\"John\", \"age\": 49}")));
-      stubFor(get(urlEqualTo("/person4")).willReturn(aResponse()
-               .withHeader("Content-Type", "application/vnd.test.person")
-               .withBody("{\"name\":\"Jane\", \"age\": 3}")));
+      stubGet("/", "application/vnd.test.searchpage",
+            "{\"greetingMessage\":\"Hello!\", \"searchForm\": {\"href\":\"/1\"}}");
+      stubGet("/1?q=all+persons", "application/vnd.test.resultspage",
+            "{\"hit1\": {\"href\":\"/person1\"}, \"hit2\": {\"href\":\"/person2\"}, \"nextPage\":{\"href\":\"/2?q=all+persons\"}}");
+      stubGet("/2?q=all+persons", "application/vnd.test.resultspage",
+            "{\"hit1\": {\"href\":\"/person3\"}, \"hit2\": {\"href\":\"/person4\"}}");
+      stubGet("/person1", "application/vnd.test.person", "{\"name\":\"Jack\", \"age\": 15}");
+      stubGet("/person2", "application/vnd.test.person", "{\"name\":\"Jill\", \"age\": 16}");
+      stubGet("/person3", "application/vnd.test.person", "{\"name\":\"John\", \"age\": 49}");
+      stubGet("/person4", "application/vnd.test.person", "{\"name\":\"Jane\", \"age\": 3}");
 
       Optional<Person> personMaybe = new Navigation<Person>(reference("/"))
          .navigate(SearchPage.TYPE, (searchPage, context) -> context.follow(searchPage.search("all persons")))
