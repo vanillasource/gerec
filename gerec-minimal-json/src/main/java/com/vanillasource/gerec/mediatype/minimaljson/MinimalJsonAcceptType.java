@@ -38,6 +38,7 @@ import com.eclipsesource.json.Json;
 import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.eclipsesource.json.ParseException;
 
 /**
  * Accept media type that processes incoming json documents with
@@ -66,55 +67,64 @@ public class MinimalJsonAcceptType<T> implements AcceptMediaType<T> {
    @Override
    public CompletableFuture<T> deserialize(HttpResponse response, DeserializationContext context) {
       return delegate.deserialize(response, context)
-         .thenApply(jsonString -> deserializer.apply(Json.parse(jsonString), new JsonContext() {
-            @Override
-            public Form parseForm(JsonObject object) {
-               LOGGER.debug("parsing form");
-               return withControls(object, createForm(object));
+         .thenApply(jsonString -> {
+            JsonValue jsonValue;
+            try {
+               jsonValue = Json.parse(jsonString);
+            } catch (ParseException e) {
+               LOGGER.error("there was a parse exception (follows) for message:\n"+jsonString);
+               throw e;
             }
-
-            private Form createForm(JsonObject object) {
-               if (object.getString("method","get").equalsIgnoreCase("post")) {
-                  return new PostForm(parseLink(object));
-               } else {
-                  return new GetForm(URI.create(object.getString("href","")), uri -> parseLink(object, uri));
+            return deserializer.apply(jsonValue, new JsonContext() {
+               @Override
+               public Form parseForm(JsonObject object) {
+                  LOGGER.debug("parsing form");
+                  return withControls(object, createForm(object));
                }
-            }
 
-            private Form withControls(JsonObject object, Form form) {
-               Form result = form;
-               JsonValue controls = object.get("controls");
-               if (controls != null) {
-                  LOGGER.debug("parsing form controls");
-                  for (JsonObject.Member member: controls.asObject()) {
-                     JsonValue defaultValue = member.getValue().asObject().get("default");
-                     if (defaultValue != null) {
-                        result = result.put(member.getName(), defaultValue.asString());
-                     }
+               private Form createForm(JsonObject object) {
+                  if (object.getString("method","get").equalsIgnoreCase("post")) {
+                     return new PostForm(parseLink(object));
+                  } else {
+                     return new GetForm(URI.create(object.getString("href","")), uri -> parseLink(object, uri));
                   }
                }
-               return result;
-            }
 
-            @Override
-            public ResourceReference parseLink(JsonObject object) {
-               LOGGER.debug("parsing link");
-               URI uri = URI.create(object.getString("href",""));
-               return parseLink(object, uri);
-            }
-
-            private ResourceReference parseLink(JsonObject object, URI uri) {
-               ResourceReference original = context.resolve(uri);
-               JsonValue bearing = object.get("bearing");
-               if (bearing != null) {
-                  LOGGER.debug("parsing link bearing token");
-                  return new ChangedResourceReference(original,
-                        bearing(bearing.asString()));
-               } else {
-                  return original;
+               private Form withControls(JsonObject object, Form form) {
+                  Form result = form;
+                  JsonValue controls = object.get("controls");
+                  if (controls != null) {
+                     LOGGER.debug("parsing form controls");
+                     for (JsonObject.Member member: controls.asObject()) {
+                        JsonValue defaultValue = member.getValue().asObject().get("default");
+                        if (defaultValue != null) {
+                           result = result.put(member.getName(), defaultValue.asString());
+                        }
+                     }
+                  }
+                  return result;
                }
-            }
-         }));
+
+               @Override
+               public ResourceReference parseLink(JsonObject object) {
+                  LOGGER.debug("parsing link");
+                  URI uri = URI.create(object.getString("href",""));
+                  return parseLink(object, uri);
+               }
+
+               private ResourceReference parseLink(JsonObject object, URI uri) {
+                  ResourceReference original = context.resolve(uri);
+                  JsonValue bearing = object.get("bearing");
+                  if (bearing != null) {
+                     LOGGER.debug("parsing link bearing token");
+                     return new ChangedResourceReference(original,
+                           bearing(bearing.asString()));
+                  } else {
+                     return original;
+                  }
+               }
+            });
+         });
    }
 
    public interface JsonContext {
