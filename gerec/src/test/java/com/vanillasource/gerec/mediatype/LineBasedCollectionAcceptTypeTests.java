@@ -30,6 +30,7 @@ import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.ExecutionException;
 
 @Test
 public class LineBasedCollectionAcceptTypeTests {
@@ -53,6 +54,14 @@ public class LineBasedCollectionAcceptTypeTests {
 
       verify(consumer).accept("a");
       verifyNoMoreInteractions(consumer);
+   }
+
+   @Test(expectedExceptions = ExecutionException.class)
+   public void testConsumerThrowsExceptionAbortsType() throws Exception {
+      responseContent("a\n\n\n\n");
+      doThrow(new NullPointerException("test")).when(consumer).accept(any());
+
+      type.deserialize(response, null).get();
    }
 
    @SuppressWarnings("unchecked")

@@ -129,7 +129,8 @@ public class LineBasedCollectionAcceptType<T> implements AcceptMediaType<Void> {
                   return master.execute(follower, Runnable::run);
                }
             }, context)
-            .thenAccept(consumer);
+            .thenAccept(consumer)
+            .join();
          }
 
          @Override

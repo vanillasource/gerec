@@ -30,6 +30,8 @@ import java.io.ByteArrayInputStream;
 import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 @Test
 public class PacketBasedCollectionAcceptTypeTests {
@@ -53,6 +55,14 @@ public class PacketBasedCollectionAcceptTypeTests {
 
       verify(consumer).accept("a");
       verifyNoMoreInteractions(consumer);
+   }
+
+   @Test(expectedExceptions = ExecutionException.class)
+   public void testConsumerThrowsExceptionAbortsType() throws Exception {
+      responseContent(new byte[] { 0,0,0,1, 'a', 0,0,0,0, 0,0,0,0, 0,0,0,0 });
+      doThrow(new NullPointerException("test")).when(consumer).accept(any());
+
+      type.deserialize(response, null).get();
    }
 
    @SuppressWarnings("unchecked")
